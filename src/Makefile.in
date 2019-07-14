@@ -14,6 +14,7 @@
 
 @SET_MAKE@
 
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -96,7 +97,8 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
+DIST_COMMON = $(srcdir)/Makefile.am $(include_HEADERS) \
+	$(ncompinclude_HEADERS) $(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
@@ -128,10 +130,11 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(libdir)"
+am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)" \
+	"$(DESTDIR)$(ncompincludedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
-libncomp_la_LIBADD =
-am_libncomp_la_OBJECTS = libncomp_la-util.lo
+libncomp_la_DEPENDENCIES = fortran/libncomp_fort.la
+am_libncomp_la_OBJECTS = libncomp_la-util.lo libncomp_la-linint2.lo
 libncomp_la_OBJECTS = $(am_libncomp_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -139,7 +142,7 @@ am__v_lt_0 = --silent
 am__v_lt_1 = 
 libncomp_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libncomp_la_CFLAGS) \
-	$(CFLAGS) $(libncomp_la_LDFLAGS) $(LDFLAGS) -o $@
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -155,7 +158,8 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/libncomp_la-util.Plo
+am__depfiles_remade = ./$(DEPDIR)/libncomp_la-linint2.Plo \
+	./$(DEPDIR)/libncomp_la-util.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -190,6 +194,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+HEADERS = $(include_HEADERS) $(ncompinclude_HEADERS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 am__recursive_targets = \
@@ -365,10 +370,12 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = fortran
 lib_LTLIBRARIES = libncomp.la
-libncomp_la_SOURCES = util.c ncomp.h
+libncomp_la_SOURCES = util.c ncomp.h linint2.c
 libncomp_la_CFLAGS = $(AM_CFLAGS)
-@LINUX_TRUE@libncomp_la_LDFLAGS = -Wl,--whole-archive,fortran/libncomp_fort.a -Wl,--no-whole-archive
-@OSX_TRUE@libncomp_la_LDFLAGS = -Wl,-all_load,fortran/libncomp_fort.a
+libncomp_la_LIBADD = fortran/libncomp_fort.la
+include_HEADERS = ncomp.h
+ncompincludedir = $(includedir)/ncomp
+ncompinclude_HEADERS = util.h constants.h wrapper.h
 all: all-recursive
 
 .SUFFIXES:
@@ -447,6 +454,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libncomp_la-linint2.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libncomp_la-util.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -483,11 +491,60 @@ libncomp_la-util.lo: util.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libncomp_la_CFLAGS) $(CFLAGS) -c -o libncomp_la-util.lo `test -f 'util.c' || echo '$(srcdir)/'`util.c
 
+libncomp_la-linint2.lo: linint2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libncomp_la_CFLAGS) $(CFLAGS) -MT libncomp_la-linint2.lo -MD -MP -MF $(DEPDIR)/libncomp_la-linint2.Tpo -c -o libncomp_la-linint2.lo `test -f 'linint2.c' || echo '$(srcdir)/'`linint2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libncomp_la-linint2.Tpo $(DEPDIR)/libncomp_la-linint2.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='linint2.c' object='libncomp_la-linint2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libncomp_la_CFLAGS) $(CFLAGS) -c -o libncomp_la-linint2.lo `test -f 'linint2.c' || echo '$(srcdir)/'`linint2.c
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
+install-includeHEADERS: $(include_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(include_HEADERS)'; test -n "$(includedir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(includedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(includedir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(includedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(includedir)" || exit $$?; \
+	done
+
+uninstall-includeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(include_HEADERS)'; test -n "$(includedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(includedir)'; $(am__uninstall_files_from_dir)
+install-ncompincludeHEADERS: $(ncompinclude_HEADERS)
+	@$(NORMAL_INSTALL)
+	@list='$(ncompinclude_HEADERS)'; test -n "$(ncompincludedir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(ncompincludedir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(ncompincludedir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(ncompincludedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(ncompincludedir)" || exit $$?; \
+	done
+
+uninstall-ncompincludeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(ncompinclude_HEADERS)'; test -n "$(ncompincludedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(ncompincludedir)'; $(am__uninstall_files_from_dir)
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run 'make' without going through this Makefile.
@@ -648,10 +705,10 @@ distdir-am: $(DISTFILES)
 	done
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(libdir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)" "$(DESTDIR)$(ncompincludedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -690,7 +747,8 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 	mostlyclean-am
 
 distclean: distclean-recursive
-		-rm -f ./$(DEPDIR)/libncomp_la-util.Plo
+		-rm -f ./$(DEPDIR)/libncomp_la-linint2.Plo
+	-rm -f ./$(DEPDIR)/libncomp_la-util.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -707,7 +765,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am:
+install-data-am: install-includeHEADERS install-ncompincludeHEADERS
 
 install-dvi: install-dvi-recursive
 
@@ -736,7 +794,8 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-recursive
-		-rm -f ./$(DEPDIR)/libncomp_la-util.Plo
+		-rm -f ./$(DEPDIR)/libncomp_la-linint2.Plo
+	-rm -f ./$(DEPDIR)/libncomp_la-util.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -753,7 +812,8 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-libLTLIBRARIES
+uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES \
+	uninstall-ncompincludeHEADERS
 
 .MAKE: $(am__recursive_targets) install-am install-strip
 
@@ -764,14 +824,16 @@ uninstall-am: uninstall-libLTLIBRARIES
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-libLTLIBRARIES install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
-	uninstall-libLTLIBRARIES
+	install-exec-am install-html install-html-am \
+	install-includeHEADERS install-info install-info-am \
+	install-libLTLIBRARIES install-man install-ncompincludeHEADERS \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	installdirs-am maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
+	uninstall-am uninstall-includeHEADERS uninstall-libLTLIBRARIES \
+	uninstall-ncompincludeHEADERS
 
 .PRECIOUS: Makefile
 

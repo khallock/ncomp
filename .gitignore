@@ -5,5 +5,9 @@ Makefile
 /libtool
 /src/.deps
 /src/.libs
+/src/fortran/.libs
 /stamp-h1
 /build
+*.o
+*.lo
+*.la
