@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "ncomp.h"
-#include "util.h"
+#include "ncomp/types.h"
+#include "ncomp/util.h"
 #include <time.h>
 
 /* this name mangling works with gfortran, haven't tested other compilers */

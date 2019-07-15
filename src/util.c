@@ -1,6 +1,7 @@
 #include <stdlib.h>
-#include "ncomp.h"
-#include "util.h"
+#include "ncomp/constants.h"
+#include "ncomp/types.h"
+#include "ncomp/util.h"
 
 #define _ncomp_coerce_to_type(a, b, c, d, e, f) _ncomp_coerce_to_bool(a, b, c, d, e, f)
 #define C_TYPE char
