@@ -9,6 +9,7 @@ AC_CONFIG_FILES([
  Makefile
  src/Makefile
  src/fortran/Makefile
+ src/wrappers/Makefile
 ])
 # AC_CANONICAL_HOST is needed to access the 'host_os' variable    
 AC_CANONICAL_HOST

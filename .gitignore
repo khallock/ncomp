@@ -6,6 +6,8 @@ Makefile
 /src/.deps
 /src/.libs
 /src/fortran/.libs
+/src/wrappers/.deps
+/src/wrappers/.libs
 /stamp-h1
 /build
 *.o

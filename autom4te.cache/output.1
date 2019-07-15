@@ -4248,7 +4248,7 @@ esac
 
 ac_config_headers="$ac_config_headers config.h"
 
-ac_config_files="$ac_config_files Makefile src/Makefile src/fortran/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile src/fortran/Makefile src/wrappers/Makefile"
 
 # AC_CANONICAL_HOST is needed to access the 'host_os' variable    
 # Make sure we can run config.sub.
@@ -16407,6 +16407,7 @@ do
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/fortran/Makefile") CONFIG_FILES="$CONFIG_FILES src/fortran/Makefile" ;;
+    "src/wrappers/Makefile") CONFIG_FILES="$CONFIG_FILES src/wrappers/Makefile" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
