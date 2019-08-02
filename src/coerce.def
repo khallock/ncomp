@@ -1,0 +1,190 @@
+void _ncomp_coerce_to_type(void* arr, int arr_type, void* arr_missing, C_TYPE *out_arr, C_TYPE *out_missing, size_t arr_size) {
+    long i;
+    int arr_has_missing = 0;
+
+    if (arr_missing != NULL && out_missing != NULL)
+        arr_has_missing = 1;
+
+    switch(arr_type) {
+        case NCOMP_TYPE:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((C_TYPE *)arr)[i] == *((C_TYPE *)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = ((C_TYPE *)arr)[i];
+                }
+            }
+            break;
+
+#if NCOMP_TYPE != NCOMP_FLOAT
+        case NCOMP_FLOAT:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((float*)arr)[i] == *((float*)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = (C_TYPE)((float*)arr)[i];
+                }
+            }
+            break;
+#endif /* NCOMP_TYPE != NCOMP_FLOAT */
+
+#if NCOMP_TYPE != NCOMP_DOUBLE
+        case NCOMP_DOUBLE:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((double*)arr)[i] == *((double*)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = (C_TYPE)((double*)arr)[i];
+                }
+            }
+            break;
+#endif /* NCOMP_TYPE != NCOMP_DOUBLE */
+
+#if NCOMP_TYPE != NCOMP_BOOL
+        case NCOMP_BOOL:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((char*)arr)[i] == *((char*)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = (C_TYPE)((char*)arr)[i];
+                }
+            }
+            break;
+#endif /* NCOMP_TYPE != NCOMP_BOOL */
+
+#if NCOMP_TYPE != NCOMP_BYTE
+        case NCOMP_BYTE:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((signed char*)arr)[i] == *((signed char*)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = (C_TYPE)((signed char*)arr)[i];
+                }
+            }
+            break;
+#endif /* NCOMP_TYPE != NCOMP_BYTE */
+
+#if NCOMP_TYPE != NCOMP_UBYTE
+        case NCOMP_UBYTE:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((unsigned char*)arr)[i] == *((unsigned char*)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = (C_TYPE)((unsigned char*)arr)[i];
+                }
+            }
+            break;
+#endif /* NCOMP_TYPE != NCOMP_UBYTE */
+
+#if NCOMP_TYPE != NCOMP_SHORT
+        case NCOMP_SHORT:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((short*)arr)[i] == *((short*)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = (C_TYPE)((short*)arr)[i];
+                }
+            }
+            break;
+#endif /* NCOMP_TYPE != NCOMP_SHORT */
+
+#if NCOMP_TYPE != NCOMP_USHORT
+        case NCOMP_USHORT:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((unsigned short*)arr)[i] == *((unsigned short*)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = (C_TYPE)((unsigned short*)arr)[i];
+                }
+            }
+            break;
+#endif /* NCOMP_TYPE != NCOMP_USHORT */
+
+#if NCOMP_TYPE != NCOMP_INT
+        case NCOMP_INT:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((int*)arr)[i] == *((int*)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = (C_TYPE)((int*)arr)[i];
+                }
+            }
+            break;
+#endif /* NCOMP_TYPE != NCOMP_INT */
+
+#if NCOMP_TYPE != NCOMP_UINT
+        case NCOMP_UINT:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((unsigned int*)arr)[i] == *((unsigned int*)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = (C_TYPE)((unsigned int*)arr)[i];
+                }
+            }
+            break;
+#endif /* NCOMP_TYPE != NCOMP_UINT */
+
+#if NCOMP_TYPE != NCOMP_LONG
+        case NCOMP_LONG:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((long*)arr)[i] == *((long*)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = (C_TYPE)((long*)arr)[i];
+                }
+            }
+            break;
+#endif /* NCOMP_TYPE != NCOMP_LONG */
+
+#if NCOMP_TYPE != NCOMP_ULONG
+        case NCOMP_ULONG:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((unsigned long*)arr)[i] == *((unsigned long*)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = (C_TYPE)((unsigned long*)arr)[i];
+                }
+            }
+            break;
+#endif /* NCOMP_TYPE != NCOMP_ULONG */
+
+#if NCOMP_TYPE != NCOMP_LONGLONG
+        case NCOMP_LONGLONG:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((long long*)arr)[i] == *((long long*)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = (C_TYPE)((long long*)arr)[i];
+                }
+            }
+            break;
+#endif /* NCOMP_TYPE != NCOMP_LONGLONG */
+
+#if NCOMP_TYPE != NCOMP_ULONGLONG
+        case NCOMP_ULONGLONG:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((unsigned long long*)arr)[i] == *((unsigned long long*)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = (C_TYPE)((unsigned long long*)arr)[i];
+                }
+            }
+            break;
+#endif /* NCOMP_TYPE != NCOMP_ULONGLONG */
+
+#if NCOMP_TYPE != NCOMP_LONGDOUBLE
+        case NCOMP_LONGDOUBLE:
+            for (i = 0; i < arr_size; i++) {
+                if (arr_has_missing && ((long double*)arr)[i] == *((long double*)arr_missing)) {
+                    out_arr[i] = *out_missing;
+                } else {
+                    out_arr[i] = (C_TYPE)((long double*)arr)[i];
+                }
+            }
+            break;
+#endif /* NCOMP_TYPE != NCOMP_LONGDOUBLE */
+    }
+
+    return;
+}
+
