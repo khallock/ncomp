@@ -1,0 +1,10 @@
+name: ncomp-dev
+channels:
+  - conda-forge
+dependencies:
+  - clang_osx-64
+  - gfortran_osx-64
+  - autoconf
+  - automake
+  - libtool
+  - make
