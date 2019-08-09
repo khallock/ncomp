@@ -10,3 +10,4 @@ if [ $(uname) = Darwin ]; then
 else
     ${LDD:-ldd} ${CONDA_PREFIX}/lib/libncomp.so
 fi
+make check
