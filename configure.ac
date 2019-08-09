@@ -10,6 +10,7 @@ AC_CONFIG_FILES([
  src/Makefile
  src/fortran/Makefile
  src/wrappers/Makefile
+ test/Makefile
 ])
 LT_INIT
 AC_OUTPUT
