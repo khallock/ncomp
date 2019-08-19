@@ -9,10 +9,6 @@ SUBROUTINE DLININT1(NXI,XI,FI,ICYCX,NXO,XO,FO,XIW,FXIW,NXI2,XMSG,&
   DOUBLE PRECISION XIW(NXI2),FXIW(NXI2)
   ! NCLEND
 
-  ! This is written  with GNU f77 acceptable extensions
-  ! .   to allow for compilation on linux platforms.
-  ! .   This could be improved considerably with f90
-
   ! NCL:  fo = linint1 (xi,fi, wrapX, xo, iopt)
   !
   !            {nxi,nxo} = dimsizes( {xi,xo} )
@@ -54,83 +50,78 @@ SUBROUTINE DLININT1(NXI,XI,FI,ICYCX,NXO,XO,FO,XIW,FXIW,NXI2,XMSG,&
   INTEGER NX,NPTS,IFLAG,NXSTRT,NXLAST
   !                              gross error checking
   IER = 0
-  IF (NXO.LT.1) THEN
+  if (NXO < 1) then
      IER = 1
-     RETURN
-  END IF
+     return
+  end if
   !                              initialize to msg
-  DO NX = 1,NXO
-     FO(NX) = XMSG
-  END DO
+  FO(:) = XMSG
 
-  IF (NXI.LE.1) THEN
+  if (NXI <= 1) then
      IER = 1
-     RETURN
-  END IF
+     return
+  end if
   !                              mono (in/de)creasing ?
   CALL DMONOID2(NXI,XI,NXO,XO,IFLAG,IER)
-  IF (IFLAG.EQ.0 .OR. IER.NE.0) RETURN
+  if (IFLAG == 0 .or. IER /= 0) return
   !                              are data to be treated cyclic?
-  IF (ICYCX.EQ.0) THEN
+  if (ICYCX == 0) then
      !                              data are not cyclic
-     IF (IOPT.EQ.0) THEN
+     if (IOPT == 0) then
 
         CALL DLIN2INT1(NXI,XI,FI,NXO,XO,FO,XMSG,IFLAG)
-     ELSE IF (IOPT.EQ.1) THEN
+     else if (IOPT == 1) then
         !                              collapse data array (eliminate msg)
         NPTS = 0
-        DO NX = 1,NXI
-           IF (FI(NX).NE.XMSG) THEN
+        do NX = 1,NXI
+           if (FI(NX) /= XMSG) then
               NPTS = NPTS + 1
               XIW(NPTS+1)  = XI(NX)
               FXIW(NPTS+1) = FI(NX)
-           END IF
-        END DO
+           end if
+        end do
 
         CALL DLIN2INT1(NPTS,XIW(2),FXIW(2),NXO,XO,FO,XMSG,IFLAG)
-     END IF
-  ELSE
+     end if
+  else
      !                              data are cyclic
-     IF (IOPT.EQ.0) THEN
+     if (IOPT == 0) then
         !                              preserve msg region
-        DO NX = 1,NXI
+        do NX = 1,NXI
            XIW(NX+1)  = XI(NX)
            FXIW(NX+1) = FI(NX)
-        END DO
+        end do
 
         CALL DLINCYC(NXI,XI,FI,1,NXI,IFLAG,XIW,FXIW,NXI)
         CALL DLIN2INT1(NXI+2,XIW,FXIW,NXO,XO,FO,XMSG,IFLAG)
 
-     ELSE IF (IOPT.EQ.1) THEN
+     else if (IOPT == 1) then
         !                              collapse data array
         NPTS = 0
         NXSTRT = 0
         NXLAST = 0
-        DO NX = 1,NXI
-           IF (FI(NX).NE.XMSG) THEN
+        do NX = 1,NXI
+           if (FI(NX) /= XMSG) then
               NPTS = NPTS + 1
               XIW(NPTS+1)  = XI(NX)
               FXIW(NPTS+1) = FI(NX)
-              IF (NPTS.EQ.1) NXSTRT = NX
+              if (NPTS == 1) NXSTRT = NX
               NXLAST = NX
-           END IF
-        END DO
+           end if
+        end do
 
-        IF (NPTS.EQ.0) THEN
+        if (NPTS == 0) then
            IER = 1
-           RETURN
-        END IF
+           return
+        end if
 
         CALL DLINCYC(NXI,XI,FI,NXSTRT,NXLAST,IFLAG,XIW,FXIW,NPTS)
         CALL DLIN2INT1(NPTS+2,XIW,FXIW,NXO,XO,FO,XMSG,IFLAG)
-        ! c c         DO nx=0,npts+1
-        ! c c            write (*,"(i5,2(1x,f10.5))") nx, xiw(nx+1), fxiw(nx+1)
-        ! c c         END DO
-     END IF
+     end if
 
-  END IF
+  end if
 
-  RETURN
+  return
 END SUBROUTINE DLININT1
 ! -----------------------------------------------------------
 ! NCLFORTSTART
@@ -142,10 +133,6 @@ SUBROUTINE DLININT2(NXI,XI,NYI,YI,FI,ICYCX,NXO,XO,NYO,YO,FO,XIW,&
   DOUBLE PRECISION XO(NXO),YO(NYO),FO(NXO,NYO),XMSG
   DOUBLE PRECISION XIW(NXI2),FXIW(NXI2)
   ! NCLEND
-
-  ! This is written  with GNU f77 acceptable extensions
-  ! .   to allow for compilation on linux platforms.
-  ! .   This could be improved considerably with f90
 
   ! NCL:  fo = linint2 (xi,yi,fi, wrapX, xo,yo, iopt)
   !
@@ -192,161 +179,147 @@ SUBROUTINE DLININT2(NXI,XI,NYI,YI,FI,ICYCX,NXO,XO,NYO,YO,FO,XIW,&
 
   !                              local
   INTEGER NX,NY
+
   !                              error checking
   IER = 0
-  IF (NXO.LT.1 .OR. NYO.LT.1) THEN
+  if (NXO < 1 .or. NYO < 1) then
      IER = 1
-     RETURN
-  END IF
-  !                              set to msg
-  DO NY = 1,NYO
-     DO NX = 1,NXO
-        FO(NX,NY) = XMSG
-     END DO
-  END DO
+     return
+  end if
 
-  IF (NXI.LT.2 .OR. NYI.LT.2) THEN
+  !                              set to msg
+  FO = XMSG
+
+  if (NXI < 2 .or. NYI < 2) then
      IER = 1
-     RETURN
-  END IF
+     return
+  end if
+
   !                              error mono increasing ?
   CALL DMONOID2(NXI,XI,NXO,XO,IFLAG,IER)
-  IF (IFLAG.EQ.0 .OR. IER.NE.0) THEN
+  if (IFLAG == 0 .or. IER /= 0) then
      IER = 2
-     RETURN
-  END IF
+     return
+  end if
   CALL DMONOID2(NYI,YI,NYO,YO,IFLAG,IER)
-  IF (IFLAG.EQ.0 .OR. IER.NE.0) THEN
+  if (IFLAG == 0 .or. IER /= 0) then
      IER = 3
-     RETURN
-  END IF
+     return
+  end if
+
   !                               is the input array cyclic in x
-  IF (ICYCX.EQ.0) THEN
+  if (ICYCX == 0) then
      !                               preserve missing areas
-     IF (IOPT.EQ.0) THEN
+     if (IOPT == 0) then
         !                               interpolate in the x direction
-        DO NY = 1,NYI
+        do NY = 1,NYI
            CALL DLIN2INT1(NXI,XI,FI(1,NY),NXO,XO,FTMP(1,NY),&
                 &                          XMSG,IFLAG)
-        END DO
+        end do
         !                               interpolate in the y direction
-        DO NX = 1,NXO
-           DO NY = 1,NYI
-              FYIW(NY) = FTMP(NX,NY)
-           END DO
-
+        do NX = 1,NXO
+           FYIW(:) = FTMP(NX,:) ! : = NYI
            CALL DLIN2INT1(NYI,YI,FYIW,NYO,YO,FOYW,XMSG,IFLAG)
-
-           DO NY = 1,NYO
-              FO(NX,NY) = FOYW(NY)
-           END DO
-        END DO
-     ELSE IF (IOPT.EQ.1) THEN
+           FO(NX,:) = FOYW(:) ! : = NYO
+        end do
+     else if (IOPT == 1) then
         !                               interpolate in the x direction
         !                               collapse data array
-        DO NY = 1,NYI
+        do NY = 1,NYI
            NPTS = 0
-           DO NX = 1,NXI
-              IF (FI(NX,NY).NE.XMSG) THEN
+           do NX = 1,NXI
+              if (FI(NX,NY) /= XMSG) then
                  NPTS = NPTS + 1
                  XIW(NPTS+1)  = XI(NX)
                  FXIW(NPTS+1) = FI(NX,NY)
-              END IF
-           END DO
+              end if
+           end do
 
            CALL DLIN2INT1(NPTS,XIW(2),FXIW(2),NXO,XO,FTMP(1,NY),&
                 &                          XMSG,IFLAG)
-        END DO
+        end do
         !                               interpolate in the y direction
-        DO NX = 1,NXO
+        do NX = 1,NXO
            NPTS = 0
-           DO NY = 1,NYI
-              IF (FTMP(NX,NY).NE.XMSG) THEN
+           do NY = 1,NYI
+              if (FTMP(NX,NY) /= XMSG) then
                  NPTS = NPTS + 1
                  YIW(NPTS) = YI(NY)
                  FYIW(NPTS) = FTMP(NX,NY)
-              END IF
-           END DO
+              end if
+           end do
 
            CALL DLIN2INT1(NPTS,YIW,FYIW,NYO,YO,FOYW,XMSG,IFLAG)
 
-           DO NY = 1,NYO
+           do NY = 1,NYO
               FO(NX,NY) = FOYW(NY)
-           END DO
-        END DO
+           end do
+        end do
 
-     END IF
-  ELSE
+     end if
+  else
      !                               must be cyclic in x
      !                               create cyclic "x" coordinates
-     IF (IOPT.EQ.0) THEN
-        DO NY = 1,NYI
-           DO NX = 1,NXI
+     if (IOPT == 0) then
+        do NY = 1,NYI
+           do NX = 1,NXI
               XIW(NX+1)  = XI(NX)
               FXIW(NX+1) = FI(NX,NY)
-           END DO
+           end do
 
            NPTS = NXI
            CALL DLINCYC(NXI,XI,FI(1,NY),1,NXI,IFLAG,XIW,FXIW,&
                 &                         NPTS)
            CALL DLIN2INT1(NXI+2,XIW,FXIW,NXO,XO,FTMP(1,NY),XMSG,&
                 &                           IFLAG)
-        END DO
+        end do
         !                               interpolate in the y direction
-        DO NX = 1,NXO
-           DO NY = 1,NYI
-              FYIW(NY) = FTMP(NX,NY)
-           END DO
-
+        do NX = 1,NXO
+           FYIW(:) = FTMP(NX,:) ! : = NYI
            CALL DLIN2INT1(NYI,YI,FYIW,NYO,YO,FOYW,XMSG,IFLAG)
+           FO(NX,:) = FOYW(:) ! : = NYO
+        end do
 
-           DO NY = 1,NYO
-              FO(NX,NY) = FOYW(NY)
-           END DO
-        END DO
-
-     ELSE IF (IOPT.EQ.1) THEN
-        DO NY = 1,NYI
+     else if (IOPT == 1) then
+        do NY = 1,NYI
            !                              collapse data array
            NPTS = 0
            NXSTRT = 0
            NXLAST = 0
-           DO NX = 1,NXI
-              IF (FI(NX,NY).NE.XMSG) THEN
+           do NX = 1,NXI
+              if (FI(NX,NY) /= XMSG) then
                  NPTS = NPTS + 1
                  XIW(NPTS+1)  = XI(NX)
                  FXIW(NPTS+1) = FI(NX,NY)
-                 IF (NPTS.EQ.1) NXSTRT = NX
+                 if (NPTS == 1) NXSTRT = NX
                  NXLAST = NX
-              END IF
-           END DO
+              end if
+           end do
 
            CALL DLINCYC(NXI,XI,FI(1,NY),NXSTRT,NXLAST,IFLAG,XIW,&
                 &                         FXIW,NPTS)
            CALL DLIN2INT1(NPTS+2,XIW,FXIW,NXO,XO,FTMP(1,NY),&
                 &                           XMSG,IFLAG)
-        END DO
+        end do
         !                               interpolate in the y direction
         do NX = 1,NXO
            NPTS = 0
            do NY = 1,NYI
-              IF (FTMP(NX,NY).NE.XMSG) THEN
+              if (FTMP(NX,NY) /= XMSG) then
                  NPTS = NPTS + 1
                  YIW(NPTS) = YI(NY)
                  FYIW(NPTS) = FTMP(NX,NY)
-              END IF
-           END DO
+              end if
+           end do
 
            CALL DLIN2INT1(NPTS,YIW,FYIW,NYO,YO,FOYW,XMSG,IFLAG)
 
-           do NY = 1,NYO
-              FO(NX,NY) = FOYW(NY)
-           END DO
-        END DO
-     END IF
-  END IF
+           FO(NX, :) = FOYW(:) ! : = NYO
+        end do
+     end if
+  end if
 
-  RETURN
+  return
 END SUBROUTINE DLININT2
 ! -----------------------------------------------------------
 SUBROUTINE DLIN2INT1(NIN,XI,FI,NOUT,XO,FO,XMSG,IFLAG)
@@ -361,54 +334,44 @@ SUBROUTINE DLIN2INT1(NIN,XI,FI,NOUT,XO,FO,XMSG,IFLAG)
   INTEGER NI,NO,NISTRT,NIS,NEXACT
   DOUBLE PRECISION SLOPE
 
-  !     PRINT *, "Hello World!" 
-  !     write ( *, '(a)' ) '  Hello, world!'
+  ! PRINT *, "Hello World!"
+  ! write ( *, '(a)' ) '  Hello, world!'
 
-  FO(:) = XMSG
+  FO(:) = XMSG ! : = NOUT
 
-  !                              main loop [exact matches]
-  !                              nistrt minimizes extra checks
+  ! main loop [exact matches]
+  ! nistrt minimizes extra checks
   NEXACT = 0
   NISTRT = 1
   NIS = NISTRT
-  do NO = 1,NOUT
-     do NI = NISTRT,NIN
-        IF (XO(NO).EQ.XI(NI)) THEN
+  noloop: do NO = 1,NOUT
+     niloop: do NI = NISTRT,NIN
+        if (XO(NO) == XI(NI)) then
            FO(NO) = FI(NI)
            NIS = NI + 1
            NEXACT = NEXACT + 1
-           GO TO 10
-        END IF
-     END DO
-10   NISTRT = NIS
-  END DO
+           exit niloop
+        end if
+     end do niloop
+     NISTRT = NIS
+  end do noloop
 
   !                              main loop [interpolation]
-  IF (IFLAG.EQ.1) THEN
+  if (IFLAG == 1 .or. IFLAG == -1) then
      do NO = 1,NOUT
         do NI = 1,NIN - 1
-           IF (XO(NO).GT.XI(NI) .AND. XO(NO).LT.XI(NI+1)) THEN
-              IF (FI(NI).NE.XMSG .AND. FI(NI+1).NE.XMSG) THEN
+           if ((XO(NO) > XI(NI) .and. XO(NO) < XI(NI+1) .and. IFLAG == 1)&
+                &.or. (XO(NO) < XI(NI) .and. XO(NO) > XI(NI+1) .and. IFLAG == -1)) then
+              if (FI(NI) /= XMSG .and. FI(NI+1) /= XMSG) then
                  SLOPE = (FI(NI+1)-FI(NI))/ (XI(NI+1)-XI(NI))
                  FO(NO) = FI(NI) + SLOPE* (XO(NO)-XI(NI))
-              END IF
-           END IF
-        END DO
-     END DO
-  ELSE IF (IFLAG.EQ.-1) THEN
-     do NO = 1,NOUT
-        do NI = 1,NIN - 1
-           IF (XO(NO).LT.XI(NI) .AND. XO(NO).GT.XI(NI+1)) THEN
-              IF (FI(NI).NE.XMSG .AND. FI(NI+1).NE.XMSG) THEN
-                 SLOPE = (FI(NI+1)-FI(NI))/ (XI(NI+1)-XI(NI))
-                 FO(NO) = FI(NI) + SLOPE* (XO(NO)-XI(NI))
-              END IF
-           END IF
-        END DO
-     END DO
-  END IF
+              end if
+           end if
+        end do
+     end do
+  end if
 
-  RETURN
+  return
 END SUBROUTINE DLIN2INT1
 ! ---------------------------------------------
 SUBROUTINE DLINCYC(NXI,XI,FI,NXSTRT,NXLAST,IFLAG,XIW,FXIW,NPTS)
@@ -421,14 +384,14 @@ SUBROUTINE DLINCYC(NXI,XI,FI,NXSTRT,NXLAST,IFLAG,XIW,FXIW,NPTS)
   DOUBLE PRECISION DX
 
 
-  IF (NXSTRT.EQ.1 .AND. NXLAST.EQ.NXI) THEN
+  if (NXSTRT == 1 .and. NXLAST == NXI) then
      DX = ABS(XI(2)-XI(1))
      XIW(0) = XI(1) - IFLAG*DX
      FXIW(0) = FI(NXI)
      DX = ABS(XI(NXI)-XI(NXI-1))
      XIW(NPTS+1) = XI(NXI) + IFLAG*DX
      FXIW(NPTS+1) = FI(1)
-  ELSE
+  else
      !                              arbitrary
      DX = (NXSTRT+ (NXI-NXLAST))*ABS(XI(2)-XI(1))
      XIW(0) = XIW(1) - IFLAG*DX
@@ -436,9 +399,9 @@ SUBROUTINE DLINCYC(NXI,XI,FI,NXSTRT,NXLAST,IFLAG,XIW,FXIW,NPTS)
      DX = ((NXI-NXLAST)+NXSTRT)*ABS(XI(NXI)-XI(NXI-1))
      XIW(NPTS+1) = XIW(NPTS) + IFLAG*DX
      FXIW(NPTS+1) = FXIW(1)
-  END IF
+  end if
 
-  RETURN
+  return
 END SUBROUTINE DLINCYC
 ! ---------------------------------------------
 SUBROUTINE DMONOINC(X,NX,NER,IER)
@@ -452,16 +415,16 @@ SUBROUTINE DMONOINC(X,NX,NER,IER)
   INTEGER N
 
   IER = 0
-  IF (NX.LE.1) RETURN
+  if (NX <= 1) return
 
   do N = 1,NX - 1
-     IF (X(N+1).LE.X(N)) THEN
+     if (X(N+1) <= X(N)) then
         IER = NER
-        RETURN
-     END IF
-  END DO
+        return
+     end if
+  end do
 
-  RETURN
+  return
 END SUBROUTINE DMONOINC
 !     ---------------------------------------------------
 SUBROUTINE DMONOID1(NIN,XI,IFLAG,IER)
@@ -479,34 +442,34 @@ SUBROUTINE DMONOID1(NIN,XI,IFLAG,IER)
   !
   ! if only one element, then treat it as monotonically increasing
   !
-  IF (NIN.LT.2) THEN
+  if (NIN < 2) then
      IFLAG = +1
-     RETURN
-  END IF
+     return
+  end if
 
-  IF (XI(2).GT.XI(1)) THEN
+  if (XI(2) > XI(1)) then
      !                              ? mono INcreasing
      do NI = 1,NIN - 1
-        IF (XI(NI+1).LE.XI(NI)) THEN
+        if (XI(NI+1) <= XI(NI)) then
            IER = 2
-           RETURN
-        END IF
-     END DO
+           return
+        end if
+     end do
 
      IFLAG = +1
-  ELSE
+  else
      !                              ? mono DEcreasing
      do NI = 1,NIN - 1
-        IF (XI(NI+1).GE.XI(NI)) THEN
+        if (XI(NI+1) >= XI(NI)) then
            IER = 2
-           RETURN
-        END IF
-     END DO
+           return
+        end if
+     end do
 
      IFLAG = -1
-  END IF
+  end if
 
-  RETURN
+  return
 END SUBROUTINE DMONOID1
 !     ---------------------------------------------------
 SUBROUTINE DMONOID2(NIN,XI,NOUT,XO,IFLAG,IER)
@@ -524,18 +487,18 @@ SUBROUTINE DMONOID2(NIN,XI,NOUT,XO,IFLAG,IER)
   NFLAG = 0
 
   CALL DMONOID1(NIN,XI,IFLAG,IER)
-  IF (IFLAG.EQ.0) THEN
+  if (IFLAG == 0) then
      IER = 2
-  ELSE
+  else
      CALL DMONOID1(NOUT,XO,NFLAG,NER)
-     IF (NFLAG.EQ.0) THEN
+     if (NFLAG == 0) then
         IER = 3
-     ELSE IF (IFLAG.NE.NFLAG) THEN
+     else if (IFLAG /= NFLAG) then
         IER = 4
-     END IF
-  END IF
+     end if
+  end if
 
-  RETURN
+  return
 END SUBROUTINE DMONOID2
 
 ! -----------------------------------------------------------
@@ -548,10 +511,6 @@ SUBROUTINE DLININT2PTS(NXI,XI,NYI,YI,FI,ICYCX,NXYO,XO,YO,FO,&
   DOUBLE PRECISION XO(NXYO),YO(NXYO),FO(NXYO)
   DOUBLE PRECISION XIW(NXI2),FIXW(NXI2,NYI),XMSG
   ! NCLEND
-
-  ! This is written  with GNU f77 acceptable extensions
-  ! .   to allow for compilation on linux platforms.
-  ! .   This could be improved considerably with f90
 
   ! NCL:  fo = linint2_points (xi,yi,fi, wrapX, xo,yo, foOpt)
   !
@@ -600,24 +559,24 @@ SUBROUTINE DLININT2PTS(NXI,XI,NYI,YI,FI,ICYCX,NXYO,XO,YO,FO,&
   NOPT = -1
   !                              error checking
   IER = 0
-  IF (NXI.LT.2 .OR. NYI.LT.2) THEN
+  if (NXI < 2 .or. NYI < 2) then
      IER = 1
-     RETURN
-  END IF
+     return
+  end if
   !                              error mono increasing ?
   CALL DMONOINC(XI,NXI,2,IER)
-  IF (IER.NE.0) RETURN
+  if (IER /= 0) return
   CALL DMONOINC(YI,NYI,3,IER)
-  IF (IER.NE.0) RETURN
+  if (IER /= 0) return
   !                               is the input array cyclic in x
-  IF (ICYCX.EQ.0) THEN
+  if (ICYCX == 0) then
      CALL DLINT2XY(NXI,XI,NYI,YI,FI,NXYO,XO,YO,FO,XMSG,NOPT,IER)
-  ELSE
+  else
      !                               must be cyclic in x
      !                               create cyclic "x" coordinates
      do NX = 1,NXI
         XIW(NX+1) = XI(NX)
-     END DO
+     end do
      DX = XI(2) - XI(1)
      XIW(1)    = XI(1) - DX
      XIW(NXI2) = XI(NXI) + DX
@@ -625,20 +584,18 @@ SUBROUTINE DLININT2PTS(NXI,XI,NYI,YI,FI,ICYCX,NXYO,XO,YO,FO,&
      do NY = 1,NYI
         do NX = 1,NXI
            FIXW(NX+1,NY) = FI(NX,NY)
-        END DO
+        end do
         FIXW(1,NY)    = FI(NXI,NY)
         FIXW(NXI2,NY) = FI(1,NY)
-     END DO
+     end do
      CALL DLINT2XY(NXI2,XIW,NYI,YI,FIXW,NXYO,XO,YO,FO,XMSG,NOPT,&
           &                  IER)
-  END IF
+  end if
 
-
-  RETURN
+  return
 END SUBROUTINE DLININT2PTS
 
 ! -----------------------------------------------------------
-!                           could be improved with f90 cycle/continue
 SUBROUTINE DLINT2XY(NXI,XI,NYI,YI,FI,NXYO,XO,YO,FO,XMSG,NOPT,IER)
   IMPLICIT NONE
   INTEGER NXI,NYI,NXYO,NOPT,IER
@@ -652,28 +609,28 @@ SUBROUTINE DLINT2XY(NXI,XI,NYI,YI,FI,NXYO,XO,YO,FO,XMSG,NOPT,IER)
      FO(NXY) = XMSG
 
      NN = 0
-     do N = 1,NXI - 1
-        IF (XO(NXY).GE.XI(N) .AND. XO(NXY).LT.XI(N+1)) THEN
-           NN = N
-           GO TO 20
-        END IF
-     END DO
+     nloop: do N = 1,NXI - 1
+	if (XO(NXY) >= XI(N) .and. XO(NXY) < XI(N+1)) then
+	   NN = N
+	   exit nloop
+	end if
+     end do nloop
 
-20   MM = 0
-     do M = 1,NYI - 1
-        IF (YO(NXY).GE.YI(M) .AND. YO(NXY).LT.YI(M+1)) THEN
-           MM = M
-           GO TO 40
-        END IF
-     END DO
+     MM = 0
+     mloop: do M = 1,NYI - 1
+	if (YO(NXY) >= YI(M) .and. YO(NXY) < YI(M+1)) then
+	   MM = M
+	   exit mloop
+	end if
+     end do mloop
 
-40   IF (NN.NE.0 .AND. MM.NE.0) THEN
-        IF (XO(NXY).EQ.XI(NN) .AND. YO(NXY).EQ.YI(MM)) THEN
+     if (NN /= 0 .and. MM /= 0) then
+        if (XO(NXY) == XI(NN) .and. YO(NXY) == YI(MM)) then
            !                               exact location [no interpolation]
            FO(NXY) = FI(NN,MM)
-        ELSE IF (FI(NN,MM).NE.XMSG .AND. FI(NN+1,MM).NE.XMSG .AND.&
-             &                 FI(NN,MM+1).NE.XMSG .AND.&
-             &                 FI(NN+1,MM+1).NE.XMSG) THEN
+        else if (FI(NN,MM) /= XMSG .and. FI(NN+1,MM) /= XMSG .and.&
+             &                 FI(NN,MM+1) /= XMSG .and.&
+             &                 FI(NN+1,MM+1) /= XMSG) then
            !                               must interpolate: calculate slopes
            SLPX = (XO(NXY)-XI(NN))/ (XI(NN+1)-XI(NN))
            SLPY = (YO(NXY)-YI(MM))/ (YI(MM+1)-YI(MM))
@@ -682,16 +639,16 @@ SUBROUTINE DLINT2XY(NXI,XI,NYI,YI,FI,NXYO,XO,YO,FO,XMSG,NOPT,IER)
            TMP2 = FI(NN,MM+1) + SLPX* (FI(NN+1,MM+1)-FI(NN,MM+1))
            !                               interpolate in "y"
            FO(NXY) = TMP1 + SLPY* (TMP2-TMP1)
-        ELSE IF (NOPT.EQ.-1) THEN
+        else if (NOPT == -1) then
            CALL ESTFOW(FI(NN,MM),FI(NN+1,MM),FI(NN,MM+1),&
                 &                        FI(NN+1,MM+1),XI(NN),XI(NN+1),YI(MM),&
                 &                        YI(MM+1),FO(NXY),XO(NXY),YO(NXY),XMSG)
-        END IF
-     END IF
+        end if
+     end if
 
-  END DO
+  end do
 
-  RETURN
+  return
 END SUBROUTINE DLINT2XY
 ! ---------------------------------------------
 SUBROUTINE ESTFOW(F1,F2,F3,F4,X1,X2,Y1,Y2,F0,X0,Y0,XMSG)
@@ -708,8 +665,8 @@ SUBROUTINE ESTFOW(F1,F2,F3,F4,X1,X2,Y1,Y2,F0,X0,Y0,XMSG)
   ! if all msg return
 
   F0 = XMSG
-  IF (F1.EQ.XMSG .AND. F2.EQ.XMSG .AND. F3.EQ.XMSG .AND.&
-       &    F4.EQ.XMSG) RETURN
+  if (F1 == XMSG .and. F2 == XMSG .and. F3 == XMSG .and.&
+       &    F4 == XMSG) return
 
   ! compute 'distance wgted average
   ! .   make assumption that dx/dy are small and
@@ -730,16 +687,16 @@ SUBROUTINE ESTFOW(F1,F2,F3,F4,X1,X2,Y1,Y2,F0,X0,Y0,XMSG)
   SWT = 0.D0
   do M = 1,2
      do N = 1,2
-        IF (FI(N,M).NE.XMSG) THEN
+        if (FI(N,M) /= XMSG) then
            SUM = SUM + FI(N,M)*W(N,M)
            SWT = SWT + W(N,M)
-        END IF
-     END DO
-  END DO
+        end if
+     end do
+  end do
   !                               wgted average
-  IF (SWT.GT.0.D0) THEN
+  if (SWT > 0.D0) then
      F0 = SUM/SWT
-  END IF
+  end if
 
-  RETURN
+  return
 END SUBROUTINE ESTFOW
