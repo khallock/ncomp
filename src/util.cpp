@@ -1,6 +1,10 @@
 #include "ncomp/constants.h"
 #include "ncomp/types.h"
 #include "ncomp/util.h"
+#include "ncomp_internal/util.hpp"
+#include <stdlib.h>
+#include <type_traits>
+#include <vector>
 
 template <typename T>
 void convert_to(void *in_arr, size_t in_arr_size, size_t in_arr_offset,
@@ -110,7 +114,7 @@ void convert_to(void *in_arr, size_t in_arr_size, size_t in_arr_offset,
   return;
 }
 
-ncomp_array *ncomp_array_alloc(void *array_ptr, int array_type, int array_ndim,
+extern "C" ncomp_array *ncomp_array_alloc(void *array_ptr, int array_type, int array_ndim,
                                size_t *array_shape) {
   ncomp_array *new_array = (ncomp_array *)malloc(
       sizeof(ncomp_array) + (array_ndim - 1) * sizeof(size_t));
@@ -138,7 +142,7 @@ ncomp_array *ncomp_array_alloc(void *array_ptr, int array_type, int array_ndim,
   // return ncompStruct.get();
 }
 
-size_t sizeof_ncomp_array_data(int array_type) {
+extern "C" size_t sizeof_ncomp_array_data(int array_type) {
   size_t array_type_size = 0;
   switch (array_type) {
   case NCOMP_DOUBLE:

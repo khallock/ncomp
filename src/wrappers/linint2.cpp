@@ -1,15 +1,17 @@
 #include "ncomp/types.h"
 #include "ncomp/util.h"
+#include "ncomp_internal/util.hpp"
+#include <vector>
 
 /* this name mangling works with gfortran, haven't tested other compilers */
-extern void dlinint2_(int *,double *,int *,double *,
-                      double *,int *,int *,double *,int *,
-                      double *,double *,double *, double *,
-                      int *,double *,int *,int *);
+extern "C" void dlinint2_(int *,double *,int *,double *,
+                          double *,int *,int *,double *,int *,
+                          double *,double *,double *, double *,
+                          int *,double *,int *,int *);
 
-int linint2(const ncomp_array *xi, const ncomp_array *yi, const ncomp_array *fi,
-            const ncomp_array *xo, const ncomp_array *yo, ncomp_array *fo,
-            int icycx, int iopt) {
+extern "C" int linint2(const ncomp_array *xi, const ncomp_array *yi, const ncomp_array *fi,
+                       const ncomp_array *xo, const ncomp_array *yo, ncomp_array *fo,
+                       int icycx, int iopt) {
   /* Adapted from linint2_W() in linint2W.c */
   long nxi, nyi, nxi2, nfi, nxo, nyo, nfo, size_leftmost, size_fo;
 
@@ -38,8 +40,8 @@ int linint2(const ncomp_array *xi, const ncomp_array *yi, const ncomp_array *fi,
   int has_missing_fi = fi->has_missing;
   ncomp_missing *missing_fi;
   missing_fi = (ncomp_missing *)&(fi->msg);
-  double missing_dfi = {};
-  float missing_rfi = {};
+  double missing_dfi;
+  float missing_rfi;
   coerce_missing(fi->type, has_missing_fi, missing_fi, &missing_dfi,
                  &missing_rfi);
 

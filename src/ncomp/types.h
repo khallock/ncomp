@@ -2,7 +2,6 @@
 #define NCOMP_TYPES_H
 
 #include <stddef.h>
-#include <vector>
 
 /* enumerated types, adapted from numpy's ndarraytypes.h */
 enum NcompTypes {
@@ -46,7 +45,7 @@ typedef struct {
     void *addr;
     int has_missing; // = 0;
     ncomp_missing msg;
-    size_t *shape;
+    size_t shape[1];
 } ncomp_array;
 
 #endif // NCOMP_TYPES_H
