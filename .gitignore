@@ -6,6 +6,10 @@ Makefile.in
 /py-compile
 /test-driver
 /ylwrap
+.libs/
+*.o
+*.la
+*.lo
 
 # http://www.gnu.org/software/autoconf
 
@@ -25,10 +29,14 @@ autom4te.cache
 /install-sh
 /missing
 /stamp-h1
+Makefile
+/config.h
+.deps/
 
 # https://www.gnu.org/software/libtool/
 
 /ltmain.sh
+/libtool
 
 # http://www.gnu.org/software/texinfo
 
