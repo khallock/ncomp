@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 ncomp_array* ncomp_array_alloc(void*, int, int, size_t*);
+void ncomp_array_free(ncomp_array*, int);
 size_t sizeof_ncomp_array_data(int);
 
 #ifdef __cplusplus /* If this is a C++ compiler, end C linkage */

@@ -142,6 +142,16 @@ extern "C" ncomp_array *ncomp_array_alloc(void *array_ptr, int array_type, int a
   // return ncompStruct.get();
 }
 
+extern "C" void ncomp_array_free(ncomp_array* old_array, int keep_data_ptr) {
+    /* free ptr by default */
+    if (!keep_data_ptr)
+        free(old_array->addr);
+
+    free(old_array);
+
+    return;
+}
+
 extern "C" size_t sizeof_ncomp_array_data(int array_type) {
   size_t array_type_size = 0;
   switch (array_type) {
