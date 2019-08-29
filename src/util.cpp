@@ -609,6 +609,20 @@ void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
   return;
 }
 
+// Sets a subset of the output data to missing.
+void set_subset_output_missing(void *x, size_t index_x, int type_x,
+                               size_t size_x, const double &missing_x) {
+  if (type_x != NCOMP_DOUBLE) {
+    for (auto i = 0; i < size_x; i++) {
+      (static_cast<float *>(x))[index_x + i] = static_cast<float>(missing_x);
+    }
+  } else {
+    for (auto i = 0; i < size_x; i++) {
+      (static_cast<double *>(x))[index_x + i] = missing_x;
+    }
+  }
+}
+
 // explicit function instantiations
 template void convert_to<double>(void *, size_t, size_t, int, double *);
 template void convert_to<float>(void *, size_t, size_t, int, float *);

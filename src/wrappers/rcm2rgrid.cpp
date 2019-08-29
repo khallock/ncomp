@@ -1,5 +1,8 @@
 #include "ncomp/types.h"
 #include "ncomp/util.h"
+#include "ncomp_internal/util.hpp"
+#include <iostream> // for cerr
+#include <vector>
 
 extern void drcm2rgrid_(int *ingrid, int *inlat2d, int *inlon2d, double *tmp_lat2d, double *tmp_lon2d,
 						double *tmp_fi, int *inlat1d, double *tmp_lat1d, int *inlon1d,
@@ -39,9 +42,11 @@ int rcm2rgrid(const ncomp_array* lat2d, const ncomp_array* lon2d, const ncomp_ar
 		std::cerr << "ERROR rcm2rgrid: fi must be at least two dimensions !\n";
 	}
 	if(fi->shape[fi->ndim - 2] != nlat2d || fi->shape[fi->ndim - 1] != nlon2d) {
-		std::cerr << "ERROR rcm2rgrid: The rightmost dimensions of fi must be (nlat2d x nlon2d), \n" <<
-				  << "                 where nlat2d and nlon2d are the dimensions of the lat2d/lon2d arrays !\n";
-	}
+          std::cerr << "ERROR rcm2rgrid: The rightmost dimensions of fi must "
+                       "be (nlat2d x nlon2d), \n"
+                    << "                 where nlat2d and nlon2d are the "
+                       "dimensions of the lat2d/lon2d arrays !\n";
+        }
 	/**************** END: BASIC SANITY CHECKS ****************/
 
 	nfi  = nlon2d * nlat2d;
@@ -109,12 +114,13 @@ int rcm2rgrid(const ncomp_array* lat2d, const ncomp_array* lon2d, const ncomp_ar
 		if(2 <= ier && ier <= 5) {
 			std::cerr << "ERROR rcm2rgrid: lat2d, lon2d, lat1d, lon1d must be monotonically increasing ! \n";
 		}
-		set_subset_output_missing(fo->addr, 0, fo->type, size_fo, &missing_dfi)
-	}
+                set_subset_output_missing(fo->addr, 0, fo->type, size_fo,
+                                          missing_dfi);
+        }
 	else {
-		if(fo->type != NCOMP_double) {
-			convert_to<float>(tmp_fo, size_fo, 0, NCOMP_DOUBLE,
-							  ((float *)fo->addr));
+          if (fo->type != NCOMP_DOUBLE) {
+            convert_to<float>(tmp_fo, size_fo, 0, NCOMP_DOUBLE,
+                              ((float *)fo->addr));
 		}
 	}
 
@@ -145,13 +151,17 @@ int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, const ncomp_ar
 	}
 
 	// Check dimensions of fi.
-	if(fi->ndims < 2) {
-		std::cerr << "ERROR rgrid2rcm: fi must be at least two dimensions !\n";
+        if (fi->ndim < 2) {
+          std::cerr
+              << "ERROR rgrid2rcm: fi must be at least two dimensions !\n";
 	}
-	
-	if(fi->shape[fi->ndims-2] != nlat1d || fi->shape[fi->ndims-1] != nlon1d) {
-		std::cerr << "ERROR rgrid2rcm: The rightmost dimensions of `fi` must be (nlat1d x nlon1d), \n"
-				  << "                 where nlat1d and nlon1d are the dimensions of the lat1d/lon1d arrays !\n";
+
+        if (fi->shape[fi->ndim - 2] != nlat1d ||
+            fi->shape[fi->ndim - 1] != nlon1d) {
+          std::cerr << "ERROR rgrid2rcm: The rightmost dimensions of `fi` must "
+                       "be (nlat1d x nlon1d), \n"
+                    << "                 where nlat1d and nlon1d are the "
+                       "dimensions of the lat1d/lon1d arrays !\n";
 	}
 	/**************** END: BASIC SANITY CHECKS ****************/
 
@@ -221,12 +231,13 @@ int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, const ncomp_ar
 		if(2 <= ier && ier <= 5) {
 			std::cerr << "ERROR rgrid2rcm: lat2d, lon2d, lat1d, lon1d must be monotonically increasing ! \n";
 		}
-		set_subset_output_missing(fo->addr, 0, fo->type, size_fo, &missing_dfi)
-	}
+                set_subset_output_missing(fo->addr, 0, fo->type, size_fo,
+                                          missing_dfi);
+        }
 	else {
-		if(fo->type != NCOMP_double) {
-			convert_to<float>(tmp_fo, size_fo, 0, NCOMP_DOUBLE,
-							  ((float *)fo->addr));
+          if (fo->type != NCOMP_DOUBLE) {
+            convert_to<float>(tmp_fo, size_fo, 0, NCOMP_DOUBLE,
+                              ((float *)fo->addr));
 		}
 	}
 

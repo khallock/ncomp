@@ -10,6 +10,14 @@ extern "C" {
 int linint2(const ncomp_array *, const ncomp_array *, const ncomp_array *,
             const ncomp_array *, const ncomp_array *, ncomp_array *, int, int);
 
+int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d,
+              const ncomp_array *fi, const ncomp_array *lat1d,
+              const ncomp_array *lon1d, ncomp_array *fo);
+
+int rgrid2rcm(const ncomp_array *lat1d, const ncomp_array *lon1d,
+              const ncomp_array *fi, const ncomp_array *lat2d,
+              const ncomp_array *lon2d, ncomp_array *fo);
+
 #ifdef __cplusplus /* If this is a C++ compiler, end C linkage */
 }
 #endif
