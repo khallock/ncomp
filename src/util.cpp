@@ -611,6 +611,9 @@ void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
   return;
 }
 
+// Searches for a given attribute. If it exists it returns 1 and sets the
+// attributePosInList to the proper position in the array. Otherwise it returns
+// zero (0) and attributePosInList is unchanged.
 int hasAttribute(const attributes& attributeList, const char* attributeName, int& attributePosInList) {
   for (int i=0; i<= attributeList.nAttribute; ++i) {
     if (strcmp(attributeList.attribute_array[i].name, attributeName) == 0) {
@@ -622,18 +625,20 @@ int hasAttribute(const attributes& attributeList, const char* attributeName, int
 }
 
 // Searches for an attribute and returns it. If the attribute doesn't exists, returns the default value provided by the user.
-void getAttributeOrDefault(const attributes& attributeList, const char* attributeName, const single_attribute* defaultValue, single_attribute* output){
+int getAttributeOrDefault(const attributes& attributeList, const char* attributeName, const single_attribute* defaultValue, single_attribute* output){
   int attributePosInList = 0;
   if (hasAttribute(attributeList, attributeName, attributePosInList)==1) {
     output = (single_attribute*) (attributeList.attribute_array + attributePosInList);
+    return 1;
   } else {
     output = (single_attribute*) defaultValue;
+    return 0;
   }
 }
 
 // Searches for an attribute and returns it; If the attribute doesn't exists, it returns nullptr
-void getAttribute(const attributes& attributeList, const char* attributeName, single_attribute* output){
-  getAttributeOrDefault(attributeList,attributeName, nullptr, output);
+int getAttribute(const attributes& attributeList, const char* attributeName, single_attribute* output){
+  return getAttributeOrDefault(attributeList,attributeName, nullptr, output);
 }
 
 // explicit function instantiations
