@@ -48,4 +48,14 @@ typedef struct {
     size_t shape[1];
 } ncomp_array;
 
+typedef struct {
+  char* name; // Name of the attribute
+  ncomp_array value; // the value for the attribute
+} single_attribute;
+
+typedef struct {
+  int nAttribute; // number of attributes
+  single_attribute attribute_array[]; // the attributes.
+} attributes;
+
 #endif // NCOMP_TYPES_H

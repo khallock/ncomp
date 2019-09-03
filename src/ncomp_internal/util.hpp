@@ -20,4 +20,8 @@ void _ncomp_coerce_internal(void *from_ptr, int from_type, void *from_missing,
 void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
                    void *to_ptr, int to_type, void *to_missing, size_t num);
 
+int hasAttribute(const attributes& attributeList, const char* attributeName, int& attributePosInList);
+void getAttributeOrDefault(const attributes& attributeList, const char* attributeName, const single_attribute* defaultValue, single_attribute* output);
+void getAttribute(const attributes& attributeList, const char* attributeName, single_attribute* output);
+
 #endif

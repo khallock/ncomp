@@ -3,6 +3,8 @@
 #include "ncomp/util.h"
 #include "ncomp_internal/util.hpp"
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include <type_traits>
 #include <vector>
 
@@ -607,6 +609,31 @@ void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
     break;
   }
   return;
+}
+
+int hasAttribute(const attributes& attributeList, const char* attributeName, int& attributePosInList) {
+  for (int i=0; i<= attributeList.nAttribute; ++i) {
+    if (strcmp(attributeList.attribute_array[i].name, attributeName) == 0) {
+      attributePosInList = i;
+      return 1;
+    }
+  }
+  return 0;
+}
+
+// Searches for an attribute and returns it. If the attribute doesn't exists, returns the default value provided by the user.
+void getAttributeOrDefault(const attributes& attributeList, const char* attributeName, const single_attribute* defaultValue, single_attribute* output){
+  int attributePosInList = 0;
+  if (hasAttribute(attributeList, attributeName, attributePosInList)==1) {
+    output = (single_attribute*) (attributeList.attribute_array + attributePosInList);
+  } else {
+    output = (single_attribute*) defaultValue;
+  }
+}
+
+// Searches for an attribute and returns it; If the attribute doesn't exists, it returns nullptr
+void getAttribute(const attributes& attributeList, const char* attributeName, single_attribute* output){
+  getAttributeOrDefault(attributeList,attributeName, nullptr, output);
 }
 
 // explicit function instantiations
