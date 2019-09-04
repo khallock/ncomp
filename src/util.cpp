@@ -615,7 +615,7 @@ void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
 // attributePosInList to the proper position in the array. Otherwise it returns
 // zero (0) and attributePosInList is unchanged.
 int hasAttribute(const attributes& attributeList, const char* attributeName, int& attributePosInList) {
-  for (int i=0; i<= attributeList.nAttribute; ++i) {
+  for (int i=0; i < attributeList.nAttribute; ++i) {
     if (strcmp(attributeList.attribute_array[i].name, attributeName) == 0) {
       attributePosInList = i;
       return 1;

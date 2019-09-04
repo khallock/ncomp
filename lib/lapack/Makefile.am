@@ -129,4 +129,4 @@ liblapack_ncomp_la_SOURCES =	cbdsqr.f  cgbbrd.f  cgbcon.f  cgbequ.f  cgbrfs.f  c
 															zunglq.f  zungql.f  zungqr.f  zungr2.f  zungrq.f  zungtr.f  zunm2l.f  zunm2r.f  zunmbr.f  zunmhr.f \
 															zunml2.f  zunmlq.f  zunmql.f  zunmqr.f  zunmr2.f  zunmr3.f  zunmrq.f  zunmrz.f  zunmtr.f  zupgtr.f \
 															zupmtr.f
-liblapack_ncomp_la_LIBADD = 	../blas/libblas_ncomp.la
+															
