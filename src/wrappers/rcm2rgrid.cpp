@@ -42,16 +42,16 @@ int rcm2rgrid(const ncomp_array* lat2d, const ncomp_array* lon2d, const ncomp_ar
 		std::cerr << "ERROR rcm2rgrid: fi must be at least two dimensions !\n";
 	}
 	if(fi->shape[fi->ndim - 2] != nlat2d || fi->shape[fi->ndim - 1] != nlon2d) {
-          std::cerr << "ERROR rcm2rgrid: The rightmost dimensions of fi must "
-                       "be (nlat2d x nlon2d), where nlat2d and nlon2d are the "
-                       "dimensions of the lat2d/lon2d arrays !\n";
-        }
-        /**************** END: BASIC SANITY CHECKS ****************/
+		std::cerr << "ERROR rcm2rgrid: The rightmost dimensions of fi must "
+			"be (nlat2d x nlon2d), where nlat2d and nlon2d are the "
+			"dimensions of the lat2d/lon2d arrays !\n";
+	}
+	/**************** END: BASIC SANITY CHECKS ****************/
 
-        nfi = nlon2d * nlat2d;
-        nfo = nlat1d * nlon1d;
+	nfi = nlon2d * nlat2d;
+	nfo = nlat1d * nlon1d;
 
-        // Compute the total size of the input/output arrays.
+	// Compute the total size of the input/output arrays.
 	size_t ngrid = 1;
 	for(auto i = 0; i < fi->ndim - 2; i++) ngrid *= fi->shape[i];
 	size_t size_fi = ngrid * nfi;
@@ -75,8 +75,8 @@ int rcm2rgrid(const ncomp_array* lat2d, const ncomp_array* lon2d, const ncomp_ar
 
 	// Allocate space for temporary output array.
 	// NOTE: since the output array (fo) type and memory is already
-        //		cython, just allocate tmp_fo accordingly.
-        double *tmp_fo = nullptr;
+	//		cython, just allocate tmp_fo accordingly.
+	double *tmp_fo = nullptr;
 	if(fo->type == NCOMP_DOUBLE) {
 		tmp_fo = &((double*)fo)[0];
 	}
@@ -88,17 +88,17 @@ int rcm2rgrid(const ncomp_array* lat2d, const ncomp_array* lon2d, const ncomp_ar
 	// Coerce input arrays to double if necessary.
 	double *tmp_lat2d, *tmp_lon2d, *tmp_lat1d, *tmp_lon1d, *tmp_fi;
 
-        tmp_lat2d = coerce_input_T<double>(lat2d->addr, lat2d->type, nfi, 0,
-                                           nullptr, nullptr);
-        tmp_lon2d = coerce_input_T<double>(lon2d->addr, lon2d->type, nfi, 0,
-                                           nullptr, nullptr);
-        tmp_lat1d = coerce_input_T<double>(lat1d->addr, lat1d->type, nlat1d, 0, nullptr, nullptr);
+	tmp_lat2d = coerce_input_T<double>(lat2d->addr, lat2d->type, nfi, 0,
+									   nullptr, nullptr);
+	tmp_lon2d = coerce_input_T<double>(lon2d->addr, lon2d->type, nfi, 0,
+									   nullptr, nullptr);
+	tmp_lat1d = coerce_input_T<double>(lat1d->addr, lat1d->type, nlat1d, 0, nullptr, nullptr);
 	tmp_lon1d = coerce_input_T<double>(lon1d->addr, lon1d->type, nlon1d, 0, nullptr, nullptr);
-        tmp_fi =
-            coerce_input_T<double>(fi->addr, fi->type, size_fi, has_missing_fi,
-                                   &missing_fi, &missing_dfi);
+	tmp_fi =
+		coerce_input_T<double>(fi->addr, fi->type, size_fi, has_missing_fi,
+							   &missing_fi, &missing_dfi);
 
-        // Force opt to 0 and ncrit to 1, since they are not used yet.
+	// Force opt to 0 and ncrit to 1, since they are not used yet.
 	int tmp_opt	= 0;
 	int tmp_ncrit = 1;
 	int ier;
@@ -117,13 +117,13 @@ int rcm2rgrid(const ncomp_array* lat2d, const ncomp_array* lon2d, const ncomp_ar
 		if(2 <= ier && ier <= 5) {
 			std::cerr << "ERROR rcm2rgrid: lat2d, lon2d, lat1d, lon1d must be monotonically increasing ! \n";
 		}
-                set_subset_output_missing(fo->addr, 0, fo->type, size_fo,
-                                          missing_dfi);
-        } else {
-          if (fo->type != NCOMP_DOUBLE) {
+		set_subset_output_missing(fo->addr, 0, fo->type, size_fo,
+								  missing_dfi);
+	} else {
+		if (fo->type != NCOMP_DOUBLE) {
             convert_to<float>(tmp_fo, size_fo, 0, NCOMP_DOUBLE,
                               ((float *)fo->addr));
-          }
+		}
 	}
 
 	return ier;
@@ -144,8 +144,8 @@ int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, const ncomp_ar
 	}
 
 	nlat2d = lat2d->shape[0];
-        nlon2d = lat2d->shape[1]; // same as dsizes_lon2d[1]
-        nlat1d = lat1d->shape[0];
+	nlon2d = lat2d->shape[1]; // same as dsizes_lon2d[1]
+	nlat1d = lat1d->shape[0];
 	nlon1d = lon1d->shape[0];
 
 	if(nlon2d <= 1 || nlat2d <= 1 || nlat1d <= 1 || nlon1d <= 1) {
@@ -153,24 +153,24 @@ int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, const ncomp_ar
 	}
 
 	// Check dimensions of fi.
-        if (fi->ndim < 2) {
-          std::cerr
-              << "ERROR rgrid2rcm: fi must be at least two dimensions !\n";
-        }
+	if (fi->ndim < 2) {
+		std::cerr
+			<< "ERROR rgrid2rcm: fi must be at least two dimensions !\n";
+	}
 
-        if (fi->shape[fi->ndim - 2] != nlat1d ||
-            fi->shape[fi->ndim - 1] != nlon1d) {
-          std::cerr << "ERROR rcm2rgrid: The rightmost dimensions of `fi` must "
-                       "be (nlat1d x nlon1d), where nlat1d and nlon1d are the "
-                       "dimensions of the lat1d/lon1d arrays !\n";
-        }
+	if (fi->shape[fi->ndim - 2] != nlat1d ||
+		fi->shape[fi->ndim - 1] != nlon1d) {
+		std::cerr << "ERROR rcm2rgrid: The rightmost dimensions of `fi` must "
+			"be (nlat1d x nlon1d), where nlat1d and nlon1d are the "
+			"dimensions of the lat1d/lon1d arrays !\n";
+	}
 	/**************** END: BASIC SANITY CHECKS ****************/
 
 	// Compute the total number of elements in our arrays.
-        nfi = nlat1d * nlon1d;
-        nfo = nlon2d * nlat2d;
+	nfi = nlat1d * nlon1d;
+	nfo = nlon2d * nlat2d;
 
-        // Compute the total size of the input/output arrays.
+	// Compute the total size of the input/output arrays.
 	size_t ngrid = 1;
 	for(auto i = 0; i < fi->ndim - 2; i++) ngrid *= fi->shape[i];
 	size_t size_fi = ngrid * nfi;
@@ -194,8 +194,8 @@ int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, const ncomp_ar
 
 	// Allocate space for temporary output array.
 	// NOTE: since the output array (fo) type and memory is already
-        //		cython, just allocate tmp_fo accordingly.
-        double *tmp_fo = nullptr;
+	//		cython, just allocate tmp_fo accordingly.
+	double *tmp_fo = nullptr;
 	if(fo->type == NCOMP_DOUBLE) {
 		tmp_fo = &((double*)fo)[0];
 	}
@@ -214,8 +214,8 @@ int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, const ncomp_ar
 	tmp_fi	  = coerce_input_T<double>(fi->addr, fi->type, size_fi, has_missing_fi, &missing_fi, &missing_dfi);
 
 	// Force opt to zero and ncrit to 1, since they are not used yet.
-        int tmp_opt = 0;
-        int tmp_ncrit = 1;
+	int tmp_opt = 0;
+	int tmp_ncrit = 1;
 	int ier;
 
 	/**************** START: FORTRAN CALL ****************/
@@ -232,13 +232,13 @@ int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, const ncomp_ar
 		if(2 <= ier && ier <= 5) {
 			std::cerr << "ERROR rgrid2rcm: lat2d, lon2d, lat1d, lon1d must be monotonically increasing ! \n";
 		}
-                set_subset_output_missing(fo->addr, 0, fo->type, size_fo,
-                                          missing_dfi);
-        } else {
-          if (fo->type != NCOMP_DOUBLE) {
+		set_subset_output_missing(fo->addr, 0, fo->type, size_fo,
+								  missing_dfi);
+	} else {
+		if (fo->type != NCOMP_DOUBLE) {
             convert_to<float>(tmp_fo, size_fo, 0, NCOMP_DOUBLE,
                               ((float *)fo->addr));
-          }
+		}
 	}
 
 	return ier;
