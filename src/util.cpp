@@ -116,6 +116,21 @@ void convert_to(void *in_arr, size_t in_arr_size, size_t in_arr_offset,
   return;
 }
 
+template <typename T>
+T* convert_to_with_copy_avoiding(const void *in_arr, size_t arr_size,
+        size_t arr_offset, int arr_type, NcompTypes intendedType) {
+  if ( arr_type == intendedType) {
+    // no need to copy/ just cast it
+    return static_cast<T *>(in_arr);
+  } else {
+    std::vector<T> tmpVector(arr_size);
+    convert_to<T>(in_arr, arr_size, 0, arr_type, tmpVector.data());
+    return tmpVector.data(); // Need to check making sure that since tmpVector
+                             // goes out of scope, the memory is still not
+                             // freed, since we are returning the .data() pointer.
+  }
+}
+
 extern "C" ncomp_array *ncomp_array_alloc(void *array_ptr, int array_type, int array_ndim,
                                size_t *array_shape) {
   ncomp_array *new_array = (ncomp_array *)malloc(
@@ -639,6 +654,24 @@ int getAttributeOrDefault(const attributes& attributeList, const char* attribute
 // Searches for an attribute and returns it; If the attribute doesn't exists, it returns nullptr
 int getAttribute(const attributes& attributeList, const char* attributeName, single_attribute* output){
   return getAttributeOrDefault(attributeList,attributeName, nullptr, output);
+}
+
+// a variant of getAttributeOrDefault with easier way of providing defaultValue.
+void* getAttributeOrDefault(const attributes& attributeList, const char* attributeName, const void * defaultValue) {
+  single_attribute * tmpOutput = new single_attribute;
+  if (getAttribute(attributeList, attributeName, tmpOutput) == 1) {
+    return tmpOutput->value.addr;
+  } else {
+    return (void *) defaultValue;
+  }
+}
+
+size_t prod(const size_t* shape, int ndim) {
+  size_t nElements = 1;
+  for (int i = 0; i<ndim; ++i) {
+    nElements *= *(shape+i);
+  }
+  return nElements;
 }
 
 // explicit function instantiations

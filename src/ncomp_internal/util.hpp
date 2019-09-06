@@ -7,6 +7,11 @@ template <typename T>
 void convert_to(void *in_arr, size_t arr_size, size_t arr_offset, int arr_type,
                 T *out_arr);
 
+template <typename T>
+T* convert_to_with_copy_avoiding(const void *in_arr, size_t arr_size,
+        size_t arr_offset, int arr_type, NcompTypes intendedType) ;
+
+
 void coerce_missing(int, int, const ncomp_missing *, double *, float *);
 
 template <typename T>
@@ -23,5 +28,8 @@ void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
 int hasAttribute(const attributes& attributeList, const char* attributeName, int& attributePosInList);
 int getAttributeOrDefault(const attributes& attributeList, const char* attributeName, const single_attribute* defaultValue, single_attribute* output);
 int getAttribute(const attributes& attributeList, const char* attributeName, single_attribute* output);
+void* getAttributeOrDefault(const attributes& attributeList, const char* attributeName, const void * defaultValue);
+
+size_t prod(const size_t* shape, int ndim);
 
 #endif
