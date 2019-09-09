@@ -2,6 +2,7 @@
 #define NCOMP_INTERNAL_UTIL_H
 
 #include <ncomp/types.h>
+#include <algorithm>
 
 template <typename T>
 void convert_to(void *in_arr, size_t arr_size, size_t arr_offset, int arr_type,
@@ -25,10 +26,29 @@ void _ncomp_coerce_internal(void *from_ptr, int from_type, void *from_missing,
 void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
                    void *to_ptr, int to_type, void *to_missing, size_t num);
 
-int hasAttribute(const attributes& attributeList, const char* attributeName, int& attributePosInList);
-int getAttributeOrDefault(const attributes& attributeList, const char* attributeName, const single_attribute* defaultValue, single_attribute* output);
-int getAttribute(const attributes& attributeList, const char* attributeName, single_attribute* output);
-void* getAttributeOrDefault(const attributes& attributeList, const char* attributeName, const void * defaultValue);
+template <typename T>
+inline T* allocateAndInit(size_t size, T initValue);
+
+int hasAttribute(
+  const attributes& attributeList,
+  const char* attributeName,
+  int& attributePosInList);
+
+int getAttributeOrDefault(
+  const attributes& attributeList,
+  const char* attributeName,
+  const single_attribute* defaultValue,
+  single_attribute* output);
+
+int getAttribute(
+  const attributes& attributeList,
+  const char* attributeName,
+  single_attribute* output);
+
+void* getAttributeOrDefault(
+  const attributes& attributeList,
+  const char* attributeName,
+  const void * defaultValue);
 
 size_t prod(const size_t* shape, int ndim);
 

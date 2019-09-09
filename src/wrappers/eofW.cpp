@@ -1,8 +1,8 @@
 #include "ncomp/types.h"
 #include "ncomp/util.h"
 #include "ncomp_internal/util.hpp"
-#include "iostream"
-#include "vector"
+#include <iostream>
+#include <memory>
 
 extern "C" void crveoft_( double *dx_strip, double *dx_strip_t,
                          int *nrow, int *ncol, int *nrobs,
@@ -71,16 +71,6 @@ typedef struct { // options used for eofunc and their default values
   bool debug {false};
 } eofunc_options;
 
-template <typename T>
-void transpose(T * in, T *out, size_t nrow, size_t ncol) {
-  for (size_t i = 0; i < nrow; ++i)
-    for (size_t j = 0; i < ncol; ++j) {
-      size_t inIdx = i*ncol + j;
-      size_t outIdx = j*nrow + i;
-      out[outIdx] = in[inIdx];
-    }
-}
-
 eofunc_options* extract_eofunc_options(const attributes & options_in) {
   eofunc_options* options_out = new eofunc_options;
 
@@ -91,7 +81,7 @@ eofunc_options* extract_eofunc_options(const attributes & options_in) {
 
   int tmpPos = -1;
   if (hasAttribute(options_in, "pcrit", tmpPos)==1) {
-    options_out->pcrit = *(double*) options_in.attribute_array[tmpPos].value.addr;
+    options_out->pcrit = *(double*) options_in.attribute_array[tmpPos].value->addr;
     options_out->return_pcrit = true;
     if ((options_out->pcrit < 0.0) && (options_out->pcrit > 100.0)) {
       options_out->pcrit = 50.0; // pcrit must be between 0.0 and 100.0; default value is 50
@@ -105,12 +95,12 @@ eofunc_options* extract_eofunc_options(const attributes & options_in) {
   options_out->anomalies = *(bool*) getAttributeOrDefault(options_in, "anomalies", &((*options_out).anomalies));
 
   if (hasAttribute(options_in, "transpose", tmpPos)==1) {
-    options_out->use_new_transpose = *(bool*) options_in.attribute_array[tmpPos].value.addr;
+    options_out->use_new_transpose = *(bool*) options_in.attribute_array[tmpPos].value->addr;
     options_out->tr_setbyuser = true;
   }
 
   if (hasAttribute(options_in, "oldtranspose", tmpPos)==1) {
-    options_out->use_old_transpose = *(bool*) options_in.attribute_array[tmpPos].value.addr;
+    options_out->use_old_transpose = *(bool*) options_in.attribute_array[tmpPos].value->addr;
     options_out->tr_setbyuser = true;
   }
 
@@ -129,7 +119,9 @@ eofunc_options* extract_eofunc_options(const attributes & options_in) {
   return options_out;
 }
 
-extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in, const attributes & options_in) {
+extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
+                      const attributes & options_in,
+                      ncomp_array * x_out, attributes * attr_out) {
   int i_error = 0;
 
   // Sanity Checking
@@ -182,10 +174,10 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in, co
   * Create arrays to store non-missing data and to remove mean from
   * data before entering Fortran routines.
   */
-  std::vector<double> dx_strip(nrow*ncol);
-  std::vector<double> xave(ncol);
-  std::vector<double> xvar(ncol);
-  std::vector<double> xdvar(ncol);
+  double * dx_strop = new double[nrow*ncol];
+  double * xave = new double[ncol];
+  double * xvar = new double[ncol];
+  double * xdvar = new double[ncol];
 
   /*
    * Strip all grid points that have less than "PCRIT" valid values.
@@ -317,7 +309,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in, co
     }
   }
 
-  std::vector<size_t> dsizes_evec(x_in.ndim);
+  size_t * dsizes_evec = new size_t[x_in.ndim];
   dsizes_evec[0] = *neval;
   for (int i = 0; i<x_in.ndim-1; ++i) {
     dsizes_evec[i+1] = x_in.shape[i];
@@ -348,32 +340,25 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in, co
   int ilwork, iliwork, ilifail, lweval, icovcor;
   int iopt = 0;
   if (options->use_new_transpose) {
-    std::vector<double> tmp_xdatat(nrow*mcsta);
-    xdatat = tmp_xdatat.data();
+    xdatat = new double[nrow*mcsta];
 
-    std::vector<double> tmp_wevec(*neval * mcsta, x_in.msg.msg_double);
-    wevec = tmp_wevec.data();
+    wevec = allocateAndInit<double>(*neval * mcsta, x_in.msg.msg_double);
 
-    std::vector<double> tmp_prncmp(*neval*nrow);
-    prncmp = tmp_prncmp.data();
+    prncmp = new double[*neval*nrow];
 
-    std::vector<double> tmp_eval(*neval, x_in.msg.msg_double);
-    eval = tmp_eval.data();
+    eval = allocateAndInit<double>(*neval, x_in.msg.msg_double);
 
-    std::vector<double> tmp_pcvar(*neval, x_in.msg.msg_double);
-    pcvar = tmp_pcvar.data();
+    pcvar = allocateAndInit<double>(*neval, x_in.msg.msg_double);
 
-    if (x_in.type == NCOMP_DOUBLE) {
-      std::vector<float> tmp_revec(total_size_evec);
-      revec = tmp_revec.data();
+    if (x_in.type != NCOMP_DOUBLE) {
+      revec = new float[total_size_evec];
     } else {
       /*
        * If mcsta = msta, then we can use wevec as is. Otherwise, later we
        * need to copy wevec to locations in which the input was not missing.
        */
       if (mcsta != msta) {
-        std::vector<double> tmp_evec(total_size_evec);
-        evec = tmp_evec.data();
+        evec = new double[total_size_evec];
       }
     }
 
@@ -390,24 +375,18 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in, co
       }
     }
   } else if (options->use_old_transpose) {
-    std::vector<double> tmp_trace(1, x_in.msg.msg_double); // really?!!!!
-    trace = tmp_trace.data();
+    trace = allocateAndInit<double>(1, x_in.msg.msg_double);
 
-    std::vector<double> tmp_evec(total_size_evec, x_in.msg.msg_double);
-    evec = tmp_evec.data();
+    evec = allocateAndInit<double>(total_size_evec, x_in.msg.msg_double);
 
-    std::vector<double> tmp_eval(*neval, x_in.msg.msg_double);
-    eval = tmp_eval.data();
+    eval = allocateAndInit<double>(*neval, x_in.msg.msg_double);
 
-    std::vector<double> tmp_pcvar(*neval, x_in.msg.msg_double);
-    pcvar = tmp_pcvar.data();
+    pcvar = allocateAndInit<double>(*neval, x_in.msg.msg_double);
 
-    std::vector<double> tmp_xdatat(nrow*mcsta);
-    xdatat = tmp_xdatat.data();
+    xdatat = new double[nrow*mcsta]
 
     if (x_in.type != NCOMP_DOUBLE) {
-      std::vector<float> tmp_revec(total_size_evec);
-      revec = tmp_revec.data();
+      revec = new float[total_size_evec];
     }
   } else {
     /*
@@ -415,21 +394,16 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in, co
      *
      * Allocate space needed for various arrays.
      */
-    std::vector<double> tmp_wevec(total_size_evec, x_in.msg.msg_double);
-    wevec = tmp_wevec.data();
+    wevec = allocateAndInit<double>(total_size_evec, x_in.msg.msg_double);
 
-    std::vector<double> tmp_trace(1, x_in.msg.msg_double); // really?!!!!
-    trace = tmp_trace.data();
+    trace = allocateAndInit<double>(1, x_in.msg.msg_double);
 
-    std::vector<double> tmp_eval(*neval, x_in.msg.msg_double);
-    eval = tmp_eval.data();
+    eval = allocateAndInit<double>(*neval, x_in.msg.msg_double);
 
-    std::vector<float> tmp_rpcvar(*neval, x_in.msg.msg_double);
-    rpcvar = tmp_rpcvar.data();
+    rpcvar = allocateAndInit<float>(*neval, x_in.msg.msg_double);
 
     if (x_in.type != NCOMP_DOUBLE) {
-      std::vector<float> tmp_revec(total_size_evec);
-      revec = tmp_revec.data();
+      revec = new float[total_size_evec];
     } else {
       /*
        * If mcsta = msta, then we can use wevec as is. Otherwise, later we
@@ -437,7 +411,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in, co
        */
       if (mcsta != msta) {
         std::vector<double> tmp_evec(total_size_evec);
-        evec = tmp_evec.data();
+        evec = new double[total_size_evec];
       }
     }
 
@@ -461,20 +435,15 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in, co
      */
     lweval = lifail;
 
-    std::vector<double> tmp_cssm(llcssm);
-    cssm = tmp_cssm.data();
+    cssm = new double[llcssm];
 
-    std::vector<double> tmp_work(lwork);
-    work = tmp_work.data();
+    work = new double[lwork];
 
-    std::vector<double> tmp_weval(lweval);
-    weval = tmp_weval.data();
+    weval = new double[lweval];
 
-    std::vector<int> tmp_iwork(liwork);
-    iwork = tmp_iwork.data();
+    iwork = new int[liwork];
 
-    std::vector<int> tmp_ifail(lifail);
-    ifail = tmp_ifail.data();
+    ifail = new in[lifail];
   }
 
   /*
@@ -504,7 +473,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in, co
   size_t nc2;
   if(options->use_old_transpose) {
     if(x_in.type != NCOMP_DOUBLE) {
-      for( size_t i = 0; i < total_size_evec; i++ ) {
+      for( size_t i = 0; i < total_size_evec; ++i ) {
         revec[i] = (float)evec[i];
       }
     }
@@ -631,6 +600,286 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in, co
       return i_error;
     }
   }
+
+  /*
+   * This is the start of a rather large if-else statement. It is based
+   * on whether you are returning floats or doubles.
+   */
+   std::vector<single_attribute> tmp_attr_out;
+  if(x_in.type != NCOMP_DOUBLE) {
+    /*
+     * Set up return value.
+     */
+     // x_out is the return_md in NCL code.
+     x_out = ncomp_array_alloc((void *) revec, NCOMP_FLOAT, dsizes_evec.size(),dsizes_evec.data());
+    /*
+     * Only return the eigenvalues if the appropriate option has been set.
+     */
+    if(options->return_eval) {
+      /*
+       * Coerce eval to float.
+       */
+      float * reval =  convert_to_with_copy_avoiding(eval, *neval, 0, NCOMP_DOUBLE, NCOMP_FLOAT);
+
+      /*
+       * If we didn't use the SCRIPPS routine, then the eigenvalues
+       * returned are okay as is. Otherwise, we have to apply a scale
+       * factor and return both the original values and the scaled values.
+       */
+      if(options->use_new_transpose) {
+        float * scaled_reval;
+        std::vector<float> tmp_scaled_reval(*neval);
+        scaled_reval = tmp_scaled_reval.data();
+        float scale_factor = (mcsta-1)/(nrow-1);
+        for( size_t i = 0; i < *neval; ++i ) {
+          scaled_reval[i] = scale_factor * reval[i];
+        }
+
+      /*
+       * First return original eigenvalues as "eval_transpose".
+       */
+      tmp_attr_out.push_back(create_single_attribute("eval_transpose", reval, NCOMP_FLOAT, 1, neval));
+
+      /*
+       * Now return scaled eigenvalues as simply "eval".
+       */
+      tmp_attr_out.push_back(create_single_attribute("eval", scaled_reval, NCOMP_FLOAT, 1, neval));
+      } else {
+        /*
+         * We didn't call the tranpose routine, so we only need to return
+         * one set of eigenvalues.
+         */
+        tmp_attr_out.push_back(create_single_attribute("eval", reval, NCOMP_FLOAT, 1, neval));
+      }
+    }
+    /*
+     * Only return the trace if the appropriate option has been set.
+     * The new transpose routine doesn't return trace.
+     */
+    if(!options->use_new_transpose) {
+      if(return_trace) {
+        /*
+         * Coerce trace to float.
+         */
+        std::vector<float> rtrace(1, (float) *trace)
+        float * tmp_rtrace;
+        tmp_rtrace = rtrace.data();
+        int dims[1] {1};
+        tmp_attr_out.push_back(create_single_attribute("trace", tmp_rtrace, NCOMP_FLOAT, 1, dims));
+      }
+    }
+  } else {
+    /*
+     *  Return doubles.
+     */
+    x_out = ncomp_array_alloc((void *) evec, NCOMP_DOUBLE, dsizes_evec.size(),dsizes_evec.data());  // wait for abhishek to make sure after evec is out of scope
+                                                                                                    //its memory is not released and x_out is still valid;
+
+    /*
+     * Only return the eigenvalues if the appropriate option has been set.
+     */
+    if(options->return_eval) {
+      /*
+       * If we didn't use the SCRIPPS routine, then the eigenvalues
+       * returned are okay as is. Otherwise, we have to apply a scale
+       * factor and return both the original values and the scaled values.
+       */
+      if(options->use_new_transpose) {
+        double * scaled_eval;
+        std::vector<double> tmp_scaled_eval(*neval);
+        scaled_eval = tmp_scaled_eval.data();
+        double scale_factor = (mcsta-1)/(nrow-1);
+        for( size_t i = 0; i < *neval; ++i ) {
+          scaled_eval[i] = scale_factor * eval[i];
+        }
+        /*
+         * First return original eigenvalues as "eval_transpose".
+         */
+        tmp_attr_out.push_back(create_single_attribute("eval_transpose", eval, NCOMP_DOUBLE, 1, neval));
+        /*
+         * Now return scaled eigenvalues as simply "eval".
+         */
+        tmp_attr_out.push_back(create_single_attribute("eval", scaled_eval, NCOMP_DOUBLE, 1, neval));
+      } else {
+        /*
+         * We didn't call the tranpose routine, so we only need to return
+         * one set of eigenvalues.
+         */
+        tmp_attr_out.push_back(create_single_attribute("eval", eval, NCOMP_DOUBLE, 1, neval));
+      }
+    }
+
+    if(!options->use_new_transpose) {
+      if(options->return_trace) {
+        otrace = (float *)calloc(1,sizeof(float));
+        std::vector<float> tmp_rtrace(1)
+        *rtrace = (float)(*trace);
+        int dims[1] {1};
+        tmp_attr_out.push_back(create_single_attribute("trace", trace, NCOMP_DOUBLE, 1, dims));
+      }
+    }
+  }
+
+  /*
+   * Return pcvar as float no matter what.
+   */
+   float * rpcvar;
+  if(options->use_old_transpose || options->use_new_transpose) {
+    std::vector(float) tmp_rpcvar(*neval);
+    rpcvar = tmp_rpcvar.data();
+    for( size_t i = 0; i < *neval; ++i ) {
+      rpcvar[i] = (float)pcvar[i];
+    }
+  }
+  tmp_attr_out.push_back(create_single_attribute("pcvar", rpcvar, NCOMP_FLOAT, 1, neval))
+
+  /*
+   * Only return "pcrit" if it was set by the user and we called one
+   * of the transpose routines. The type returned is a float or a double,
+   * depending on what pcrit was set to in the input.
+   */
+  if( (options->use_new_transpose || options->use_old_transpose) &&
+      options->return_pcrit) {
+    int dims[1] {1};
+    std::vector()
+    tmp_attr_out.push_back(create_single_attribute("pcvar", rpcvar, NCOMP_FLOAT, 1, neval))
+    dsizes[0] = 1;
+    // if(type_pcrit == NCL_float) {
+    //   att_md = _NclCreateVal(
+    //                          NULL,
+    //                          NULL,
+    //                          Ncl_MultiDValData,
+    //                          0,
+    //                          (void*)rpcrit,
+    //                          NULL,
+    //                          1,
+    //                          dsizes,
+    //                          TEMPORARY,
+    //                          NULL,
+    //                          (NclObjClass)nclTypefloatClass
+    //                          );
+    // }
+    // else {
+    //   att_md = _NclCreateVal(
+    //                          NULL,
+    //                          NULL,
+    //                          Ncl_MultiDValData,
+    //                          0,
+    //                          (void*)pcrit,
+    //                          NULL,
+    //                          1,
+    //                          dsizes,
+    //                          TEMPORARY,
+    //                          NULL,
+    //                          (NclObjClass)nclTypedoubleClass
+    //                          );
+    // }
+    // _NclAddAtt(
+    //            att_id,
+    //            "pcrit",
+    //            att_md,
+    //            NULL
+    //            );
+  }
+
+  /*
+   * "matrix" indicates whether the covariance or correlation matrix
+   * was used.
+   */
+  // if(options->jopt == 0) {
+  //   cmatrix = (char *)calloc(11,sizeof(char));
+  //   strcpy(cmatrix,"covariance");
+  // }
+  // else {
+  //   cmatrix = (char *)calloc(12,sizeof(char));
+  //   strcpy(cmatrix,"correlation");
+  // }
+  // matrix  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+  // *matrix = NrmStringToQuark(cmatrix);
+  //
+  // dsizes[0] = 1;
+  // att_md = _NclCreateVal(
+  //                        NULL,
+  //                        NULL,
+  //                        Ncl_MultiDValData,
+  //                        0,
+  //                        (void*)matrix,
+  //                        NULL,
+  //                        1,
+  //                        dsizes,
+  //                        TEMPORARY,
+  //                        NULL,
+  //                        (NclObjClass)nclTypestringClass
+  //                        );
+  // _NclAddAtt(
+  //            att_id,
+  //            "matrix",
+  //            att_md,
+  //            NULL
+  //            );
+
+// /*
+//  * "method" indicates whether the transpose routine was called or not.
+//  */
+//   if(use_new_transpose) {
+//     cmethod = (char *)calloc(10,sizeof(char));
+//     strcpy(cmethod,"transpose");
+//   }
+//   else if(use_old_transpose) {
+//     cmethod = (char *)calloc(14,sizeof(char));
+//     strcpy(cmethod,"old_transpose");
+//   }
+//   else {
+//     cmethod = (char *)calloc(13,sizeof(char));
+//     strcpy(cmethod,"no transpose");
+//   }
+//   method  = (NclQuark*)NclMalloc(sizeof(NclQuark));
+//   *method = NrmStringToQuark(cmethod);
+
+  // dsizes[0] = 1;
+  // att_md = _NclCreateVal(
+  //                        NULL,
+  //                        NULL,
+  //                        Ncl_MultiDValData,
+  //                        0,
+  //                        (void*)method,
+  //                        NULL,
+  //                        1,
+  //                        dsizes,
+  //                        TEMPORARY,
+  //                        NULL,
+  //                        (NclObjClass)nclTypestringClass
+  //                        );
+  // _NclAddAtt(
+  //            att_id,
+  //            "method",
+  //            att_md,
+  //            NULL
+  //            );
+
+  // tmp_var = _NclVarCreate(
+  //                         NULL,
+  //                         NULL,
+  //                         Ncl_Var,
+  //                         0,
+  //                         NULL,
+  //                         return_md,
+  //                         NULL,
+  //                         att_id,
+  //                         NULL,
+  //                         RETURNVAR,
+  //                         NULL,
+  //                         TEMPORARY
+  //                         );
+
+
+  /*
+   * Return output grid and attributes to NCL.
+   */
+  // return_data.kind = NclStk_VAR;
+  // return_data.u.data_var = tmp_var;
+  // _NclPlaceReturn(return_data);
+
 
   // Cleaning up
   delete options;

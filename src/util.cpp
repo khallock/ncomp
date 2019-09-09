@@ -120,14 +120,12 @@ template <typename T>
 T* convert_to_with_copy_avoiding(const void *in_arr, size_t arr_size,
         size_t arr_offset, int arr_type, NcompTypes intendedType) {
   if ( arr_type == intendedType) {
-    // no need to copy/ just cast it
+    // no need to copy/convert just cast it
     return static_cast<T *>(in_arr);
   } else {
-    std::vector<T> tmpVector(arr_size);
-    convert_to<T>(in_arr, arr_size, 0, arr_type, tmpVector.data());
-    return tmpVector.data(); // Need to check making sure that since tmpVector
-                             // goes out of scope, the memory is still not
-                             // freed, since we are returning the .data() pointer.
+    T * tmpStorage = new T[arr_size];
+    convert_to<T>(in_arr, arr_size, 0, arr_type, tmpStorage);
+    return tmpStorage;
   }
 }
 
@@ -626,10 +624,21 @@ void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
   return;
 }
 
+// Allocates a variable of a given size and initializes all the elements
+template <typename T>
+inline T* allocateAndInit(size_t size, T initValue) {
+  T * tmpVar = new T[size];
+  std::fill_n(tmpVar, size, initValue);
+  return tmpVar;
+}
+
 // Searches for a given attribute. If it exists it returns 1 and sets the
 // attributePosInList to the proper position in the array. Otherwise it returns
 // zero (0) and attributePosInList is unchanged.
-int hasAttribute(const attributes& attributeList, const char* attributeName, int& attributePosInList) {
+int hasAttribute(
+  const attributes& attributeList,
+  const char* attributeName,
+  int& attributePosInList) {
   for (int i=0; i < attributeList.nAttribute; ++i) {
     if (strcmp(attributeList.attribute_array[i].name, attributeName) == 0) {
       attributePosInList = i;
@@ -640,7 +649,11 @@ int hasAttribute(const attributes& attributeList, const char* attributeName, int
 }
 
 // Searches for an attribute and returns it. If the attribute doesn't exists, returns the default value provided by the user.
-int getAttributeOrDefault(const attributes& attributeList, const char* attributeName, const single_attribute* defaultValue, single_attribute* output){
+int getAttributeOrDefault(
+  const attributes& attributeList,
+  const char* attributeName,
+  const single_attribute* defaultValue,
+  single_attribute* output) {
   int attributePosInList = 0;
   if (hasAttribute(attributeList, attributeName, attributePosInList)==1) {
     output = (single_attribute*) (attributeList.attribute_array + attributePosInList);
@@ -660,10 +673,19 @@ int getAttribute(const attributes& attributeList, const char* attributeName, sin
 void* getAttributeOrDefault(const attributes& attributeList, const char* attributeName, const void * defaultValue) {
   single_attribute * tmpOutput = new single_attribute;
   if (getAttribute(attributeList, attributeName, tmpOutput) == 1) {
-    return tmpOutput->value.addr;
+    return tmpOutput->value->addr;
   } else {
     return (void *) defaultValue;
   }
+}
+
+single_attribute create_single_attribute(char * name, void * data, NcompTypes type, int ndim, size_t * dims) {
+  single_attribute tmp_attr = {
+    name,
+    ncomp_array_alloc(data, type, 1, dims)
+  };
+
+  return tmp_attr;
 }
 
 size_t prod(const size_t* shape, int ndim) {
