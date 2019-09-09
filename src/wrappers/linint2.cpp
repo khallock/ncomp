@@ -52,11 +52,13 @@ extern "C" int linint2(const ncomp_array *xi, const ncomp_array *yi, const ncomp
 
   /* create temporary output arrays */
   double *tmp_xo = nullptr, *tmp_yo = nullptr;
+  std::vector<double> tmp_vector_xo;
+  std::vector<double> tmp_vector_yo;
 
   if (xo->type == NCOMP_DOUBLE) {
     tmp_xo = static_cast<double *>(xo->addr);
   } else {
-    std::vector<double> tmp_vector_xo(nxo);
+    tmp_vector_xo.resize(nxo);
     tmp_xo = tmp_vector_xo.data();
     convert_to<double>(xo->addr, nxo, 0, xo->type, tmp_xo);
   }
@@ -64,7 +66,7 @@ extern "C" int linint2(const ncomp_array *xi, const ncomp_array *yi, const ncomp
   if (yo->type == NCOMP_DOUBLE) {
     tmp_yo = static_cast<double *>(yo->addr);
   } else {
-    std::vector<double> tmp_vector_yo(nyo);
+    tmp_vector_yo.resize(nyo);
     tmp_yo = tmp_vector_yo.data();
     convert_to<double>(yo->addr, nyo, 0, yo->type, tmp_yo);
   }
@@ -78,17 +80,20 @@ extern "C" int linint2(const ncomp_array *xi, const ncomp_array *yi, const ncomp
    * Coerce input arrays to double if necessary.
    */
   double *tmp_xi = nullptr, *tmp_yi = nullptr, *tmp_fi = nullptr;
+  std::vector<double> tmp_vector_xi;
+  std::vector<double> tmp_vector_yi;
+  std::vector<double> tmp_vector_fi;
 
   if (xi->type != NCOMP_DOUBLE) {
-    std::vector<double> tmp_vector_xi(nxi);
+    tmp_vector_xi.resize(nxi);
     tmp_xi = tmp_vector_xi.data();
   }
   if (yi->type != NCOMP_DOUBLE) {
-    std::vector<double> tmp_vector_yi(nyi);
+    tmp_vector_yi.resize(nyi);
     tmp_yi = tmp_vector_yi.data();
   }
   if (fi->type != NCOMP_DOUBLE) {
-    std::vector<double> tmp_vector_fi(nfi);
+    tmp_vector_fi.resize(nfi);
     tmp_fi = tmp_vector_fi.data();
   }
 
