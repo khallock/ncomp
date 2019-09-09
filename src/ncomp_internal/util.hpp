@@ -20,4 +20,6 @@ void _ncomp_coerce_internal(void *from_ptr, int from_type, void *from_missing,
 void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
                    void *to_ptr, int to_type, void *to_missing, size_t num);
 
+void set_subset_output_missing(void *x, size_t index_x, int type_x,
+                               size_t size_x, const double &missing_x);
 #endif
