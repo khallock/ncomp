@@ -20,6 +20,7 @@ enum NcompTypes {
   NCOMP_DOUBLE = 12,
   NCOMP_LONGDOUBLE = 13
 };
+#define NCOMP_CHAR NCOMP_BOOL
 
 typedef union {
     char                msg_bool;

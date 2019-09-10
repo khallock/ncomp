@@ -626,7 +626,7 @@ void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
 
 // Allocates a variable of a given size and initializes all the elements
 template <typename T>
-inline T* allocateAndInit(size_t size, T initValue) {
+T* allocateAndInit(size_t size, T initValue) {
   T * tmpVar = new T[size];
   std::fill_n(tmpVar, size, initValue);
   return tmpVar;
@@ -679,12 +679,10 @@ void* getAttributeOrDefault(const attributes& attributeList, const char* attribu
   }
 }
 
-single_attribute create_single_attribute(char * name, void * data, NcompTypes type, int ndim, size_t * dims) {
-  single_attribute tmp_attr = {
-    name,
-    ncomp_array_alloc(data, type, 1, dims)
-  };
-
+single_attribute * create_single_attribute(char * name, void * data, NcompTypes type, int ndim, size_t * dims) {
+  single_attribute * tmp_attr = new single_attribute[1];
+  tmp_attr->name = name;
+  tmp_attr->value = ncomp_array_alloc(data, type, 1, dims);
   return tmp_attr;
 }
 
