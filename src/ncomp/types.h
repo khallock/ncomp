@@ -56,7 +56,7 @@ typedef struct {
 
 typedef struct {
   int nAttribute; // number of attributes
-  single_attribute * attribute_array; // the attributes.
+  single_attribute ** attribute_array; // the attributes.
 } attributes;
 
 #endif // NCOMP_TYPES_H

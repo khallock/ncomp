@@ -116,6 +116,11 @@ void convert_to(void *in_arr, size_t in_arr_size, size_t in_arr_offset,
   return;
 }
 
+// If the intended type and the actual type are the same, the array is just casted
+// So nothing is copied. Hence, you need to make sure that in_arr is not scoped
+// out. However, if the arr_type and the intended are not the same, then a brand
+// new memory locaiton is assigned and the in_arr is copied and converted to it.
+// Hence, if the variable is no longer needed you would need to delete it manually.
 template <typename T>
 T* convert_to_with_copy_avoiding(const void *in_arr, size_t arr_size,
         size_t arr_offset, int arr_type, NcompTypes intendedType) {
@@ -129,6 +134,9 @@ T* convert_to_with_copy_avoiding(const void *in_arr, size_t arr_size,
   }
 }
 
+// NOTE: array_ptr is not copied, but array_shape is copied. So make sure that
+//       array_ptr and the memory associated to it is not scoped out. Otherwise,
+//       ncomp_array->addr is pointing to a memory location that is freed.
 extern "C" ncomp_array *ncomp_array_alloc(void *array_ptr, int array_type, int array_ndim,
                                size_t *array_shape) {
   ncomp_array *new_array = (ncomp_array *)malloc(
@@ -636,11 +644,11 @@ T* allocateAndInit(size_t size, T initValue) {
 // attributePosInList to the proper position in the array. Otherwise it returns
 // zero (0) and attributePosInList is unchanged.
 int hasAttribute(
-  const attributes& attributeList,
+  const attributes* attributeList,
   const char* attributeName,
   int& attributePosInList) {
-  for (int i=0; i < attributeList.nAttribute; ++i) {
-    if (strcmp(attributeList.attribute_array[i].name, attributeName) == 0) {
+  for (int i=0; i < attributeList->nAttribute; ++i) {
+    if (strcmp(attributeList->attribute_array[i]->name, attributeName) == 0) {
       attributePosInList = i;
       return 1;
     }
@@ -650,13 +658,13 @@ int hasAttribute(
 
 // Searches for an attribute and returns it. If the attribute doesn't exists, returns the default value provided by the user.
 int getAttributeOrDefault(
-  const attributes& attributeList,
+  const attributes* attributeList,
   const char* attributeName,
   const single_attribute* defaultValue,
   single_attribute* output) {
   int attributePosInList = 0;
   if (hasAttribute(attributeList, attributeName, attributePosInList)==1) {
-    output = (single_attribute*) (attributeList.attribute_array + attributePosInList);
+    output = (single_attribute*) (attributeList->attribute_array + attributePosInList);
     return 1;
   } else {
     output = (single_attribute*) defaultValue;
@@ -665,26 +673,34 @@ int getAttributeOrDefault(
 }
 
 // Searches for an attribute and returns it; If the attribute doesn't exists, it returns nullptr
-int getAttribute(const attributes& attributeList, const char* attributeName, single_attribute* output){
+int getAttribute(const attributes * attributeList, const char* attributeName, single_attribute* output){
   return getAttributeOrDefault(attributeList,attributeName, nullptr, output);
 }
 
 // a variant of getAttributeOrDefault with easier way of providing defaultValue.
-void* getAttributeOrDefault(const attributes& attributeList, const char* attributeName, const void * defaultValue) {
+void* getAttributeOrDefault(const attributes * attributeList, const char* attributeName, const void * defaultValue) {
   single_attribute * tmpOutput = new single_attribute;
   if (getAttribute(attributeList, attributeName, tmpOutput) == 1) {
-    return tmpOutput->value->addr;
+    return tmpOutput->value->addr;  // It is assumed that addr could be casted to type T.
+                                    // May be we should add a cast check here to make sure
+                                    // we could indeed cast.
   } else {
     return (void *) defaultValue;
   }
 }
+//
+// template <typename T>
+// T* getAttributeOrDefault(const attributes& attributeList, const char* attributeName, const T * defaultValue) {
+//   single_attribute * tmpOutput = new single_attribute;
+//   if (getAttribute(attributeList, attributeName, tmpOutput) == 1) {
+//     return (T *) tmpOutput->value->addr; // It is assumed that addr could be casted to type T.
+//                                          // May be we should add a cast check here to make sure
+//                                          // we could indeed cast.
+//   } else {
+//     return (T *) defaultValue;
+//   }
+// }
 
-single_attribute * create_single_attribute(char * name, void * data, NcompTypes type, int ndim, size_t * dims) {
-  single_attribute * tmp_attr = new single_attribute[1];
-  tmp_attr->name = name;
-  tmp_attr->value = ncomp_array_alloc(data, type, 1, dims);
-  return tmp_attr;
-}
 
 size_t prod(const size_t* shape, int ndim) {
   size_t nElements = 1;
@@ -692,6 +708,28 @@ size_t prod(const size_t* shape, int ndim) {
     nElements *= *(shape+i);
   }
   return nElements;
+}
+
+// Creates a single_attribute. Note that the data is not copied. So,
+single_attribute * create_single_attribute(char * name, void * data, NcompTypes type, int ndim, size_t * dims) {
+  int size_name = strlen(name) + 1;
+  char * copy_of_name = new char[size_name];
+  std::copy(name, name+size_name, copy_of_name);
+
+  single_attribute * out_single_attribute = new single_attribute[1];
+  out_single_attribute->name = copy_of_name;
+  out_single_attribute->value = ncomp_array_alloc(data, type, 1, dims);
+  return out_single_attribute;
+}
+
+attributes * collectAttributeList(std::vector<single_attribute *> attrVector) {
+  attributes * output_attribute_list = new attributes;
+  output_attribute_list->nAttribute = attrVector.size();
+  output_attribute_list->attribute_array = new single_attribute*[attrVector.size()];
+  for (int i = 0; i < attrVector.size(); ++i) {
+    output_attribute_list->attribute_array[i] = attrVector[i];
+  }
+  return output_attribute_list;
 }
 
 // explicit function instantiations
