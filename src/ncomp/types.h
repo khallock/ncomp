@@ -2,6 +2,12 @@
 #define NCOMP_TYPES_H
 
 #include <stddef.h>
+#include <climits>
+
+enum ncomp_return_status {
+  NCOMP_RETURN_ALL_GOOD = 0,
+  NCOMP_RETURN_FATAL = 42
+};
 
 /* enumerated types, adapted from numpy's ndarraytypes.h */
 enum NcompTypes {
@@ -52,11 +58,11 @@ typedef struct {
 typedef struct {
   char* name; // Name of the attribute
   ncomp_array* value; // the value for the attribute
-} single_attribute;
+} ncomp_single_attribute;
 
 typedef struct {
   int nAttribute; // number of attributes
-  single_attribute ** attribute_array; // the attributes.
-} attributes;
+  ncomp_single_attribute ** attribute_array; // the attributes.
+} ncomp_attributes;
 
 #endif // NCOMP_TYPES_H

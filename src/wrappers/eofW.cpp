@@ -73,7 +73,7 @@ typedef struct { // options used for eofunc and their default values
   bool debug {false};
 } eofunc_options;
 
-eofunc_options* extract_eofunc_options(const attributes * options_in) {
+eofunc_options* extract_eofunc_options(const ncomp_attributes * options_in) {
   eofunc_options* options_out = new eofunc_options;
 
   if (options_in == nullptr) {
@@ -125,13 +125,23 @@ eofunc_options* extract_eofunc_options(const attributes * options_in) {
   return options_out;
 }
 
-extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
-                      const attributes * options_in,
-                      ncomp_array * x_out, attributes * attrList_out) {
+
+
+
+
+
+
+
+
+
+
+extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
+                      const ncomp_attributes * options_in,
+                      ncomp_array * x_out, ncomp_attributes * attrList_out) {
   int i_error = 0;
 
   // Sanity Checking
-  if (x_in.ndim < 2) {
+  if (x_in->ndim < 2) {
     std::cerr<<"eofunc: The input array must be at least two-dimensional"<<std::endl;
     return 1;
   }
@@ -139,21 +149,21 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
   /* handle missing values */
   double missing_d_x_in;
   float missing_f_x_in;
-  coerce_missing(x_in.type, x_in.has_missing, (ncomp_missing *)&(x_in.msg),
+  coerce_missing(x_in->type, x_in->has_missing, (ncomp_missing *)&(x_in->msg),
                  &missing_d_x_in,&missing_f_x_in);
 
   // Getting xData as double
-  size_t x_nelem = prod(x_in.shape, x_in.ndim);
-  double * dx = convert_to_with_copy_avoiding<double>(&x_in.addr, x_nelem, 0, x_in.type, NCOMP_DOUBLE);
+  size_t x_nelem = prod(x_in->shape, x_in->ndim);
+  double * dx = convert_to_with_copy_avoiding<double>(&x_in->addr, x_nelem, 0, x_in->type, NCOMP_DOUBLE);
 
   // Get number of eigenvalues and eigen vectors to be computed.
   // This is supposed to be a scalar.
-  int* neval =  (int *) neval_in.addr;
+  int neval =  neval_in;
 
   // Check Dimension sizes
-  size_t msta = prod(x_in.shape, x_in.ndim-1);
+  size_t msta = prod(x_in->shape, x_in->ndim-1);
   size_t ncol = msta;
-  size_t nobs = x_in.shape[x_in.ndim-1];
+  size_t nobs = x_in->shape[x_in->ndim-1];
   size_t nrow = nobs;
   size_t total_size_x_in = ncol*nrow;
 
@@ -163,12 +173,11 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
     return 2;
   }
 
-  // ignoring the following tests based on the discussion with Abhishek
-  // if((nrow > INT_MAX) || (ncol > INT_MAX) ||
-  //    (msta > INT_MAX) || (nobs > INT_MAX)) {
-  //   NhlPError(NhlFATAL,NhlEUNKNOWN,"eofunc: one or more dimension sizes is greater than INT_MAX");
-  //   return(NhlFATAL);
-  // }
+  if((nrow > INT_MAX) || (ncol > INT_MAX) ||
+     (msta > INT_MAX) || (nobs > INT_MAX)) {
+    std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+    return(NCOMP_RETURN_FATAL);
+  }
 
   int inrow = (int) nrow;
   int incol = (int) ncol;
@@ -264,12 +273,15 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
        mcsta++;
       }
   }
-
+  if(mcsta > INT_MAX) {
+    std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+    return(NCOMP_RETURN_FATAL);
+  }
   int imcsta = (int) mcsta;
 
   /*
    * Depending on the size of the rightmost 2D arrays being processed, and/or
-   * the value of the transpose or oldtranspose attributes, we call one of
+   * the value of the transpose or oldtranspose ncomp_attributes, we call one of
    * three different Fortran routines. These routines basically behave the
    * same, except two of them operate on a transposed version of the 2d array.
    */
@@ -277,7 +289,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
     printf("eofunc: msta = %ld mcsta = %ld nobs = %ld\n", msta, mcsta, nobs);
   }
   /*
-   * If one of the transpose attributes has not explicitly been set by the
+   * If one of the transpose ncomp_attributes has not explicitly been set by the
    * user, then based on the sizes of the input array's dimensions, determine
    * whether to call a transpose routine or not.
    */
@@ -303,7 +315,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
     }
   } else if(options->debug) {
     /*
-     * User explicitly set one of the transpose attributes, so indicate
+     * User explicitly set one of the transpose ncomp_attributes, so indicate
      * which one here. Note that if both oldtranspose and transpose are
      * set to True, transpose will take precedence.
      */
@@ -316,12 +328,12 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
     }
   }
 
-  size_t * dsizes_evec = new size_t[x_in.ndim];
-  dsizes_evec[0] = *neval;
-  for (int i = 0; i<x_in.ndim-1; ++i) {
-    dsizes_evec[i+1] = x_in.shape[i];
+  size_t * dsizes_evec = new size_t[x_in->ndim];
+  dsizes_evec[0] = neval;
+  for (int i = 0; i<x_in->ndim-1; ++i) {
+    dsizes_evec[i+1] = x_in->shape[i];
   }
-  int total_size_evec = (*neval) * ncol;
+  int total_size_evec = (neval) * ncol;
 
   /*
    * Allocate memory for various arrays.  Depending on which Fortran routine
@@ -349,15 +361,15 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
   if (options->use_new_transpose) {
     xdatat = new double[nrow*mcsta];
 
-    wevec = allocateAndInit<double>(*neval * mcsta, missing_d_x_in);
+    wevec = allocateAndInit<double>(neval * mcsta, missing_d_x_in);
 
-    prncmp = new double[*neval * nrow];
+    prncmp = new double[neval * nrow];
 
-    eval = allocateAndInit<double>(*neval, missing_d_x_in);
+    eval = allocateAndInit<double>(neval, missing_d_x_in);
 
-    pcvar = allocateAndInit<double>(*neval, missing_d_x_in);
+    pcvar = allocateAndInit<double>(neval, missing_d_x_in);
 
-    if (x_in.type != NCOMP_DOUBLE) {
+    if (x_in->type != NCOMP_DOUBLE) {
       revec = new float[total_size_evec];
     } else {
       /*
@@ -386,13 +398,13 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
 
     evec = allocateAndInit<double>(total_size_evec, missing_d_x_in);
 
-    eval = allocateAndInit<double>(*neval, missing_d_x_in);
+    eval = allocateAndInit<double>(neval, missing_d_x_in);
 
-    pcvar = allocateAndInit<double>(*neval, missing_d_x_in);
+    pcvar = allocateAndInit<double>(neval, missing_d_x_in);
 
     xdatat = new double[nrow*mcsta];
 
-    if (x_in.type != NCOMP_DOUBLE) {
+    if (x_in->type != NCOMP_DOUBLE) {
       revec = new float[total_size_evec];
     }
   } else {
@@ -405,11 +417,11 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
 
     trace = allocateAndInit<double>(1, missing_d_x_in);
 
-    eval = allocateAndInit<double>(*neval, missing_d_x_in);
+    eval = allocateAndInit<double>(neval, missing_d_x_in);
 
-    rpcvar = allocateAndInit<float>(*neval, missing_f_x_in);
+    rpcvar = allocateAndInit<float>(neval, missing_f_x_in);
 
-    if (x_in.type != NCOMP_DOUBLE) {
+    if (x_in->type != NCOMP_DOUBLE) {
       revec = new float[total_size_evec];
     } else {
       /*
@@ -429,6 +441,11 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
     lwork  = 8*mcsta;
     liwork = 5*mcsta;
     lifail = mcsta;
+
+    if((lwork > INT_MAX) || (liwork > INT_MAX) || (lifail > INT_MAX)) {
+      std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+      return(NCOMP_RETURN_FATAL);
+    }
 
     ilwork  = (int) lwork;
     iliwork = (int) liwork;
@@ -457,15 +474,15 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
    */
   if (options->use_new_transpose) {
     icovcor = 0;
-    deof11_(xdatat,&imcsta,&inrow,neval,&icovcor,
+    deof11_(xdatat,&imcsta,&inrow,&neval,&icovcor,
             &missing_d_x_in,eval,wevec,pcvar,prncmp);
   } else if (options->use_old_transpose) {
     xrveoft_( dx_strip,xdatat,&inrow,&incol,&inobs,&imcsta,
-              &missing_d_x_in,neval,eval,evec,
+              &missing_d_x_in,&neval,eval,evec,
               pcvar,trace,xdvar,xave,&options->jopt,&i_error);
   } else {
     ddrveof_( dx_strip,&inrow,&incol,&inobs,&imcsta,
-              &missing_d_x_in,neval,eval,wevec,rpcvar,
+              &missing_d_x_in,&neval,eval,wevec,rpcvar,
               trace,&iopt,&options->jopt,cssm,&llcssm,work,&ilwork,
               weval,iwork,&iliwork,ifail,&ilifail,&i_error);
   }
@@ -478,7 +495,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
    */
   size_t nc2;
   if(options->use_old_transpose) {
-    if(x_in.type != NCOMP_DOUBLE) {
+    if(x_in->type != NCOMP_DOUBLE) {
       for( size_t i = 0; i < total_size_evec; ++i ) {
         revec[i] = (float)evec[i];
       }
@@ -500,7 +517,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
        *
        * This is the floating point (single precision) case.
        */
-      if(x_in.type != NCOMP_DOUBLE) {
+      if(x_in->type != NCOMP_DOUBLE) {
         std::fill_n(revec, total_size_evec, missing_f_x_in);
         /*
          * Now copy over the appropriate values in the wevec array. Since the
@@ -511,7 +528,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
           nc2 = 0;
           for( size_t nc = 0; nc < ncol; ++nc) {
             if (xave[nc] != missing_d_x_in) {
-              for( size_t ne = 0; ne < *neval; ++ne ) {
+              for( size_t ne = 0; ne < neval; ++ne ) {
                 revec[ne*ncol+nc] = (float)wevec[ne*mcsta+nc2];
               }
               ++nc2;
@@ -521,7 +538,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
           nc2 = 0;
           for( size_t nc = 0; nc < ncol; ++nc) {
             if (xave[nc] != missing_d_x_in) {
-              for( size_t ne = 0; ne < *neval; ++ne ) {
+              for( size_t ne = 0; ne < neval; ++ne ) {
                 revec[ne*ncol+nc] = (float)wevec[ne*ncol+nc2];
               }
               ++nc2;
@@ -547,7 +564,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
           nc2 = 0;
           for( size_t nc = 0; nc < ncol; ++nc) {
             if (xave[nc] != missing_d_x_in) {
-              for( size_t ne = 0; ne < *neval; ++ne ) {
+              for( size_t ne = 0; ne < neval; ++ne ) {
                 evec[ne*ncol+nc] = wevec[ne*mcsta+nc2];
               }
               ++nc2;
@@ -557,7 +574,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
           nc2 = 0;
           for( size_t nc = 0; nc < ncol; ++nc) {
             if (xave[nc] != missing_d_x_in) {
-              for( size_t ne = 0; ne < *neval; ++ne ) {
+              for( size_t ne = 0; ne < neval; ++ne ) {
                 evec[ne*ncol+nc] = wevec[ne*ncol+nc2];
               }
               ++nc2;
@@ -573,7 +590,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
        * routine, because if mcsta==msta, then wevec is the same size for
        * both routines.
        */
-      if(x_in.type != NCOMP_DOUBLE) {
+      if(x_in->type != NCOMP_DOUBLE) {
         for( size_t i = 0; i < total_size_evec; ++i ) {
           revec[i] = (float)wevec[i];
         }
@@ -610,7 +627,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
   /*
  * Free unneeded memory.
  */
-  if(x_in.type != NCOMP_DOUBLE) delete[] dx;
+  if(x_in->type != NCOMP_DOUBLE) delete[] dx;
   delete[] dx_strip;
   delete[] xave;
   delete[] xvar;
@@ -631,13 +648,13 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
    * This is the start of a rather large if-else statement. It is based
    * on whether you are returning floats or doubles.
    */
-  std::vector<single_attribute *> tmp_attr_out;
-  if(x_in.type != NCOMP_DOUBLE) {
+  std::vector<ncomp_single_attribute *> tmp_attr_out;
+  if(x_in->type != NCOMP_DOUBLE) {
     /*
      * Set up return value.
      */
      // x_out is the return_md in NCL code.
-     x_out = ncomp_array_alloc((void *) revec, NCOMP_FLOAT, x_in.ndim,dsizes_evec);
+     x_out = ncomp_array_alloc((void *) revec, NCOMP_FLOAT, x_in->ndim,dsizes_evec);
     /*
      * Only return the eigenvalues if the appropriate option has been set.
      */
@@ -645,8 +662,8 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
       /*
        * Coerce eval to float.
        */
-      float * reval =  new float[*neval];
-      for (size_t i = 0; i < *neval; ++i) {
+      float * reval =  new float[neval];
+      for (size_t i = 0; i < neval; ++i) {
         reval[i] = (float) eval[i];
       }
 
@@ -656,29 +673,29 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
        * factor and return both the original values and the scaled values.
        */
       if(options->use_new_transpose) {
-        float * scaled_reval = new float[*neval];
+        float * scaled_reval = new float[neval];
         float scale_factor = (mcsta-1)/(nrow-1);
-        for( size_t i = 0; i < *neval; ++i ) {
+        for( size_t i = 0; i < neval; ++i ) {
           scaled_reval[i] = scale_factor * reval[i];
         }
 
       /*
        * First return original eigenvalues as "eval_transpose".
        */
-      size_t dims[1] {(size_t)*neval};
-      tmp_attr_out.push_back(create_single_attribute((char *) "eval_transpose", reval, NCOMP_FLOAT, 1, dims));
+      size_t dims[1] {(size_t)neval};
+      tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "eval_transpose", reval, NCOMP_FLOAT, 1, dims));
 
       /*
        * Now return scaled eigenvalues as simply "eval".
        */
-      tmp_attr_out.push_back(create_single_attribute((char *) "eval", scaled_reval, NCOMP_FLOAT, 1, dims));
+      tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "eval", scaled_reval, NCOMP_FLOAT, 1, dims));
       } else {
         /*
          * We didn't call the tranpose routine, so we only need to return
          * one set of eigenvalues.
          */
-        size_t dims[1] {(size_t)*neval};
-        tmp_attr_out.push_back(create_single_attribute((char *) "eval", reval, NCOMP_FLOAT, 1, dims));
+        size_t dims[1] {(size_t)neval};
+        tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "eval", reval, NCOMP_FLOAT, 1, dims));
       }
       delete[] eval;
     }
@@ -693,7 +710,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
          */
         float * rtrace = new float[1]{(float) *trace};
         size_t dims[1] {1};
-        tmp_attr_out.push_back(create_single_attribute((char *) "trace", rtrace, NCOMP_FLOAT, 1, dims));
+        tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "trace", rtrace, NCOMP_FLOAT, 1, dims));
       }
       delete[] trace;
     }
@@ -701,7 +718,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
     /*
      *  Return doubles.
      */
-    x_out = ncomp_array_alloc((void *) evec, NCOMP_DOUBLE, x_in.ndim,dsizes_evec);
+    x_out = ncomp_array_alloc((void *) evec, NCOMP_DOUBLE, x_in->ndim,dsizes_evec);
 
     /*
      * Only return the eigenvalues if the appropriate option has been set.
@@ -713,32 +730,32 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
        * factor and return both the original values and the scaled values.
        */
       if(options->use_new_transpose) {
-        double * scaled_eval = new double[*neval];
+        double * scaled_eval = new double[neval];
         double scale_factor = (mcsta-1)/(nrow-1);
-        for( size_t i = 0; i < *neval; ++i ) {
+        for( size_t i = 0; i < neval; ++i ) {
           scaled_eval[i] = scale_factor * eval[i];
         }
         /*
          * First return original eigenvalues as "eval_transpose".
          */
-        tmp_attr_out.push_back(create_single_attribute((char *) "eval_transpose", eval, NCOMP_DOUBLE, 1, dsizes_evec));
+        tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "eval_transpose", eval, NCOMP_DOUBLE, 1, dsizes_evec));
         /*
          * Now return scaled eigenvalues as simply "eval".
          */
-        tmp_attr_out.push_back(create_single_attribute((char *) "eval", scaled_eval, NCOMP_DOUBLE, 1, dsizes_evec));
+        tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "eval", scaled_eval, NCOMP_DOUBLE, 1, dsizes_evec));
       } else {
         /*
          * We didn't call the tranpose routine, so we only need to return
          * one set of eigenvalues.
          */
-        tmp_attr_out.push_back(create_single_attribute((char *) "eval", eval, NCOMP_DOUBLE, 1, dsizes_evec));
+        tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "eval", eval, NCOMP_DOUBLE, 1, dsizes_evec));
       }
     }
 
     if(!options->use_new_transpose) {
       if(options->return_trace) {
         size_t dims[1] {1};
-        tmp_attr_out.push_back(create_single_attribute((char *) "trace", trace, NCOMP_DOUBLE, 1, dims));
+        tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "trace", trace, NCOMP_DOUBLE, 1, dims));
       } else {
         delete[] trace;
       }
@@ -749,12 +766,12 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
    * Return pcvar as float no matter what.
    */
   if(options->use_old_transpose || options->use_new_transpose) {
-    rpcvar = new float[*neval];
-    for( size_t i = 0; i < *neval; ++i ) {
+    rpcvar = new float[neval];
+    for( size_t i = 0; i < neval; ++i ) {
       rpcvar[i] = (float)pcvar[i];
     }
   }
-  tmp_attr_out.push_back(create_single_attribute((char *) "pcvar", rpcvar, NCOMP_FLOAT, 1, dsizes_evec));
+  tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "pcvar", rpcvar, NCOMP_FLOAT, 1, dsizes_evec));
 
   /*
    * Only return "pcrit" if it was set by the user and we called one
@@ -764,7 +781,7 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
   if( (options->use_new_transpose || options->use_old_transpose) &&
       options->return_pcrit) {
     size_t dims[1] {1};
-    tmp_attr_out.push_back(create_single_attribute((char *) "pcrit", &options->pcrit, NCOMP_DOUBLE, 1, dims));
+    tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "pcrit", &options->pcrit, NCOMP_DOUBLE, 1, dims));
 
   }
 
@@ -777,13 +794,13 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
     cmatrix = new char[11];
     strcpy(cmatrix,"covariance");
     size_t dims[1] {1};
-    tmp_attr_out.push_back(create_single_attribute((char *) "matrix", cmatrix, NCOMP_CHAR, 1, dims));
+    tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "matrix", cmatrix, NCOMP_CHAR, 1, dims));
   }
   else {
     cmatrix = new char[12];
     strcpy(cmatrix,"correlation");
     size_t dims[1] {1};
-    tmp_attr_out.push_back(create_single_attribute((char *) "matrix", cmatrix, NCOMP_CHAR, 1, dims));
+    tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "matrix", cmatrix, NCOMP_CHAR, 1, dims));
   }
 
 
@@ -795,19 +812,19 @@ extern "C" int eofunc(const ncomp_array & x_in, const ncomp_array & neval_in,
     cmethod = new char[10];
     strcpy(cmethod,"transpose");
     size_t dims[1] {1};
-    tmp_attr_out.push_back(create_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
+    tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
   }
   else if(options->use_old_transpose) {
     cmethod = new char[14];
     strcpy(cmethod,"old_transpose");
     size_t dims[1] {1};
-    tmp_attr_out.push_back(create_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
+    tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
   }
   else {
     cmethod = new char[13];
     strcpy(cmethod,"no transpose");
     size_t dims[1] {1};
-    tmp_attr_out.push_back(create_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
+    tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
   }
 
   attrList_out = collectAttributeList(tmp_attr_out);

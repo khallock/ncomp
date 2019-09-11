@@ -30,30 +30,30 @@ template <typename T>
 T* allocateAndInit(size_t size, T initValue);
 
 int hasAttribute(
-  const attributes * attributeList,
+  const ncomp_attributes * attributeList,
   const char* attributeName,
   int& attributePosInList);
 
 int getAttributeOrDefault(
-  const attributes * attributeList,
+  const ncomp_attributes * attributeList,
   const char* attributeName,
-  const single_attribute* defaultValue,
-  single_attribute* output);
+  const ncomp_single_attribute* defaultValue,
+  ncomp_single_attribute* output);
 
 int getAttribute(
-  const attributes * attributeList,
+  const ncomp_attributes * attributeList,
   const char* attributeName,
-  single_attribute* output);
+  ncomp_single_attribute* output);
 
 void* getAttributeOrDefault(
-  const attributes * attributeList,
+  const ncomp_attributes * attributeList,
   const char* attributeName,
   const void * defaultValue);
 
 size_t prod(const size_t* shape, int ndim);
 
-single_attribute* create_single_attribute(char * name, void * data, NcompTypes type, int ndim, size_t * dims);
+ncomp_single_attribute* create_ncomp_single_attribute(char * name, void * data, NcompTypes type, int ndim, size_t * dims);
 
-attributes * collectAttributeList(std::vector<single_attribute *> attrVector);
+ncomp_attributes * collectAttributeList(std::vector<ncomp_single_attribute *> attrVector);
 
 #endif

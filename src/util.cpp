@@ -644,7 +644,7 @@ T* allocateAndInit(size_t size, T initValue) {
 // attributePosInList to the proper position in the array. Otherwise it returns
 // zero (0) and attributePosInList is unchanged.
 int hasAttribute(
-  const attributes* attributeList,
+  const ncomp_attributes* attributeList,
   const char* attributeName,
   int& attributePosInList) {
   for (int i=0; i < attributeList->nAttribute; ++i) {
@@ -658,28 +658,28 @@ int hasAttribute(
 
 // Searches for an attribute and returns it. If the attribute doesn't exists, returns the default value provided by the user.
 int getAttributeOrDefault(
-  const attributes* attributeList,
+  const ncomp_attributes* attributeList,
   const char* attributeName,
-  const single_attribute* defaultValue,
-  single_attribute* output) {
+  const ncomp_single_attribute* defaultValue,
+  ncomp_single_attribute* output) {
   int attributePosInList = 0;
   if (hasAttribute(attributeList, attributeName, attributePosInList)==1) {
-    output = (single_attribute*) (attributeList->attribute_array + attributePosInList);
+    output = (ncomp_single_attribute*) (attributeList->attribute_array + attributePosInList);
     return 1;
   } else {
-    output = (single_attribute*) defaultValue;
+    output = (ncomp_single_attribute*) defaultValue;
     return 0;
   }
 }
 
 // Searches for an attribute and returns it; If the attribute doesn't exists, it returns nullptr
-int getAttribute(const attributes * attributeList, const char* attributeName, single_attribute* output){
+int getAttribute(const ncomp_attributes * attributeList, const char* attributeName, ncomp_single_attribute* output){
   return getAttributeOrDefault(attributeList,attributeName, nullptr, output);
 }
 
 // a variant of getAttributeOrDefault with easier way of providing defaultValue.
-void* getAttributeOrDefault(const attributes * attributeList, const char* attributeName, const void * defaultValue) {
-  single_attribute * tmpOutput = new single_attribute;
+void* getAttributeOrDefault(const ncomp_attributes * attributeList, const char* attributeName, const void * defaultValue) {
+  ncomp_single_attribute * tmpOutput = new ncomp_single_attribute;
   if (getAttribute(attributeList, attributeName, tmpOutput) == 1) {
     return tmpOutput->value->addr;  // It is assumed that addr could be casted to type T.
                                     // May be we should add a cast check here to make sure
@@ -690,8 +690,8 @@ void* getAttributeOrDefault(const attributes * attributeList, const char* attrib
 }
 //
 // template <typename T>
-// T* getAttributeOrDefault(const attributes& attributeList, const char* attributeName, const T * defaultValue) {
-//   single_attribute * tmpOutput = new single_attribute;
+// T* getAttributeOrDefault(const ncomp_attributes& attributeList, const char* attributeName, const T * defaultValue) {
+//   ncomp_single_attribute * tmpOutput = new ncomp_single_attribute;
 //   if (getAttribute(attributeList, attributeName, tmpOutput) == 1) {
 //     return (T *) tmpOutput->value->addr; // It is assumed that addr could be casted to type T.
 //                                          // May be we should add a cast check here to make sure
@@ -710,22 +710,22 @@ size_t prod(const size_t* shape, int ndim) {
   return nElements;
 }
 
-// Creates a single_attribute. Note that the data is not copied. So,
-single_attribute * create_single_attribute(char * name, void * data, NcompTypes type, int ndim, size_t * dims) {
+// Creates a ncomp_single_attribute. Note that the data is not copied. So,
+ncomp_single_attribute * create_ncomp_single_attribute(char * name, void * data, NcompTypes type, int ndim, size_t * dims) {
   int size_name = strlen(name) + 1;
   char * copy_of_name = new char[size_name];
   std::copy(name, name+size_name, copy_of_name);
 
-  single_attribute * out_single_attribute = new single_attribute[1];
-  out_single_attribute->name = copy_of_name;
-  out_single_attribute->value = ncomp_array_alloc(data, type, 1, dims);
-  return out_single_attribute;
+  ncomp_single_attribute * out_ncomp_single_attribute = new ncomp_single_attribute[1];
+  out_ncomp_single_attribute->name = copy_of_name;
+  out_ncomp_single_attribute->value = ncomp_array_alloc(data, type, 1, dims);
+  return out_ncomp_single_attribute;
 }
 
-attributes * collectAttributeList(std::vector<single_attribute *> attrVector) {
-  attributes * output_attribute_list = new attributes;
+ncomp_attributes * collectAttributeList(std::vector<ncomp_single_attribute *> attrVector) {
+  ncomp_attributes * output_attribute_list = new ncomp_attributes;
   output_attribute_list->nAttribute = attrVector.size();
-  output_attribute_list->attribute_array = new single_attribute*[attrVector.size()];
+  output_attribute_list->attribute_array = new ncomp_single_attribute*[attrVector.size()];
   for (int i = 0; i < attrVector.size(); ++i) {
     output_attribute_list->attribute_array[i] = attrVector[i];
   }
