@@ -221,7 +221,7 @@ extern "C" int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, con
   tmp_lon2d = coerce_input_T<double>(lon2d->addr, lon2d->type, nfo,	 0, nullptr, nullptr);
   tmp_lat1d = coerce_input_T<double>(lat1d->addr, lat1d->type, nlat1d, 0, nullptr, nullptr);
   tmp_lon1d = coerce_input_T<double>(lon1d->addr, lon1d->type, nlon1d, 0, nullptr, nullptr);
-  tmp_fi	  = coerce_input_T<double>(fi->addr, fi->type, size_fi, has_missing_fi, &missing_fi, &missing_dfi);
+  tmp_fi    = coerce_input_T<double>(fi->addr, fi->type, size_fi, has_missing_fi, &missing_fi, &missing_dfi);
 
   // Force opt to zero and ncrit to 1, since they are not used yet.
   int tmp_opt = 0;
