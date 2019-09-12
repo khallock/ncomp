@@ -122,7 +122,7 @@ void convert_to(void *in_arr, size_t in_arr_size, size_t in_arr_offset,
 // new memory locaiton is assigned and the in_arr is copied and converted to it.
 // Hence, if the variable is no longer needed you would need to delete it manually.
 template <typename T>
-T* convert_to_with_copy_avoiding(const void *in_arr, unsigned long arr_size,
+T* convert_to_with_copy_avoiding(void *in_arr, unsigned long arr_size,
         unsigned long arr_offset, int arr_type, NcompTypes intendedType) {
   if ( arr_type == intendedType) {
     // no need to copy/convert just cast it
@@ -735,3 +735,6 @@ ncomp_attributes * collectAttributeList(std::vector<ncomp_single_attribute *> at
 // explicit function instantiations
 template void convert_to<double>(void *, size_t, size_t, int, double *);
 template void convert_to<float>(void *, size_t, size_t, int, float *);
+template double * allocateAndInit(size_t, double);
+template float * allocateAndInit(size_t, float);
+template double * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);

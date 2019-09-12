@@ -10,8 +10,8 @@ void convert_to(void *in_arr, size_t arr_size, size_t arr_offset, int arr_type,
                 T *out_arr);
 
 template <typename T>
-T* convert_to_with_copy_avoiding(const void *in_arr, unsigned long arr_size,
-       unsigned long arr_offset, int arr_type, NcompTypes intendedType);
+T* convert_to_with_copy_avoiding(void *in_arr, size_t arr_size,
+       size_t arr_offset, int arr_type, NcompTypes intendedType);
 
 void coerce_missing(int, int, const ncomp_missing *, double *, float *);
 
@@ -27,7 +27,7 @@ void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
                    void *to_ptr, int to_type, void *to_missing, size_t num);
 
 template <typename T>
-T* allocateAndInit(unsigned long size, T initValue);
+T* allocateAndInit(size_t size, T initValue);
 
 int hasAttribute(
   const ncomp_attributes * attributeList,

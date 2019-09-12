@@ -154,7 +154,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
 
   // Getting xData as double
   size_t x_nelem = prod(x_in->shape, x_in->ndim);
-  double * dx = convert_to_with_copy_avoiding<double>(&x_in->addr, x_nelem, 0, x_in->type, NCOMP_DOUBLE);
+  double * dx = convert_to_with_copy_avoiding<double>((void *)&x_in->addr, x_nelem, 0, x_in->type, NCOMP_DOUBLE);
 
   // Get number of eigenvalues and eigen vectors to be computed.
   // This is supposed to be a scalar.
