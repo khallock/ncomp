@@ -122,8 +122,8 @@ void convert_to(void *in_arr, size_t in_arr_size, size_t in_arr_offset,
 // new memory locaiton is assigned and the in_arr is copied and converted to it.
 // Hence, if the variable is no longer needed you would need to delete it manually.
 template <typename T>
-T* convert_to_with_copy_avoiding(const void *in_arr, size_t arr_size,
-        size_t arr_offset, int arr_type, NcompTypes intendedType) {
+T* convert_to_with_copy_avoiding(const void *in_arr, unsigned long arr_size,
+        unsigned long arr_offset, int arr_type, NcompTypes intendedType) {
   if ( arr_type == intendedType) {
     // no need to copy/convert just cast it
     return static_cast<T *>(in_arr);
@@ -634,7 +634,7 @@ void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
 
 // Allocates a variable of a given size and initializes all the elements
 template <typename T>
-T* allocateAndInit(size_t size, T initValue) {
+T* allocateAndInit(unsigned long size, T initValue) {
   T * tmpVar = new T[size];
   std::fill_n(tmpVar, size, initValue);
   return tmpVar;
