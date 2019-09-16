@@ -1,7 +1,7 @@
 ! -----------------------------------------------------------
 ! NCLFORTSTART
 SUBROUTINE DLININT1(NXI,XI,FI,ICYCX,NXO,XO,FO,XIW,FXIW,NXI2,XMSG,&
-     &                    IOPT,IER)
+     IOPT,IER)
   IMPLICIT NONE
   INTEGER NXI,NXO,NXI2,IOPT,ICYCX,IER
   DOUBLE PRECISION XI(NXI),FI(NXI)
@@ -55,7 +55,7 @@ SUBROUTINE DLININT1(NXI,XI,FI,ICYCX,NXO,XO,FO,XIW,FXIW,NXI2,XMSG,&
      return
   end if
   !                              initialize to msg
-  FO(:) = XMSG
+  FO = XMSG
 
   if (NXI <= 1) then
      IER = 1
@@ -337,7 +337,7 @@ SUBROUTINE DLIN2INT1(NIN,XI,FI,NOUT,XO,FO,XMSG,IFLAG)
   ! PRINT *, "Hello World!"
   ! write ( *, '(a)' ) '  Hello, world!'
 
-  FO(:) = XMSG ! : = NOUT
+  FO = XMSG ! : = NOUT
 
   ! main loop [exact matches]
   ! nistrt minimizes extra checks
@@ -589,7 +589,7 @@ SUBROUTINE DLININT2PTS(NXI,XI,NYI,YI,FI,ICYCX,NXYO,XO,YO,FO,&
         FIXW(NXI2,NY) = FI(1,NY)
      end do
      CALL DLINT2XY(NXI2,XIW,NYI,YI,FIXW,NXYO,XO,YO,FO,XMSG,NOPT,&
-          &                  IER)
+          IER)
   end if
 
   return
@@ -629,8 +629,8 @@ SUBROUTINE DLINT2XY(NXI,XI,NYI,YI,FI,NXYO,XO,YO,FO,XMSG,NOPT,IER)
            !                               exact location [no interpolation]
            FO(NXY) = FI(NN,MM)
         else if (FI(NN,MM) /= XMSG .and. FI(NN+1,MM) /= XMSG .and.&
-             &                 FI(NN,MM+1) /= XMSG .and.&
-             &                 FI(NN+1,MM+1) /= XMSG) then
+             FI(NN,MM+1) /= XMSG .and.&
+             FI(NN+1,MM+1) /= XMSG) then
            !                               must interpolate: calculate slopes
            SLPX = (XO(NXY)-XI(NN))/ (XI(NN+1)-XI(NN))
            SLPY = (YO(NXY)-YI(MM))/ (YI(MM+1)-YI(MM))
@@ -641,8 +641,8 @@ SUBROUTINE DLINT2XY(NXI,XI,NYI,YI,FI,NXYO,XO,YO,FO,XMSG,NOPT,IER)
            FO(NXY) = TMP1 + SLPY* (TMP2-TMP1)
         else if (NOPT == -1) then
            CALL ESTFOW(FI(NN,MM),FI(NN+1,MM),FI(NN,MM+1),&
-                &                        FI(NN+1,MM+1),XI(NN),XI(NN+1),YI(MM),&
-                &                        YI(MM+1),FO(NXY),XO(NXY),YO(NXY),XMSG)
+                FI(NN+1,MM+1),XI(NN),XI(NN+1),YI(MM),&
+                YI(MM+1),FO(NXY),XO(NXY),YO(NXY),XMSG)
         end if
      end if
 
