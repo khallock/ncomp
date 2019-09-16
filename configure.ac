@@ -8,9 +8,9 @@ AC_CONFIG_MACRO_DIRS([m4])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
  Makefile
- lib/Makefile
- lib/blas/Makefile
- lib/lapack/Makefile
+ external/Makefile
+ external/blas/Makefile
+ external/lapack/Makefile
  src/Makefile
  src/fortran/Makefile
  src/wrappers/Makefile
