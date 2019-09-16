@@ -25,17 +25,27 @@ extern "C" int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d, con
   // Other variables
   size_t nlon2d, nlat2d, nlat1d, nlon1d, nfi, nfo;
 
+  nlat2d = lat2d->shape[0];
+  nlon2d = lat2d->shape[1];
+  nlat1d = lat1d->shape[0];
+  nlon1d = lon1d->shape[0];
+  nfi = nlon2d * nlat2d;
+  nfo = nlat1d * nlon1d;
+
+  // Compute the total size of the input/output arrays.
+  size_t ngrid = 1;
+  for (auto i = 0; i < fi->ndim - 2; i++)
+    ngrid *= fi->shape[i];
+  size_t size_fi = ngrid * nfi;
+  size_t size_fo = ngrid * nfo;
+
   /**************** START: BASIC SANITY CHECKS ****************/
+#ifdef DEBUG
   if (lat2d->shape[0] != lon2d->shape[0] ||
       lat2d->shape[1] != lon2d->shape[1]) {
     std::cerr << "ERROR rcm2rgrid: The input lat/lon grids must be the same "
       "size ! \n";
   }
-
-  nlat2d = lat2d->shape[0];
-  nlon2d = lat2d->shape[1];
-  nlat1d = lat1d->shape[0];
-  nlon1d = lon1d->shape[0];
 
   if (nlon2d <= 1 || nlat2d <= 1 || nlat1d <= 1 || nlon1d <= 1) {
     std::cerr << "ERROR rcm2rgrid: The input/output lat/lon grids must have at "
@@ -51,23 +61,14 @@ extern "C" int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d, con
       "be (nlat2d x nlon2d), where nlat2d and nlon2d are the "
       "dimensions of the lat2d/lon2d arrays !\n";
   }
-  /**************** END: BASIC SANITY CHECKS ****************/
-
-  nfi = nlon2d * nlat2d;
-  nfo = nlat1d * nlon1d;
-
-  // Compute the total size of the input/output arrays.
-  size_t ngrid = 1;
-  for (auto i = 0; i < fi->ndim - 2; i++)
-    ngrid *= fi->shape[i];
-  size_t size_fi = ngrid * nfi;
-  size_t size_fo = ngrid * nfo;
 
   // Test input dimension sizes.
   if((nlon2d > INT_MAX) || (nlat2d > INT_MAX) || (ngrid > INT_MAX) ||
      (nlon1d > INT_MAX) || (nlat1d > INT_MAX)) {
     std::cerr << "ERROR rcm2rgrid: one or more input dimension sizes is greater than INT_MAX !\n";
   }
+#endif
+  /**************** END: BASIC SANITY CHECKS ****************/
 
   int inlon2d, inlat2d, ingrid, inlon1d, inlat1d;
 
@@ -150,16 +151,27 @@ extern "C" int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, con
   // Other variables
   size_t nlon2d, nlat2d, nlat1d, nlon1d, nfi, nfo;
 
-  /**************** START: BASIC SANITY CHECKS ****************/
-  if(lat2d->shape[0] != lon2d->shape[0] ||
-     lat2d->shape[1] != lon2d->shape[1]) {
-    std::cerr << "ERROR rgrid2rcm: The output lat/lon grids must be the same size ! \n";
-  }
-
   nlat2d = lat2d->shape[0];
   nlon2d = lat2d->shape[1]; // same as dsizes_lon2d[1]
   nlat1d = lat1d->shape[0];
   nlon1d = lon1d->shape[0];
+
+  // Compute the total number of elements in our arrays.
+  nfi = nlat1d * nlon1d;
+  nfo = nlon2d * nlat2d;
+
+  // Compute the total size of the input/output arrays.
+  size_t ngrid = 1;
+  for(auto i = 0; i < fi->ndim - 2; i++) ngrid *= fi->shape[i];
+  size_t size_fi = ngrid * nfi;
+  size_t size_fo = ngrid * nfo;
+
+  /**************** START: BASIC SANITY CHECKS ****************/
+#ifdef DEBUG
+  if(lat2d->shape[0] != lon2d->shape[0] ||
+     lat2d->shape[1] != lon2d->shape[1]) {
+    std::cerr << "ERROR rgrid2rcm: The output lat/lon grids must be the same size ! \n";
+  }
 
   if(nlon2d <= 1 || nlat2d <= 1 || nlat1d <= 1 || nlon1d <= 1) {
     std::cerr << "ERROR rgrid2rcm: The input/output lat/lon grids must "
@@ -178,23 +190,14 @@ extern "C" int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, con
       "be (nlat1d x nlon1d), where nlat1d and nlon1d are the "
       "dimensions of the lat1d/lon1d arrays !\n";
   }
-  /**************** END: BASIC SANITY CHECKS ****************/
-
-  // Compute the total number of elements in our arrays.
-  nfi = nlat1d * nlon1d;
-  nfo = nlon2d * nlat2d;
-
-  // Compute the total size of the input/output arrays.
-  size_t ngrid = 1;
-  for(auto i = 0; i < fi->ndim - 2; i++) ngrid *= fi->shape[i];
-  size_t size_fi = ngrid * nfi;
-  size_t size_fo = ngrid * nfo;
 
   // Test input dimension sizes.
   if((nlon2d > INT_MAX) || (nlat2d > INT_MAX) || (ngrid > INT_MAX) ||
      (nlon1d > INT_MAX) || (nlat1d > INT_MAX)) {
     std::cerr << "ERROR rgridrcm: one or more input dimension sizes is greater than INT_MAX !\n";
   }
+#endif
+  /**************** END: BASIC SANITY CHECKS ****************/
 
   int inlon2d, inlat2d, ingrid, inlon1d, inlat1d;
 
