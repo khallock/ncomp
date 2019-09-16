@@ -79,41 +79,41 @@ SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO&
      NCRT = MIN(4,NCRIT)
   end if
   !                              initialize to xmsg
-  FO(:, :, :) = XMSG
+  FO = XMSG
   !                              main loop [exact matches]
   !                              people want bit-for-bit match
   EPS    = 1.D-04
   ! NEXACT = 0
 
-  nyloop: do NY = 1,NYO
-     nxloop: do NX = 1,NXO
+ do NY = 1,NYO
+    do NX = 1,NXO
         iyloop: do IY = 1,NYI
-           ixloop: do IX = 1,NXI
+           do IX = 1,NXI
 
               if (XO(NX) >= (XI(IX,IY)-EPS) .AND.&
                    XO(NX) <= (XI(IX,IY)+EPS) .AND.&
                    YO(NY) >= (YI(IX,IY)-EPS) .AND.&
                    YO(NY) <= (YI(IX,IY)+EPS) ) then
 
-                 ngloop: do NG=1,NGRD
+                 do NG=1,NGRD
                     FO(NX,NY,NG) = FI(IX,IY,NG)
                     ! NEXACT = NEXACT + 1
-                 end do ngloop
+                 end do
                  exit iyloop
               end if
 
-           end do ixloop
+           end do
         end do iyloop
-     end do nxloop
-  end do nyloop
+     end do
+  end do
 
   ! c c print *, "nexact=",nexact
   !                              main loop [interpolation]
-  nyloop: do NY = 1,NYO
-     nxloop: do NX = 1,NXO
+  do NY = 1,NYO
+     do NX = 1,NXO
 
         iyloop: do IY = 1,NYI-K
-           ixloop: do IX = 1,NXI-K
+           do IX = 1,NXI-K
               if (XO(NX) >= XI(IX,IY) .AND.&
                    XO(NX) <= XI(IX+K,IY) .AND.&
                    YO(NY) >= YI(IX,IY) .AND.&
@@ -128,7 +128,8 @@ SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO&
                       YI(IX,IY+K),XI(IX,IY+K),2))**2
                  W(2,2) = (1.D0/DGCDIST(YO(NY),XO(NX),&
                       YI(IX+K,IY+K),XI(IX+K,IY+K),2))**2
-                 nglopp: do NG=1,NGRD
+
+                 do NG=1,NGRD
                     if (FO(NX,NY,NG) == XMSG) then
                        FW(1,1) = FI(IX,IY,NG)
                        FW(2,1) = FI(IX+K,IY,NG)
@@ -138,15 +139,15 @@ SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO&
                        NW   = 0
                        SUMF = 0.0D0
                        SUMW = 0.0D0
-                       nloop: do N = 1,2
-                          mloop: do M = 1,2
+                       do N = 1,2
+                          do M = 1,2
                              if (FW(M,N) /= XMSG) then
                                 SUMF = SUMF + FW(M,N)*W(M,N)
                                 SUMW = SUMW + W(M,N)
                                 NW   = NW + 1
                              end if
-                          end do mloop
-                       end do nloop
+                          end do
+                       end do
                        !                                             nw >=3 arbitrary
                        ! c c                       if (NW >= 3 .AND. SUMW > 0.D0) then
                        !                                             nw =1 nearest neighbor
@@ -154,14 +155,15 @@ SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO&
                           FO(NX,NY,NG) = SUMF/SUMW
                        end if
                     end if
-                 end do nglopp
+                 end do
+
                  exit iyloop
               end if
-           end do ixloop
+           end do
         end do iyloop
 
-     end do nxloop
-  end do nyloop
+     end do
+  end do
 
   ! Since the RCM grid is curvilinear the above algorithm may not work
   ! .   for all of the locations on regular grid. Fill via linear interp.
@@ -248,33 +250,32 @@ SUBROUTINE DRGRID2RCM(NGRD,NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO&
   CALL DMONOINC(XI,NXI,IER,NER)
   if (IER /= 0) return
   !                              Init to missing
-  FO( :, :, :) = XMSG ! (:, :, :) = (NXO, NYO, NGRD)
+  FO = XMSG ! (:, :, :) = (NXO, NYO, NGRD)
   !                              main loop [exact matches]
   EPS    = 1.D-03
   NEXACT = 0
 
-  nyloop: do NY = 1,NYO
-     nxloop: do NX = 1,NXO
+  do NY = 1,NYO
+     do NX = 1,NXO
 
         iyloop: do IY = 1,NYI
-           ixloop: do IX = 1,NXI
+           do IX = 1,NXI
               if (XO(NX,NY) >= (XI(IX)-EPS) .AND.&
                    XO(NX,NY) <= (XI(IX)+EPS) .AND.&
                    YO(NX,NY) >= (YI(IY)-EPS) .AND.&
                    YO(NX,NY) <= (YI(IY)+EPS) ) then
 
-                 ngloop: do NG=1,NGRD
+                 do NG=1,NGRD
                     FO(NX,NY,NG) = FI(IX,IY,NG)
                     NEXACT = NEXACT + 1
-                 end do ngloop
+                 end do
                  exit iyloop
               end if
-           end do ixloop
+           end do
         end do iyloop
 
-     end do nxloop
-  end do nyloop
-
+     end do
+  end do
 
   ! print *, "nexact=",nexact
 
@@ -282,17 +283,17 @@ SUBROUTINE DRGRID2RCM(NGRD,NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO&
   ! c c k = opt
 
   !                              main loop [interpolation]
-  nylopp: do NY = 1,NYO
-     nxloop: do NX = 1,NXO
+  do NY = 1,NYO
+     do NX = 1,NXO
 
         iyloop: do IY = 1,NYI - K
-           ixloop: do IX = 1,NXI - K
+           do IX = 1,NXI - K
               if (XO(NX,NY) >= XI(IX) .AND.&
                    XO(NX,NY) < XI(IX+K) .AND.&
                    YO(NX,NY) >= YI(IY) .AND.&
                    YO(NX,NY) < YI(IY+K)) then
 
-                 ngloop: do NG = 1,NGRD
+                 do NG = 1,NGRD
                     if (FO(NX,NY,NG) == XMSG) then
                        if (FI(IX,IY,NG) /= XMSG .AND.&
                             FI(IX+K,IY,NG) /= XMSG .AND.&
@@ -325,15 +326,15 @@ SUBROUTINE DRGRID2RCM(NGRD,NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO&
                           NW = 0
                           SUMF = 0.0D0
                           SUMW = 0.0D0
-                          nloop: do N = 1,2
-                             mloop: do M = 1,2
+                          do N = 1,2
+                             do M = 1,2
                                 if (FW(M,N) /= XMSG) then
                                    SUMF = SUMF + FW(M,N)*W(M,N)
                                    SUMW = SUMW + W(M,N)
                                    NW = NW + 1
                                 end if
-                             end do mloop
-                          end do nloop
+                             end do
+                          end do
                           !                                             nw >=3 arbitrary
                           ! c c                  if (NCRIT >= 3 .AND. SUMW > 0.D0) then
                           !                                             nw  =1 nearest neighbor
@@ -342,14 +343,14 @@ SUBROUTINE DRGRID2RCM(NGRD,NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO&
                           end if
                        end if
                     end if
-                 end do ngloop
+                 end do
                  exit iyloop
               end if
-           end do ixloop
+           end do
         end do iyloop
 
-     end do nxloop
-  end do nylopp
+     end do
+  end do
 
   return
 END SUBROUTINE DRGRID2RCM
