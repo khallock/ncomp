@@ -87,7 +87,7 @@ SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO&
 
  do NY = 1,NYO
     do NX = 1,NXO
-        iyloop: do IY = 1,NYI
+        iyloop1: do IY = 1,NYI
            do IX = 1,NXI
 
               if (XO(NX) >= (XI(IX,IY)-EPS) .AND.&
@@ -99,11 +99,11 @@ SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO&
                     FO(NX,NY,NG) = FI(IX,IY,NG)
                     ! NEXACT = NEXACT + 1
                  end do
-                 exit iyloop
+                 exit iyloop1
               end if
 
            end do
-        end do iyloop
+        end do iyloop1
      end do
   end do
 
@@ -112,7 +112,7 @@ SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO&
   do NY = 1,NYO
      do NX = 1,NXO
 
-        iyloop: do IY = 1,NYI-K
+        iyloop2: do IY = 1,NYI-K
            do IX = 1,NXI-K
               if (XO(NX) >= XI(IX,IY) .AND.&
                    XO(NX) <= XI(IX+K,IY) .AND.&
@@ -157,10 +157,10 @@ SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO&
                     end if
                  end do
 
-                 exit iyloop
+                 exit iyloop2
               end if
            end do
-        end do iyloop
+        end do iyloop2
 
      end do
   end do
@@ -258,7 +258,7 @@ SUBROUTINE DRGRID2RCM(NGRD,NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO&
   do NY = 1,NYO
      do NX = 1,NXO
 
-        iyloop: do IY = 1,NYI
+        iyloop1: do IY = 1,NYI
            do IX = 1,NXI
               if (XO(NX,NY) >= (XI(IX)-EPS) .AND.&
                    XO(NX,NY) <= (XI(IX)+EPS) .AND.&
@@ -269,10 +269,10 @@ SUBROUTINE DRGRID2RCM(NGRD,NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO&
                     FO(NX,NY,NG) = FI(IX,IY,NG)
                     NEXACT = NEXACT + 1
                  end do
-                 exit iyloop
+                 exit iyloop1
               end if
            end do
-        end do iyloop
+        end do iyloop1
 
      end do
   end do
@@ -286,7 +286,7 @@ SUBROUTINE DRGRID2RCM(NGRD,NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO&
   do NY = 1,NYO
      do NX = 1,NXO
 
-        iyloop: do IY = 1,NYI - K
+        iyloop2: do IY = 1,NYI - K
            do IX = 1,NXI - K
               if (XO(NX,NY) >= XI(IX) .AND.&
                    XO(NX,NY) < XI(IX+K) .AND.&
@@ -344,10 +344,10 @@ SUBROUTINE DRGRID2RCM(NGRD,NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO&
                        end if
                     end if
                  end do
-                 exit iyloop
+                 exit iyloop2
               end if
            end do
-        end do iyloop
+        end do iyloop2
 
      end do
   end do
