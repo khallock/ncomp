@@ -2,6 +2,7 @@
 #define NCOMP_TYPES_H
 
 #include <stddef.h>
+#include <limits.h>
 
 /* enumerated types, adapted from numpy's ndarraytypes.h */
 enum NcompTypes {
