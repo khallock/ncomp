@@ -52,7 +52,7 @@ typedef struct {
     void *addr;
     int has_missing; // = 0;
     ncomp_missing msg;
-    size_t shape[1];
+    size_t * shape;
 } ncomp_array;
 
 typedef struct {

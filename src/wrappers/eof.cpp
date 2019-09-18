@@ -654,7 +654,11 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
      * Set up return value.
      */
      // x_out is the return_md in NCL code.
-     x_out = ncomp_array_alloc((void *) revec, NCOMP_FLOAT, x_in->ndim,dsizes_evec);
+     ncomp_array_copy(
+       ncomp_array_alloc((void *) revec, NCOMP_FLOAT, x_in->ndim,dsizes_evec),
+       x_out);
+     x_out->has_missing = x_in->has_missing;
+     x_out->msg.msg_float = missing_f_x_in;
     /*
      * Only return the eigenvalues if the appropriate option has been set.
      */
@@ -718,7 +722,12 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
     /*
      *  Return doubles.
      */
-    x_out = ncomp_array_alloc((void *) evec, NCOMP_DOUBLE, x_in->ndim,dsizes_evec);
+
+    ncomp_array_copy(
+      ncomp_array_alloc((void *) evec, NCOMP_DOUBLE, x_in->ndim,dsizes_evec),
+      x_out);
+    x_out->has_missing = x_in->has_missing;
+    x_out->msg.msg_double = missing_d_x_in;
 
     /*
      * Only return the eigenvalues if the appropriate option has been set.
@@ -827,7 +836,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
     tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
   }
 
-  attrList_out = collectAttributeList(tmp_attr_out);
+  collectAttributeList(tmp_attr_out, attrList_out);
 
   // Cleaning up
   delete[] dsizes_evec;

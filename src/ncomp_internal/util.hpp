@@ -55,5 +55,6 @@ size_t prod(const size_t* shape, int ndim);
 ncomp_single_attribute* create_ncomp_single_attribute(char * name, void * data, NcompTypes type, int ndim, size_t * dims);
 
 ncomp_attributes * collectAttributeList(std::vector<ncomp_single_attribute *> attrVector);
+void collectAttributeList(std::vector<ncomp_single_attribute*> attrVector, ncomp_attributes * collectedAttributedList);
 
 #endif

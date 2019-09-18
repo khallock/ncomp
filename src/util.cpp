@@ -139,14 +139,19 @@ T* convert_to_with_copy_avoiding(void *in_arr, unsigned long arr_size,
 //       ncomp_array->addr is pointing to a memory location that is freed.
 extern "C" ncomp_array *ncomp_array_alloc(void *array_ptr, int array_type, int array_ndim,
                                size_t *array_shape) {
-  ncomp_array *new_array = (ncomp_array *)malloc(
-      sizeof(ncomp_array) + (array_ndim - 1) * sizeof(size_t));
+  // ncomp_array *new_array = (ncomp_array *)malloc(
+  //     sizeof(ncomp_array) + (array_ndim - 1) * sizeof(size_t));
+  ncomp_array * new_array = (ncomp_array *) malloc(sizeof(ncomp_array));
   new_array->type = array_type;
   new_array->addr = array_ptr;
   new_array->ndim = array_ndim;
   new_array->has_missing = 0;
   new_array->msg.msg_bool = 0;
+
+  // We are still going to copy the array_shape because some of our codes assumes
+  // that this copy is happening.
   int i;
+  new_array->shape = (size_t *) malloc(sizeof(size_t)*array_ndim);
   for (i = 0; i < array_ndim; i++)
     new_array->shape[i] = array_shape[i];
   return new_array;
@@ -165,11 +170,24 @@ extern "C" ncomp_array *ncomp_array_alloc(void *array_ptr, int array_type, int a
   // return ncompStruct.get();
 }
 
+// Copies one array to another. Note: the to array must have proper shape size.
+// Otherwise, this won't work. Suggesting to change the ncomp_array defintion of
+// shape from size_t[1] to size_t *.
+extern "C" void ncomp_array_copy(ncomp_array * from, ncomp_array * to) {
+  to->type = from->type;
+  to->addr = from->addr;
+  to->ndim = from->ndim;
+  to->has_missing = from->has_missing;
+  to->msg = from->msg;
+  to->shape = from->shape;
+}
+
 extern "C" void ncomp_array_free(ncomp_array* old_array, int keep_data_ptr) {
     /* free ptr by default */
     if (!keep_data_ptr)
         free(old_array->addr);
 
+    free(old_array->shape);
     free(old_array);
 
     return;
@@ -730,6 +748,14 @@ ncomp_attributes * collectAttributeList(std::vector<ncomp_single_attribute *> at
     output_attribute_list->attribute_array[i] = attrVector[i];
   }
   return output_attribute_list;
+}
+
+void collectAttributeList(std::vector<ncomp_single_attribute*> attrVector, ncomp_attributes * collectedAttributedList) {
+  collectedAttributedList->nAttribute = attrVector.size();
+  collectedAttributedList->attribute_array  = new ncomp_single_attribute*[attrVector.size()];
+  for (int i = 0; i < attrVector.size(); ++i) {
+    collectedAttributedList->attribute_array[i] = attrVector[i];
+  }
 }
 
 // explicit function instantiations
