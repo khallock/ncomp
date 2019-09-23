@@ -49,76 +49,70 @@ SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO&
   DOUBLE PRECISION DGCDIST
   !                              error checking
   IER = 0
-  if (NXI <= 1 .OR. NYI <= 1 .OR. NXO <= 1 .OR. NYO <= 1) then
-     IER = 1
-     return
-  end if
-  if (IER /= 0) return
 
+  ! Check for the monotonic increasing nature of output coordinates
   CALL DMONOINC(YO,NYO,IER,NER)
-  if (IER /= 0) return
+  IF (IER /= 0) RETURN
   CALL DMONOINC(XO,NXO,IER,NER)
-  if (IER /= 0) return
+  IF (IER /= 0) RETURN
 
+  ! Check for the monotonic increasing nature of input coordinates
   CHKLAT(:) = YI(1,:) ! : = NYI
-
   CALL DMONOINC(CHKLAT,NYI,IER,NER)
-  if (IER /= 0) return
+  IF (IER /= 0) RETURN
 
   CHKLON(:) = XI(:, 1) ! : = NXI
-
   CALL DMONOINC(CHKLAT,NYI,IER,NER)
-  if (IER /= 0) return
+  IF (IER /= 0) RETURN
 
   K = 2
-  ! c c k = opt
+  ! k = opt
 
-  if (NCRIT <= 1) then
+  IF (NCRIT <= 1) THEN
      NCRT = 1
   else
      NCRT = MIN(4,NCRIT)
-  end if
+  END IF
+
   !                              initialize to xmsg
   FO = XMSG
+
   !                              main loop [exact matches]
   !                              people want bit-for-bit match
   EPS    = 1.D-04
   ! NEXACT = 0
+  DO NY = 1,NYO
+     DO NX = 1,NXO
+        iyloop1: DO IY = 1,NYI
+           DO IX = 1,NXI
 
- do NY = 1,NYO
-    do NX = 1,NXO
-        iyloop1: do IY = 1,NYI
-           do IX = 1,NXI
-
-              if (XO(NX) >= (XI(IX,IY)-EPS) .AND.&
+              IF (XO(NX) >= (XI(IX,IY)-EPS) .AND.&
                    XO(NX) <= (XI(IX,IY)+EPS) .AND.&
                    YO(NY) >= (YI(IX,IY)-EPS) .AND.&
-                   YO(NY) <= (YI(IX,IY)+EPS) ) then
+                   YO(NY) <= (YI(IX,IY)+EPS) ) THEN
 
-                 do NG=1,NGRD
+                 DO NG=1,NGRD
                     FO(NX,NY,NG) = FI(IX,IY,NG)
                     ! NEXACT = NEXACT + 1
-                 end do
-                 exit iyloop1
-              end if
+                 END DO
+                 EXIT iyloop1
+              END IF
 
-           end do
-        end do iyloop1
-     end do
-  end do
+           END DO
+        END DO iyloop1
+     END DO
+  END DO
 
-  ! c c print *, "nexact=",nexact
   !                              main loop [interpolation]
-  do NY = 1,NYO
-     do NX = 1,NXO
+  DO NY = 1,NYO
+     DO NX = 1,NXO
 
-        iyloop2: do IY = 1,NYI-K
-           do IX = 1,NXI-K
-              if (XO(NX) >= XI(IX,IY) .AND.&
+        iyloop2: DO IY = 1,NYI-K
+           DO IX = 1,NXI-K
+              IF (XO(NX) >= XI(IX,IY) .AND.&
                    XO(NX) <= XI(IX+K,IY) .AND.&
                    YO(NY) >= YI(IX,IY) .AND.&
-                   YO(NY) <= YI(IX,IY+K)) then
-
+                   YO(NY) <= YI(IX,IY+K)) THEN
 
                  W(1,1) = (1.D0/DGCDIST(YO(NY),XO(NX),&
                       YI(IX,IY),XI(IX,IY),2))**2
@@ -129,8 +123,8 @@ SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO&
                  W(2,2) = (1.D0/DGCDIST(YO(NY),XO(NX),&
                       YI(IX+K,IY+K),XI(IX+K,IY+K),2))**2
 
-                 do NG=1,NGRD
-                    if (FO(NX,NY,NG) == XMSG) then
+                 DO NG=1,NGRD
+                    IF (FO(NX,NY,NG) == XMSG) THEN
                        FW(1,1) = FI(IX,IY,NG)
                        FW(2,1) = FI(IX+K,IY,NG)
                        FW(1,2) = FI(IX,IY+K,NG)
@@ -139,31 +133,33 @@ SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO&
                        NW   = 0
                        SUMF = 0.0D0
                        SUMW = 0.0D0
-                       do N = 1,2
-                          do M = 1,2
-                             if (FW(M,N) /= XMSG) then
+                       DO N = 1,2
+                          DO M = 1,2
+                             IF (FW(M,N) /= XMSG) THEN
                                 SUMF = SUMF + FW(M,N)*W(M,N)
                                 SUMW = SUMW + W(M,N)
                                 NW   = NW + 1
-                             end if
-                          end do
-                       end do
-                       !                                             nw >=3 arbitrary
-                       ! c c                       if (NW >= 3 .AND. SUMW > 0.D0) then
-                       !                                             nw =1 nearest neighbor
-                       if (NW >= NCRT .AND. SUMW > 0.D0) then
+                             END IF
+                          END DO
+                       END DO
+                       ! nw >=3 arbitrary
+                       ! IF (NW >= 3 .AND. SUMW > 0.D0) THEN
+                       ! nw =1 nearest neighbor
+                       IF (NW >= NCRT .AND. SUMW > 0.D0) THEN
                           FO(NX,NY,NG) = SUMF/SUMW
-                       end if
-                    end if
-                 end do
+                       END IF
+                    END IF
+                 END DO
 
-                 exit iyloop2
-              end if
-           end do
-        end do iyloop2
+                 GO TO 20
+                 ! EXIT iyloop2
+              END IF
+           END DO
+        END DO iyloop2
 
-     end do
-  end do
+20      CONTINUE
+     END DO
+  END DO
 
   ! Since the RCM grid is curvilinear the above algorithm may not work
   ! .   for all of the locations on regular grid. Fill via linear interp.
@@ -171,19 +167,18 @@ SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO&
   MKNT   =  0
   MFLAG  =  0
   MPTCRT =  2
-  do NG=1,NGRD
-     do NY=1,NYO
-        do NX=1,NXO
-           if (FO(NX,NY,NG) == XMSG) then
+  DO NG=1,NGRD
+     DO NY=1,NYO
+        DO NX=1,NXO
+           IF (FO(NX,NY,NG) == XMSG) THEN
               CALL DLINMSG(FO(1,NY,NG),NXO,XMSG,MFLAG,MPTCRT)
               MKNT = MKNT + 1
-           end if
-        end do
-     end do
-  end do
+           END IF
+        END DO
+     END DO
+  END DO
 
-  ! C C PRINT *,"MKNT=",MKNT
-  return
+  RETURN
 END SUBROUTINE DRCM2RGRID
 
 ! -----------------------------------------------------------
@@ -239,66 +234,64 @@ SUBROUTINE DRGRID2RCM(NGRD,NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO&
 
   !                              error checking
   IER = 0
-  if (NXI <= 1 .OR. NYI <= 1 .OR. NXO <= 1 .OR. NYO <= 1) then
+  IF (NXI <= 1 .OR. NYI <= 1 .OR. NXO <= 1 .OR. NYO <= 1) THEN
      IER = 1
-     return
-  end if
-  if (IER /= 0) return
+     RETURN
+  END IF
+  IF (IER /= 0) RETURN
 
   CALL DMONOINC(YI,NYI,IER,NER)
-  if (IER /= 0) return
+  IF (IER /= 0) RETURN
   CALL DMONOINC(XI,NXI,IER,NER)
-  if (IER /= 0) return
+  IF (IER /= 0) RETURN
   !                              Init to missing
   FO = XMSG ! (:, :, :) = (NXO, NYO, NGRD)
   !                              main loop [exact matches]
   EPS    = 1.D-03
-  NEXACT = 0
+  ! NEXACT = 0
 
-  do NY = 1,NYO
-     do NX = 1,NXO
+  DO NY = 1,NYO
+     DO NX = 1,NXO
 
-        iyloop1: do IY = 1,NYI
-           do IX = 1,NXI
-              if (XO(NX,NY) >= (XI(IX)-EPS) .AND.&
+        iyloop1: DO IY = 1,NYI
+           DO IX = 1,NXI
+              IF (XO(NX,NY) >= (XI(IX)-EPS) .AND.&
                    XO(NX,NY) <= (XI(IX)+EPS) .AND.&
                    YO(NX,NY) >= (YI(IY)-EPS) .AND.&
-                   YO(NX,NY) <= (YI(IY)+EPS) ) then
+                   YO(NX,NY) <= (YI(IY)+EPS) ) THEN
 
-                 do NG=1,NGRD
+                 DO NG=1,NGRD
                     FO(NX,NY,NG) = FI(IX,IY,NG)
-                    NEXACT = NEXACT + 1
-                 end do
-                 exit iyloop1
-              end if
-           end do
-        end do iyloop1
+                    ! NEXACT = NEXACT + 1
+                 END DO
+                 EXIT iyloop1
+              END IF
+           END DO
+        END DO iyloop1
 
-     end do
-  end do
-
-  ! print *, "nexact=",nexact
+     END DO
+  END DO
 
   K = 1
   ! c c k = opt
 
   !                              main loop [interpolation]
-  do NY = 1,NYO
-     do NX = 1,NXO
+  DO NY = 1,NYO
+     DO NX = 1,NXO
 
-        iyloop2: do IY = 1,NYI - K
-           do IX = 1,NXI - K
-              if (XO(NX,NY) >= XI(IX) .AND.&
+        iyloop2: DO IY = 1,NYI - K
+           DO IX = 1,NXI - K
+              IF (XO(NX,NY) >= XI(IX) .AND.&
                    XO(NX,NY) < XI(IX+K) .AND.&
                    YO(NX,NY) >= YI(IY) .AND.&
-                   YO(NX,NY) < YI(IY+K)) then
+                   YO(NX,NY) < YI(IY+K)) THEN
 
-                 do NG = 1,NGRD
-                    if (FO(NX,NY,NG) == XMSG) then
-                       if (FI(IX,IY,NG) /= XMSG .AND.&
+                 DO NG = 1,NGRD
+                    IF (FO(NX,NY,NG) == XMSG) THEN
+                       IF (FI(IX,IY,NG) /= XMSG .AND.&
                             FI(IX+K,IY,NG) /= XMSG .AND.&
                             FI(IX,IY+K,NG) /= XMSG .AND.&
-                            FI(IX+K,IY+K,NG) /= XMSG) then
+                            FI(IX+K,IY+K,NG) /= XMSG) THEN
 
                           FO(NX,NY,NG)=FBLI(FI(IX,IY,NG),FI(IX+K,IY,NG),&
                                FI(IX,IY+K,NG),FI(IX+K,IY+K,NG),&
@@ -326,33 +319,33 @@ SUBROUTINE DRGRID2RCM(NGRD,NYI,NXI,YI,XI,FI,NYO,NXO,YO,XO,FO&
                           NW = 0
                           SUMF = 0.0D0
                           SUMW = 0.0D0
-                          do N = 1,2
-                             do M = 1,2
-                                if (FW(M,N) /= XMSG) then
+                          DO N = 1,2
+                             DO M = 1,2
+                                IF (FW(M,N) /= XMSG) THEN
                                    SUMF = SUMF + FW(M,N)*W(M,N)
                                    SUMW = SUMW + W(M,N)
                                    NW = NW + 1
-                                end if
-                             end do
-                          end do
+                                END IF
+                             END DO
+                          END DO
                           !                                             nw >=3 arbitrary
-                          ! c c                  if (NCRIT >= 3 .AND. SUMW > 0.D0) then
+                          ! c c                  IF (NCRIT >= 3 .AND. SUMW > 0.D0) THEN
                           !                                             nw  =1 nearest neighbor
-                          if (NCRIT >= 1 .AND. SUMW > 0.D0) then
+                          IF (NCRIT >= 1 .AND. SUMW > 0.D0) THEN
                              FO(NX,NY,NG) = SUMF/SUMW
-                          end if
-                       end if
-                    end if
-                 end do
-                 exit iyloop2
-              end if
-           end do
-        end do iyloop2
+                          END IF
+                       END IF
+                    END IF
+                 END DO
+                 EXIT iyloop2
+              END IF
+           END DO
+        END DO iyloop2
 
-     end do
-  end do
+     END DO
+  END DO
 
-  return
+  RETURN
 END SUBROUTINE DRGRID2RCM
 
 ! -----------------------------------------------------------
@@ -367,12 +360,12 @@ DOUBLE PRECISION FUNCTION DGCDIST(RLAT1,RLON1,RLAT2,RLON2,IU)
   ! nomenclature :
   ! .   rlat1,rlon1 - latitude and longtitude of the first point
   ! .   rlat2,rlon2 - latitude and longtitude of the second point
-  ! .   iu          - code for the type units gcdist is to return
-  ! .               = 1 : gcdist returned in radians
-  ! .               = 2 : gcdist returned in degrees
-  ! .               = 3 : gcdist returned in meters
-  ! .               = 4 : gcdist returned in kilometers
-  ! .               = 5 : gcdist returned in *not used*
+  ! .   iu          - code for the type units gcdist is to RETURN
+  ! .               = 1 : gcdist RETURNed in radians
+  ! .               = 2 : gcdist RETURNed in degrees
+  ! .               = 3 : gcdist RETURNed in meters
+  ! .               = 4 : gcdist RETURNed in kilometers
+  ! .               = 5 : gcdist RETURNed in *not used*
   !
   ! input
   INTEGER IU
@@ -385,7 +378,7 @@ DOUBLE PRECISION FUNCTION DGCDIST(RLAT1,RLON1,RLAT2,RLON2,IU)
   ! change as required
   DATA RAD/0.01745329238474369D0/
 
-  ! special test if RLAT1=RLAT2 and RLON1=RLON2
+  ! special test IF RLAT1=RLAT2 and RLON1=RLON2
   IF(RLAT1 == RLAT2 .AND. RLON1==RLON2) THEN
      DGCDIST = 0.D0
      RETURN

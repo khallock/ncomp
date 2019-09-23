@@ -4,7 +4,7 @@
 #include "ncomp/util.h"
 #include <ncomp/types.h>
 #include <type_traits>
-#include <vector>
+#include <iostream>
 
 void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
                    void *to_ptr, int to_type, void *to_missing, size_t num);
@@ -151,6 +151,7 @@ template <typename T,
   T *coerce_input_T(void *x, int type_x, size_t size_x, int has_missing_x,
 		    void *missing_x, T *missing_dx) {
   T *dx = nullptr;
+
   if ((std::is_same<T, double>::value && type_x == NCOMP_DOUBLE) ||
       (std::is_same<T, float>::value && type_x == NCOMP_FLOAT) ||
       (std::is_same<T, int>::value && type_x == NCOMP_INT) ||
@@ -158,8 +159,7 @@ template <typename T,
       (std::is_same<T, unsigned long>::value && type_x == NCOMP_ULONG)) {
     dx = static_cast<T *>(x);
   } else {
-    std::vector<T> dxVec(size_x);
-    dx = dxVec.data();
+    dx = new double[size_x];
 
     NcompTypes ncompType;
     if (std::is_same<T, double>::value)
@@ -176,12 +176,12 @@ template <typename T,
       return nullptr;
 
     if (has_missing_x) {
-      _ncomp_coerce(x, type_x, missing_x, (void *)dx, ncompType,
-                    (void *)missing_dx, size_x);
+      _ncomp_coerce(x, type_x, missing_x, (void *)dx, ncompType, (void *)missing_dx, size_x);
     } else {
       _ncomp_coerce(x, type_x, nullptr, (void *)dx, ncompType, nullptr, size_x);
     }
   }
+
   return dx;
 }
 
