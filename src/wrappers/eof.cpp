@@ -86,7 +86,7 @@ eofunc_options* extract_eofunc_options(const ncomp_attributes * options_in) {
   }
 
   int tmpPos = -1;
-  if (hasAttribute(options_in, "pcrit", tmpPos)==1) {
+  if (hasAttribute(options_in, "pcrit", &tmpPos)==1) {
     options_out->pcrit = *(double*) options_in->attribute_array[tmpPos]->value->addr;
     options_out->return_pcrit = true;
     if ((options_out->pcrit < 0.0) || (options_out->pcrit > 100.0)) {
@@ -100,13 +100,16 @@ eofunc_options* extract_eofunc_options(const ncomp_attributes * options_in) {
 
   options_out->anomalies = *(bool*) getAttributeOrDefault(options_in, "anomalies", &(options_out->anomalies));
 
-  if (hasAttribute(options_in, "transpose", tmpPos)==1) {
+  if (hasAttribute(options_in, "transpose", &tmpPos)==1) {
     options_out->use_new_transpose = *(bool*) options_in->attribute_array[tmpPos]->value->addr;
     options_out->tr_setbyuser = true;
-  }
-
-  if (hasAttribute(options_in, "oldtranspose", tmpPos)==1) {
+  } else if (hasAttribute(options_in, "oldtranspose", &tmpPos)==1) { // we should set either transpose or old-transposed
+                                                                    // in this case, if transpose is already provided,
+                                                                    // we are not checking if old-tranpose is set.
+                                                                    // We only check if old-transpose is set, in case if
+                                                                    // transpose is not set.
     options_out->use_old_transpose = *(bool*) options_in->attribute_array[tmpPos]->value->addr;
+    options_out->use_new_transpose = false; // making sure that only one of them is set.
     options_out->tr_setbyuser = true;
   }
 
@@ -175,7 +178,6 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
 
   // processing options
   eofunc_options* options = extract_eofunc_options(options_in);
-
 
   /*
   * Create arrays to store non-missing data and to remove mean from
@@ -780,9 +782,9 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
    */
   if( (options->use_new_transpose || options->use_old_transpose) &&
       options->return_pcrit) {
-    size_t dims[1] {1};
-    tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "pcrit", &options->pcrit, NCOMP_DOUBLE, 1, dims));
-
+    double * tmp_pcrit = new double[1];
+    *tmp_pcrit = options->pcrit;
+    tmp_attr_out.push_back(create_ncomp_single_attribute_from_scalar((char *) "pcrit", tmp_pcrit, NCOMP_DOUBLE));
   }
 
   /*

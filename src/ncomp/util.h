@@ -8,10 +8,46 @@ extern "C" {
 #endif
 
 ncomp_array* ncomp_array_alloc(void*, int, int, size_t*);
+ncomp_array* ncomp_array_alloc_scalar(void* data_ptr, int data_type);
 void ncomp_array_copy(ncomp_array * from, ncomp_array * to);
 void ncomp_array_free(ncomp_array*, int);
 size_t sizeof_ncomp_array_data(int);
-ncomp_single_attribute* create_ncomp_single_attribute(char * name, void * data, int type, int ndim, size_t * dims);
+
+ncomp_single_attribute* create_ncomp_single_attribute(
+  char * name,
+  void * data_ptr,
+  int data_type,
+  int data_ndim,
+  size_t * data_shape);
+
+ncomp_single_attribute* create_ncomp_single_attribute_from_ncomp_array(
+  char * name,
+  ncomp_array* value);
+
+ncomp_single_attribute* create_ncomp_single_attribute_from_scalar(
+  char * name,
+  void * data_ptr,
+  int data_type);
+
+int hasAttribute(
+  const ncomp_attributes * attributeList,
+  const char* attributeName,
+  int* attributePosInList);
+
+ncomp_single_attribute*  getAttributeOrDefault_ncomp_single_attribute(
+  const ncomp_attributes * attributeList,
+  const char* attributeName,
+  const ncomp_single_attribute* defaultValue);
+
+ncomp_single_attribute*  getAttribute(
+  const ncomp_attributes * attributeList,
+  const char* attributeName);
+
+void* getAttributeOrDefault(
+  const ncomp_attributes * attributeList,
+  const char* attributeName,
+  const void * defaultValue);
+
 ncomp_attributes* ncomp_attributes_allocate(int nAttribute);
 
 void print_ncomp_array(const char * name, const ncomp_array * in);

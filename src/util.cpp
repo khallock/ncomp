@@ -171,6 +171,13 @@ extern "C" ncomp_array *ncomp_array_alloc(void *array_ptr, int array_type, int a
   // return ncompStruct.get();
 }
 
+extern "C" ncomp_array *ncomp_array_alloc_scalar(void *array_ptr, int array_type) {
+  int array_ndim = 1;
+  size_t array_shape[1] = {1};
+
+  return ncomp_array_alloc(array_ptr, array_type, array_ndim, array_shape);
+}
+
 // Copies one array to another. Note: the to array must have proper shape size.
 // Otherwise, this won't work. Suggesting to change the ncomp_array defintion of
 // shape from size_t[1] to size_t *.
@@ -665,10 +672,10 @@ T* allocateAndInit(unsigned long size, T initValue) {
 int hasAttribute(
   const ncomp_attributes* attributeList,
   const char* attributeName,
-  int& attributePosInList) {
+  int* attributePosInList) {
   for (int i=0; i < attributeList->nAttribute; ++i) {
     if (strcmp(attributeList->attribute_array[i]->name, attributeName) == 0) {
-      attributePosInList = i;
+      *attributePosInList = i;
       return 1;
     }
   }
@@ -676,12 +683,12 @@ int hasAttribute(
 }
 
 // Searches for an attribute and returns it. If the attribute doesn't exists, returns the default value provided by the user.
-ncomp_single_attribute* getAttributeOrDefault(
+ncomp_single_attribute* getAttributeOrDefault_ncomp_single_attribute(
   const ncomp_attributes* attributeList,
   const char* attributeName,
   const ncomp_single_attribute* defaultValue) {
   int attributePosInList = -1;
-  if (hasAttribute(attributeList, attributeName, attributePosInList)==1) {
+  if (hasAttribute(attributeList, attributeName, &attributePosInList)==1) {
     return attributeList->attribute_array[attributePosInList];
   } else {
     return (ncomp_single_attribute*) defaultValue;
@@ -691,7 +698,7 @@ ncomp_single_attribute* getAttributeOrDefault(
 // Searches for an attribute and returns it; If the attribute doesn't exists, it returns nullptr
 ncomp_single_attribute* getAttribute(const ncomp_attributes * attributeList, const char* attributeName){
   ncomp_single_attribute* defaultValue = nullptr;
-  return getAttributeOrDefault(attributeList,attributeName, defaultValue);
+  return getAttributeOrDefault_ncomp_single_attribute(attributeList,attributeName, defaultValue);
 }
 
 // a variant of getAttributeOrDefault with easier way of providing defaultValue.
@@ -736,7 +743,27 @@ ncomp_single_attribute * create_ncomp_single_attribute(char * name, void * data,
   ncomp_single_attribute * out_ncomp_single_attribute = new ncomp_single_attribute[1];
   out_ncomp_single_attribute->name = copy_of_name;
   out_ncomp_single_attribute->value = ncomp_array_alloc(data, type, 1, dims);
+
   return out_ncomp_single_attribute;
+}
+
+ncomp_single_attribute * create_ncomp_single_attribute_from_ncomp_array(char * name, ncomp_array * value) {
+  int size_name = strlen(name) + 1;
+  char * copy_of_name = new char[size_name];
+  std::copy(name, name+size_name, copy_of_name);
+
+  ncomp_single_attribute * out_ncomp_single_attribute = new ncomp_single_attribute[1];
+  out_ncomp_single_attribute->name = copy_of_name;
+  out_ncomp_single_attribute->value = value;
+  return out_ncomp_single_attribute;
+}
+
+ncomp_single_attribute* create_ncomp_single_attribute_from_scalar
+  (char * name, void * data, int type) {
+    int ndim = 1;
+    size_t dims[1] = {1};
+
+    return create_ncomp_single_attribute(name, data, type, ndim, dims);
 }
 
 ncomp_attributes* ncomp_attributes_allocate(int nAttribute) {
@@ -813,7 +840,7 @@ void print_ncomp_array(const char * name, const ncomp_array * in) {
       printf("%s data: [ %s ]\n", name, (char *) in->addr);
       break;
     default:
-      printf("ERROR: TYPE NOT FOUND\n");
+      printf("ERROR: TYPE NOT FOUND OR NOT IMPLEMENTED YET\n");
   }
 }
 

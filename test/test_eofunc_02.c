@@ -14,8 +14,7 @@ int main(void) {
   ncomp_attributes* options = ncomp_attributes_allocate(1);
 
   int jopt = 1;
-  size_t dims[1] = {1};
-  options->attribute_array[0] = create_ncomp_single_attribute((char *) "jopt", &jopt, NCOMP_INT, 1, dims);
+  options->attribute_array[0] = create_ncomp_single_attribute_from_scalar((char *) "jopt", &jopt, NCOMP_INT);
 
   printf("options->nAttribute: %d\n", options->nAttribute);
 
@@ -68,12 +67,13 @@ int main(void) {
     }
   }
 
-  if (attr->nAttribute != 5) {
+  int expected_nAttribute = 5;
+  if (attr->nAttribute != expected_nAttribute) {
     printf("problem with attr->nAttribute\n");
     return 4;
   }
 
-  for (int i = 0; i<5; ++i) {
+  for (int i = 0; i < expected_nAttribute; ++i) {
     ncomp_single_attribute * s_attr = attr->attribute_array[i];
 
     if (strcmp("eval_transpose", s_attr->name) == 0) {

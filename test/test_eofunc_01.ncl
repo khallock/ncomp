@@ -4,6 +4,7 @@ begin
 	n = reshape(m, (/ 4,4,4 /))
 
 	opt = False
+	opt@debug = True
 
 	r = eofunc(n, 1, opt)
 
@@ -16,7 +17,7 @@ end
 ;            16 values
 ;Number of Dimensions: 3
 ;Dimensions and sizes:   [1] x [4] x [4]
-;Coordinates: 
+;Coordinates:
 ;Number Of Attributes: 6
 ;  _FillValue :  9.969209968386869e+36
 ;  method :      transpose

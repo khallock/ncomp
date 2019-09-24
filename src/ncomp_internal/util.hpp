@@ -29,25 +29,6 @@ void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
 template <typename T>
 T* allocateAndInit(size_t size, T initValue);
 
-int hasAttribute(
-  const ncomp_attributes * attributeList,
-  const char* attributeName,
-  int& attributePosInList);
-
-ncomp_single_attribute*  getAttributeOrDefault(
-  const ncomp_attributes * attributeList,
-  const char* attributeName,
-  const ncomp_single_attribute* defaultValue);
-
-ncomp_single_attribute*  getAttribute(
-  const ncomp_attributes * attributeList,
-  const char* attributeName);
-
-void* getAttributeOrDefault(
-  const ncomp_attributes * attributeList,
-  const char* attributeName,
-  const void * defaultValue);
-
 size_t prod(const size_t* shape, int ndim);
 
 ncomp_attributes * collectAttributeList(std::vector<ncomp_single_attribute *> attrVector);
