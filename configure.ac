@@ -1,6 +1,7 @@
 AC_INIT([NComp], [0.1], [hallock@ucar.edu], [ncomp])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
+AC_PROG_F77
 AC_PROG_FC
 AC_PROG_CXX
 AM_PROG_AR
