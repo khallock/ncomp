@@ -34,16 +34,14 @@ int hasAttribute(
   const char* attributeName,
   int& attributePosInList);
 
-int getAttributeOrDefault(
+ncomp_single_attribute*  getAttributeOrDefault(
   const ncomp_attributes * attributeList,
   const char* attributeName,
-  const ncomp_single_attribute* defaultValue,
-  ncomp_single_attribute* output);
+  const ncomp_single_attribute* defaultValue);
 
-int getAttribute(
+ncomp_single_attribute*  getAttribute(
   const ncomp_attributes * attributeList,
-  const char* attributeName,
-  ncomp_single_attribute* output);
+  const char* attributeName);
 
 void* getAttributeOrDefault(
   const ncomp_attributes * attributeList,
@@ -51,8 +49,6 @@ void* getAttributeOrDefault(
   const void * defaultValue);
 
 size_t prod(const size_t* shape, int ndim);
-
-ncomp_single_attribute* create_ncomp_single_attribute(char * name, void * data, NcompTypes type, int ndim, size_t * dims);
 
 ncomp_attributes * collectAttributeList(std::vector<ncomp_single_attribute *> attrVector);
 void collectAttributeList(std::vector<ncomp_single_attribute*> attrVector, ncomp_attributes * collectedAttributedList);

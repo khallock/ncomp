@@ -64,10 +64,10 @@ typedef struct { // options used for eofunc and their default values
   int jopt {0};
   double pcrit {50.0};
   bool return_pcrit {false};
-  bool return_eval {false};
+  bool return_eval {true};
   bool return_trace {false};
   bool anomalies {false};
-  bool use_new_transpose {false};
+  bool use_new_transpose {true};
   bool use_old_transpose {false};
   bool tr_setbyuser {false};
   bool debug {false};
@@ -75,8 +75,8 @@ typedef struct { // options used for eofunc and their default values
 
 eofunc_options* extract_eofunc_options(const ncomp_attributes * options_in) {
   eofunc_options* options_out = new eofunc_options;
-
-  if (options_in == nullptr) {
+  if  ((options_in == nullptr) ||
+      (options_in->nAttribute == 0)) {
     return options_out;
   }
 
@@ -125,16 +125,6 @@ eofunc_options* extract_eofunc_options(const ncomp_attributes * options_in) {
   return options_out;
 }
 
-
-
-
-
-
-
-
-
-
-
 extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
                       const ncomp_attributes * options_in,
                       ncomp_array * x_out, ncomp_attributes * attrList_out) {
@@ -154,7 +144,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
 
   // Getting xData as double
   size_t x_nelem = prod(x_in->shape, x_in->ndim);
-  double * dx = convert_to_with_copy_avoiding<double>((void *)&x_in->addr, x_nelem, 0, x_in->type, NCOMP_DOUBLE);
+  double * dx = convert_to_with_copy_avoiding<double>((void *)x_in->addr, x_nelem, 0, x_in->type, NCOMP_DOUBLE);
 
   // Get number of eigenvalues and eigen vectors to be computed.
   // This is supposed to be a scalar.
@@ -185,6 +175,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
 
   // processing options
   eofunc_options* options = extract_eofunc_options(options_in);
+
 
   /*
   * Create arrays to store non-missing data and to remove mean from
