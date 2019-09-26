@@ -13,6 +13,10 @@ void ncomp_array_copy(ncomp_array * from, ncomp_array * to);
 void ncomp_array_free(ncomp_array*, int);
 size_t sizeof_ncomp_array_data(int);
 
+ncomp_single_attribute* create_ncomp_single_attribute_from_ncomp_array(
+  char * name,
+  ncomp_array* value);
+
 ncomp_single_attribute* create_ncomp_single_attribute(
   char * name,
   void * data_ptr,
@@ -20,14 +24,19 @@ ncomp_single_attribute* create_ncomp_single_attribute(
   int data_ndim,
   size_t * data_shape);
 
-ncomp_single_attribute* create_ncomp_single_attribute_from_ncomp_array(
-  char * name,
-  ncomp_array* value);
+ncomp_single_attribute* create_ncomp_single_attribute_from_1DArray(
+    char * name,
+    void * data_ptr,
+    int data_type,
+    size_t nelem);
+
 
 ncomp_single_attribute* create_ncomp_single_attribute_from_scalar(
   char * name,
   void * data_ptr,
   int data_type);
+
+ncomp_attributes* ncomp_attributes_allocate(int nAttribute);
 
 int hasAttribute(
   const ncomp_attributes * attributeList,
@@ -47,8 +56,6 @@ void* getAttributeOrDefault(
   const ncomp_attributes * attributeList,
   const char* attributeName,
   const void * defaultValue);
-
-ncomp_attributes* ncomp_attributes_allocate(int nAttribute);
 
 void print_ncomp_array(const char * name, const ncomp_array * in);
 void print_ncomp_attributes(const ncomp_attributes * in);

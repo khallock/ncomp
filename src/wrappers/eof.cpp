@@ -183,10 +183,6 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
   * Create arrays to store non-missing data and to remove mean from
   * data before entering Fortran routines.
   */
-  // double * dx_strip = new double[nrow*ncol];
-  // double * xave = new double[ncol];
-  // double * xvar = new double[ncol];
-  // double * xdvar = new double[ncol];
   std::unique_ptr<double[]> dx_strip(new double[nrow*ncol]);
   std::unique_ptr<double[]> xave(new double[ncol]);
   std::unique_ptr<double[]> xvar(new double[ncol]);
@@ -232,13 +228,6 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
      * Work with anomalies: xdave=0.0 [or standardized anomalies]
      */
     if (xave[nc] != missing_d_x_in) {
-      /*
-      * The following can produce too much output, so I've commented it out.
-      *
-      *      if(debug) {
-      *          printf("nc = %d xave = %g\n", nc, xave[nc]);
-      *      }
-      */
       /*
       * Increment counter for acceptable points.
       */
@@ -497,7 +486,6 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
       for( size_t i = 0; i < total_size_evec; ++i ) {
         revec[i] = (float)evec[i];
       }
-      // delete[] evec;
     }
   } else {
     /*
@@ -592,7 +580,6 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
         for( size_t i = 0; i < total_size_evec; ++i ) {
           revec[i] = (float)wevec[i];
         }
-        // delete[] wevec;
       } else {
         evec = std::move(wevec);
       }
@@ -621,26 +608,6 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
       return i_error;
     }
   }
-
-  /*
- * Free unneeded memory.
- */
-  // if(x_in->type != NCOMP_DOUBLE) delete[] dx;
-  // delete[] dx_strip;
-  // delete[] xave;
-  // delete[] xvar;
-  // delete[] xdvar;
-  // if(!options->use_new_transpose && !options->use_old_transpose) {
-  //   delete[] work;
-  //   delete[] cssm;
-  //   delete[] weval;
-  //   delete[] iwork;
-  //   delete[] ifail;
-  // }
-  // else {
-  //   delete[] xdatat;
-  //   if(options->use_new_transpose) delete[] prncmp;
-  // }
 
   /*
    * This is the start of a rather large if-else statement. It is based
@@ -765,9 +732,6 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
         size_t dims[1] {1};
         tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "trace", trace.release(), NCOMP_DOUBLE, 1, dims));
       }
-      // else {
-      //   delete[] trace;
-      // }
     }
   }
 
@@ -776,7 +740,6 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
    */
   if(options->use_old_transpose || options->use_new_transpose) {
     rpcvar.reset(new float[neval]);
-    // rpcvar = new float[neval]; // Possible bug in NCL as well.
     for( size_t i = 0; i < neval; ++i ) {
       rpcvar[i] = (float)pcvar[i];
     }
@@ -839,8 +802,5 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
 
   collectAttributeList(tmp_attr_out, attrList_out);
 
-  // Cleaning up
-  // delete[] dsizes_evec;
-  // delete options;
   return i_error;
 }

@@ -140,8 +140,6 @@ T* convert_to_with_copy_avoiding(void *in_arr, unsigned long arr_size,
 //       ncomp_array->addr is pointing to a memory location that is freed.
 extern "C" ncomp_array *ncomp_array_alloc(void *array_ptr, int array_type, int array_ndim,
                                size_t *array_shape) {
-  // ncomp_array *new_array = (ncomp_array *)malloc(
-  //     sizeof(ncomp_array) + (array_ndim - 1) * sizeof(size_t));
   ncomp_array * new_array = (ncomp_array *) malloc(sizeof(ncomp_array));
   new_array->type = array_type;
   new_array->addr = array_ptr;
@@ -156,19 +154,6 @@ extern "C" ncomp_array *ncomp_array_alloc(void *array_ptr, int array_type, int a
   for (i = 0; i < array_ndim; i++)
     new_array->shape[i] = array_shape[i];
   return new_array;
-
-  // std::shared_ptr<size_t> local_array_shape(new size_t[array_ndim],
-  //                                           std::default_delete<size_t[]>());
-
-  // std::unique_ptr<ncomp_array> ncompStruct(new ncomp_array);
-  // ncompStruct->type = array_type;
-  // ncompStruct->addr = array_ptr;
-  // ncompStruct->ndim = array_ndim;
-  // ncompStruct->has_missing = 0;
-  // ncompStruct->msg.msg_bool = 0;
-  // ncompStruct->shape = local_array_shape.get();
-
-  // return ncompStruct.get();
 }
 
 extern "C" ncomp_array *ncomp_array_alloc_scalar(void *array_ptr, int array_type) {
@@ -352,25 +337,6 @@ void coerce_missing(int type_x, int has_missing_x,
     }
   }
 }
-
-/*
- * Coerce data to double, or just return a pointer to it if
- * it is already double.
- *
- * FILE:"ncl/ni/src/lib/nfp/wrapper.h"
- * IMPLEMENTATION:"./ni/src/lib/nfp/wrapper.c:9503"
- *
- * extern double coerce_input_double(void,NclBasicDataTypes,ng_size_t,int,
- * 								  NclScalar,NclScalar);
- * extern float coerce_input_float(void,NclBasicDataTypes,ng_size_t,int,
- * 								NclScalar,NclScalar);
- * extern int coerce_input_int(void,NclBasicDataTypes,ng_size_t,int,
- * 							NclScalar,NclScalar);
- * extern unsigned int coerce_input_uint(void,NclBasicDataTypes,ng_size_t,int,
- * 									  NclScalar,NclScalar);
- * extern unsigned long coerce_input_ulong(void,NclBasicDataTypes,ng_size_t,int,
- * 										NclScalar,NclScalar);
- */
 
 template <typename T,
           typename = typename std::enable_if<
@@ -666,88 +632,10 @@ T* allocateAndInit(unsigned long size, T initValue) {
   return tmpVar;
 }
 
-// Searches for a given attribute. If it exists it returns 1 and sets the
-// attributePosInList to the proper position in the array. Otherwise it returns
-// zero (0) and attributePosInList is unchanged.
-int hasAttribute(
-  const ncomp_attributes* attributeList,
-  const char* attributeName,
-  int* attributePosInList) {
-  for (int i=0; i < attributeList->nAttribute; ++i) {
-    if (strcmp(attributeList->attribute_array[i]->name, attributeName) == 0) {
-      *attributePosInList = i;
-      return 1;
-    }
-  }
-  return 0;
-}
-
-// Searches for an attribute and returns it. If the attribute doesn't exists, returns the default value provided by the user.
-ncomp_single_attribute* getAttributeOrDefault_ncomp_single_attribute(
-  const ncomp_attributes* attributeList,
-  const char* attributeName,
-  const ncomp_single_attribute* defaultValue) {
-  int attributePosInList = -1;
-  if (hasAttribute(attributeList, attributeName, &attributePosInList)==1) {
-    return attributeList->attribute_array[attributePosInList];
-  } else {
-    return (ncomp_single_attribute*) defaultValue;
-  }
-}
-
-// Searches for an attribute and returns it; If the attribute doesn't exists, it returns nullptr
-ncomp_single_attribute* getAttribute(const ncomp_attributes * attributeList, const char* attributeName){
-  ncomp_single_attribute* defaultValue = nullptr;
-  return getAttributeOrDefault_ncomp_single_attribute(attributeList,attributeName, defaultValue);
-}
-
-// a variant of getAttributeOrDefault with easier way of providing defaultValue.
-void* getAttributeOrDefault(const ncomp_attributes * attributeList, const char* attributeName, const void * defaultValue) {
-  ncomp_single_attribute * tmpOutput = getAttribute(attributeList, attributeName);
-  if (tmpOutput != nullptr) {
-    return tmpOutput->value->addr;  // It is assumed that addr could be casted to type T.
-                                    // May be we should add a cast check here to make sure
-                                    // we could indeed cast.
-  } else {
-    return (void *) defaultValue;
-  }
-}
-//
-// template <typename T>
-// T* getAttributeOrDefault(const ncomp_attributes& attributeList, const char* attributeName, const T * defaultValue) {
-//   ncomp_single_attribute * tmpOutput = new ncomp_single_attribute;
-//   if (getAttribute(attributeList, attributeName, tmpOutput) == 1) {
-//     return (T *) tmpOutput->value->addr; // It is assumed that addr could be casted to type T.
-//                                          // May be we should add a cast check here to make sure
-//                                          // we could indeed cast.
-//   } else {
-//     return (T *) defaultValue;
-//   }
-// }
-
-
-size_t prod(const size_t* shape, int ndim) {
-  size_t nElements = 1;
-  for (int i = 0; i<ndim; ++i) {
-    nElements *= *(shape+i);
-  }
-  return nElements;
-}
-
-// Creates a ncomp_single_attribute. Note that the data is not copied. So,
-ncomp_single_attribute * create_ncomp_single_attribute(char * name, void * data, int type, int ndim, size_t * dims) {
-  int size_name = strlen(name) + 1;
-  char * copy_of_name = new char[size_name];
-  std::copy(name, name+size_name, copy_of_name);
-
-  ncomp_single_attribute * out_ncomp_single_attribute = new ncomp_single_attribute[1];
-  out_ncomp_single_attribute->name = copy_of_name;
-  out_ncomp_single_attribute->value = ncomp_array_alloc(data, type, 1, dims);
-
-  return out_ncomp_single_attribute;
-}
-
-ncomp_single_attribute * create_ncomp_single_attribute_from_ncomp_array(char * name, ncomp_array * value) {
+extern "C" ncomp_single_attribute * create_ncomp_single_attribute_from_ncomp_array(
+  char * name,
+  ncomp_array * value)
+{
   int size_name = strlen(name) + 1;
   char * copy_of_name = new char[size_name];
   std::copy(name, name+size_name, copy_of_name);
@@ -758,15 +646,41 @@ ncomp_single_attribute * create_ncomp_single_attribute_from_ncomp_array(char * n
   return out_ncomp_single_attribute;
 }
 
-ncomp_single_attribute* create_ncomp_single_attribute_from_scalar
-  (char * name, void * data, int type) {
-    int ndim = 1;
-    size_t dims[1] = {1};
-
-    return create_ncomp_single_attribute(name, data, type, ndim, dims);
+// Creates a ncomp_single_attribute. Note that the data is not copied. So, make
+// sure it is not scoped out if you need to use it later.
+// Note that the name is copied. So, no need to manually copy it.
+extern "C" ncomp_single_attribute * create_ncomp_single_attribute(
+  char * name,
+  void * data_ptr,
+  int data_type,
+  int data_ndim,
+  size_t * data_shape)
+{
+  ncomp_array * value = ncomp_array_alloc(data_ptr, data_type, data_ndim, data_shape);
+  return create_ncomp_single_attribute_from_ncomp_array(name, value);
 }
 
-ncomp_attributes* ncomp_attributes_allocate(int nAttribute) {
+extern "C" ncomp_single_attribute* create_ncomp_single_attribute_from_1DArray(
+  char * name,
+  void * data_ptr,
+  int data_type,
+  size_t nelem)
+{
+    int data_ndim = 1;
+    size_t data_shape[1] = {nelem};
+
+    return create_ncomp_single_attribute(name, data_ptr, data_type, data_ndim, data_shape);
+}
+
+extern "C" ncomp_single_attribute* create_ncomp_single_attribute_from_scalar(
+  char * name,
+  void * data_ptr,
+  int data_type)
+{
+    return create_ncomp_single_attribute_from_1DArray(name, data_ptr, data_type, 1);
+}
+
+extern "C" ncomp_attributes* ncomp_attributes_allocate(int nAttribute) {
   ncomp_attributes * output = new ncomp_attributes;
   output->nAttribute = nAttribute;
   output->attribute_array = new ncomp_single_attribute*[nAttribute];
@@ -787,6 +701,71 @@ void collectAttributeList(std::vector<ncomp_single_attribute*> attrVector, ncomp
   for (int i = 0; i < attrVector.size(); ++i) {
     collectedAttributedList->attribute_array[i] = attrVector[i];
   }
+}
+
+// Searches for a given attribute. If it exists it returns 1 and sets the
+// attributePosInList to the proper position in the array. Otherwise it returns
+// zero (0) and attributePosInList is unchanged.
+extern "C" int hasAttribute(
+  const ncomp_attributes* attributeList,
+  const char* attributeName,
+  int* attributePosInList)
+{
+  for (int i=0; i < attributeList->nAttribute; ++i) {
+    if (strcmp(attributeList->attribute_array[i]->name, attributeName) == 0) {
+      *attributePosInList = i;
+      return 1;
+    }
+  }
+  return 0;
+}
+
+// Searches for an attribute and returns it. If the attribute doesn't exists, returns the default value provided by the user.
+extern "C" ncomp_single_attribute* getAttributeOrDefault_ncomp_single_attribute(
+  const ncomp_attributes* attributeList,
+  const char* attributeName,
+  const ncomp_single_attribute* defaultValue)
+{
+  int attributePosInList = -1;
+  if (hasAttribute(attributeList, attributeName, &attributePosInList)==1) {
+    return attributeList->attribute_array[attributePosInList];
+  } else {
+    return (ncomp_single_attribute*) defaultValue;
+  }
+}
+
+// Searches for an attribute and returns it; If the attribute doesn't exists, it returns nullptr
+extern "C" ncomp_single_attribute* getAttribute(
+  const ncomp_attributes * attributeList,
+  const char* attributeName)
+{
+  ncomp_single_attribute* defaultValue = nullptr;
+  return getAttributeOrDefault_ncomp_single_attribute(attributeList,attributeName, defaultValue);
+}
+
+// a variant of getAttributeOrDefault with easier way of providing defaultValue.
+extern "C" void* getAttributeOrDefault(
+  const ncomp_attributes * attributeList,
+  const char* attributeName,
+  const void * defaultValue)
+{
+  ncomp_single_attribute * tmpOutput = getAttribute(attributeList, attributeName);
+  if (tmpOutput != nullptr) {
+    return tmpOutput->value->addr;  // It is assumed that addr could be casted to type T.
+                                    // May be we should add a cast check here to make sure
+                                    // we could indeed cast.
+  } else {
+    return (void *) defaultValue;
+  }
+}
+
+//
+size_t prod(const size_t* shape, int ndim) {
+  size_t nElements = 1;
+  for (int i = 0; i<ndim; ++i) {
+    nElements *= *(shape+i);
+  }
+  return nElements;
 }
 
 void print_ncomp_array(const char * name, const ncomp_array * in) {
