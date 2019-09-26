@@ -35,7 +35,9 @@ int main(void) {
   int neval = 1;
 
   printf("Calling eofunc: ...\n");
+
   int ierr = eofunc(ncomp_x_in, neval, options, ncomp_x_out, attr);
+
   if (ierr != 0) {
     printf("ierr: %d", ierr);
     return ierr;
