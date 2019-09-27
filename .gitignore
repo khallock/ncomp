@@ -139,3 +139,4 @@ dkms.conf
 # Extra added - not by gitignore.io
 ### Mac OSX ###
 .DS_Store
+.tar.gz
