@@ -9,3 +9,5 @@ dependencies:
   - automake
   - libtool
   - make
+  - blas
+  - lepack
