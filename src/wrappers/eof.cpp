@@ -111,7 +111,9 @@ eofunc_options* extract_eofunc_options(const ncomp_attributes * options_in) {
     options_out->use_old_transpose = *(bool*) options_in->attribute_array[tmpPos]->value->addr;
     options_out->use_new_transpose = false; // making sure that only one of them is set.
     options_out->tr_setbyuser = true;
-  }
+  } // Not setting transpose or old_transpose is the same as setting transpose.
+    // Based on NCL notes: old-transpose is for debug and should not be used by the user.
+    // So, May be we could remove it from here.
 
   options_out->debug = *(bool*) getAttributeOrDefault(options_in, "debug", &(options_out->debug));
 
@@ -801,6 +803,8 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
   }
 
   collectAttributeList(tmp_attr_out, attrList_out);
+
+  if(x_in->type != NCOMP_DOUBLE) delete[] dx;
 
   return i_error;
 }
