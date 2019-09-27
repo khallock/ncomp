@@ -10,4 +10,4 @@ dependencies:
   - libtool
   - make
   - blas
-  - lepack
+  - lapack
