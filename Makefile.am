@@ -1,3 +1,3 @@
-SUBDIRS = external src test
+SUBDIRS = src test
 dist_doc_DATA = README.md LICENSE
 ACLOCAL_AMFLAGS = -I m4
