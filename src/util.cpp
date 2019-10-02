@@ -149,9 +149,8 @@ extern "C" ncomp_array *ncomp_array_alloc(void *array_ptr, int array_type, int a
 
   // We are still going to copy the array_shape because some of our codes assumes
   // that this copy is happening.
-  int i;
   new_array->shape = (size_t *) malloc(sizeof(size_t)*array_ndim);
-  for (i = 0; i < array_ndim; i++)
+  for (int i = 0; i < array_ndim; i++)
     new_array->shape[i] = array_shape[i];
   return new_array;
 }
@@ -769,67 +768,68 @@ size_t prod(const size_t* shape, int ndim) {
 }
 
 void print_ncomp_array(const char * name, const ncomp_array * in) {
-  printf("%s type: %d\n", name, in->type);
+  std::cout << name << " type: " << in->type << "\n";
 
-  printf("%s ndim: %d\n", name, in->ndim);
+  std::cout << name << " ndim: " << in->ndim << "\n";
 
-  printf("%s dims: [ ", name);
+  std::cout << name << " dims: [ ";
 
   int nelem = 1;
   for (int i = 0; i < in->ndim; ++i) {
-    printf("%d ", in->shape[i]);
+    std::cout << in->shape[i] << " ";
     nelem *= in->shape[i];
   }
-  printf("]\n");
+  std::cout << "]\n";
 
-  printf("%s has_missing: %d\n", name, in->has_missing);
+  std::cout << name <<" has_missing: " << in->has_missing << "\n";
 
   switch(in->type) {
     case NCOMP_DOUBLE:
-      printf("%s msg: %f\n", name, in->msg.msg_double);
+      std::cout << name << " msg: " << in->msg.msg_double << "\n";
 
-      printf("%s data: [ ", name);
+      std::cout << name << " data: [ ";
       for (int i = 0; i < nelem; ++i) {
-        printf("%f ", ((double *) in->addr)[i]);
+        std::cout << static_cast<double *>(in->addr)[i] << " ";
       }
-      printf("]\n");
+      std::cout << "]\n";
 
       break;
     case NCOMP_FLOAT:
-      printf("%s msg: %f\n", name, in->msg.msg_float);
+      std::cout << name << " msg: " << in->msg.msg_float << "\n";
 
-      printf("%s data: [ ", name);
+      std::cout << name << " data: [ ";
       for (int i = 0; i < nelem; ++i) {
         ;
-        printf("%f ", ((float *) in->addr)[i]);
+        std::cout << static_cast<float*>(in->addr)[i] << " ";
       }
-      printf("]\n");
+      std::cout << "]\n";
       break;
     case NCOMP_INT:
-      printf("%s msg: %f\n", name, in->msg.msg_int);
 
-      printf("%s data: [ ", name);
+      std::cout << name << " msg: " << in->msg.msg_int << "\n";
+
+      std::cout << name << " data: [ ";
       for (int i = 0; i < nelem; ++i) {
         ;
-        printf("%d ", ((int *) in->addr)[i]);
+        std::cout << static_cast<int *>(in->addr)[i] << " ";
       }
-      printf("]\n");
+      std::cout<< "]\n";
       break;
     case NCOMP_CHAR:
-      printf("%s data: [ %s ]\n", name, (char *) in->addr);
+      std::cout << name << " data: [ " << static_cast<char *>(in->addr) << " ]\n";
       break;
     default:
-      printf("ERROR: TYPE NOT FOUND OR NOT IMPLEMENTED YET\n");
+      std::cout << "ERROR: TYPE NOT FOUND OR NOT IMPLEMENTED YET\n";
   }
 }
 
 void print_ncomp_attributes(const ncomp_attributes * in) {
-  printf("nAttribtues: %d\n", in->nAttribute);
+  std::cout << "nAttribtues: " << in->nAttribute << "\n";
   for (int i = 0; i < in->nAttribute; ++i) {
     char * attr_name = in->attribute_array[i]->name;
-    printf("attr Name:  %s\n", attr_name);
+    std::cout << "attr Name:  "<< attr_name << "\n";
     print_ncomp_array(attr_name, in->attribute_array[i]->value);
-    printf("\n");
+    std::cout << std::endl;
   }
 }
 

@@ -137,7 +137,9 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
 
   // Sanity Checking
   if (x_in->ndim < 2) {
-    std::cerr<<"eofunc: The input array must be at least two-dimensional"<<std::endl;
+    #if DEBUG
+      std::cerr<<"eofunc: The input array must be at least two-dimensional"<<std::endl;
+    #endif
     return 1;
   }
 
@@ -164,13 +166,17 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
 
   // Sanity Checking
   if ( msta<1 || nobs <1) {
-    std::cerr << "eofunc: The dimensions of the input array must both be at least 1" << std::endl;
+    #if DEBUG
+      std::cerr << "eofunc: The dimensions of the input array must both be at least 1" << std::endl;
+    #endif
     return 2;
   }
 
   if((nrow > INT_MAX) || (ncol > INT_MAX) ||
      (msta > INT_MAX) || (nobs > INT_MAX)) {
-    std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+    #if DEBUG
+      std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+    #endif
     return(NCOMP_RETURN_FATAL);
   }
 
@@ -263,7 +269,9 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
   }
 
   if(mcsta > INT_MAX) {
-    std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+    #if DEBUG
+      std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+    #endif
     return(NCOMP_RETURN_FATAL);
   }
   int imcsta = (int) mcsta;
@@ -275,7 +283,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
    * same, except two of them operate on a transposed version of the 2d array.
    */
   if(options->debug) {
-    printf("eofunc: msta = %ld mcsta = %ld nobs = %ld\n", msta, mcsta, nobs);
+    std::cout << "eofunc: msta = " << msta << " mcsta = " << mcsta << " nobs = " << nobs << "\n";
   }
   /*
    * If one of the transpose ncomp_attributes has not explicitly been set by the
@@ -290,7 +298,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
       options->use_new_transpose = false;    /* already the default */
       options->use_old_transpose = false;
       if(options->debug) {
-        printf("eofunc: transpose set to False\n");
+        std::cout << "eofunc: transpose set to False\n";
       }
     } else {
       /*
@@ -299,7 +307,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
       options->use_new_transpose = true;
       options->use_old_transpose = false;
       if(options->debug) {
-        printf("eofunc: transpose set to True\n");
+        std::cout << "eofunc: transpose set to True\n";
       }
     }
   } else if(options->debug) {
@@ -309,11 +317,11 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
      * set to True, transpose will take precedence.
      */
     if(options->use_new_transpose) {
-      printf("eofunc: user set use_new_transpose to True\n");
+      std::cout << "eofunc: user set use_new_transpose to True\n";
     } else if (options->use_old_transpose) {
-      printf("eofunc: user set use_old_transpose to True\n");
+      std::cout << "eofunc: user set use_old_transpose to True\n";
     } else {
-      printf("eofunc: user set neither transpose attribute to True\n");
+      std::cout << "eofunc: user set neither transpose attribute to True\n";
     }
   }
 
@@ -432,7 +440,9 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
     lifail = mcsta;
 
     if((lwork > INT_MAX) || (liwork > INT_MAX) || (lifail > INT_MAX)) {
-      std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+      #if DEBUG
+        std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+      #endif
       return(NCOMP_RETURN_FATAL);
     }
 
@@ -594,19 +604,27 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
    */
   if (!options->use_new_transpose && i_error != 0) {
     if (i_error == -1) {
-      std::cerr<<"eofunc: cssm contains one or more missing values.\n(One or more series contains all missing values.)"<<std::endl;
+      #if DEBUG
+        std::cerr<<"eofunc: cssm contains one or more missing values.\n(One or more series contains all missing values.)"<<std::endl;
+      #endif
       return i_error;
     }
     else if (i_error == -88) {
-      std::cerr<<"eofunc: trace is equal to zero.\nAll data entries are missing or are equal to zero."<<std::endl;
+      #if DEBUG
+        std::cerr<<"eofunc: trace is equal to zero.\nAll data entries are missing or are equal to zero."<<std::endl;
+      #endif
       return i_error;
     }
     else if (i_error < 0) {
-      std::cerr<<"eofunc: The "<<abs(i_error)<<"-th argument had an illegal value"<<std::endl;
+      #if DEBUG
+        std::cerr<<"eofunc: The "<<abs(i_error)<<"-th argument had an illegal value"<<std::endl;
+      #endif
       return i_error;
     }
     else {
-      std::cerr<<"eofunc: "<<i_error<<" eigenvectors failed to converge"<<std::endl;
+      #if DEBUG
+        std::cerr<<"eofunc: "<<i_error<<" eigenvectors failed to converge"<<std::endl;
+      #endif
       return i_error;
     }
   }
