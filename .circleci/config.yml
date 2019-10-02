@@ -1,0 +1,29 @@
+version: 2
+# Tell CircleCI to use this workflow
+workflows:
+  version: 2
+  default:
+    jobs:
+      - "build"
+
+jobs:
+  "build":
+    docker:
+      - image: conda/miniconda3:latest
+    steps:
+      - checkout
+      - restore_cache:
+          key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}
+      - run:
+          name: Install conda environment
+          command: ./.circleci/install-circle.sh
+      - run:
+          name: Running checks
+          command: ./.circleci/${TEST_SCRIPT}
+      - save_cache:
+          key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}
+          paths:
+            - "/usr/local/pkgs"
+    environment:
+      ENV_NAME: "ncomp-dev"
+      TEST_SCRIPT: "run-checks.sh"

@@ -1,0 +1,13 @@
+name: ncomp-dev
+channels:
+  - conda-forge
+dependencies:
+  - gcc_linux-64
+  - gxx_linux-64
+  - gfortran_linux-64
+  - autoconf
+  - automake
+  - libtool
+  - make
+  - blas
+  - lapack
