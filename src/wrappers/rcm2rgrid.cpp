@@ -3,6 +3,7 @@
 #include "ncomp_internal/util.hpp"
 #include <iostream> // for cerr
 #include <vector>
+#define DEBUG 0
 
 extern "C" void drcm2rgrid_(int *ingrid, int *inlat2d, int *inlon2d,
                             double *tmp_lat2d, double *tmp_lon2d,
@@ -40,7 +41,7 @@ extern "C" int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d, con
   size_t size_fo = ngrid * nfo;
 
   /**************** START: BASIC SANITY CHECKS ****************/
-#ifdef DEBUG
+#if DEBUG
   if (lat2d->shape[0] != lon2d->shape[0] ||
       lat2d->shape[1] != lon2d->shape[1]) {
     std::cerr << "ERROR rcm2rgrid: The input lat/lon grids must be the same "
@@ -125,6 +126,7 @@ extern "C" int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d, con
   /**************** END: FORTRAN CALL ****************/
 
   if (ier) {
+#if DEBUG
     if (ier == 1) {
       std::cerr
 	<< "ERROR rcm2rgrid: not enough points in input/output array ! \n";
@@ -133,6 +135,7 @@ extern "C" int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d, con
       std::cerr << "ERROR rcm2rgrid: lat2d, lon2d, lat1d, lon1d must be "
 	"monotonically increasing ! \n";
     }
+#endif
     set_subset_output_missing(fo->addr, 0, fo->type, size_fo, missing_dfi);
   } else {
     if (fo->type != NCOMP_DOUBLE) {
@@ -167,7 +170,7 @@ extern "C" int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, con
   size_t size_fo = ngrid * nfo;
 
   /**************** START: BASIC SANITY CHECKS ****************/
-#ifdef DEBUG
+#if DEBUG
   if(lat2d->shape[0] != lon2d->shape[0] ||
      lat2d->shape[1] != lon2d->shape[1]) {
     std::cerr << "ERROR rgrid2rcm: The output lat/lon grids must be the same size ! \n";
@@ -250,12 +253,14 @@ extern "C" int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, con
   /**************** END: FORTRAN CALL ****************/
 
   if(ier) {
+#if DEBUG
     if(ier == 1) {
       std::cerr << "ERROR rgrid2rcm: not enough points in input/output array ! \n";
     }
     if(2 <= ier && ier <= 5) {
       std::cerr << "ERROR rgrid2rcm: lat2d, lon2d, lat1d, lon1d must be monotonically increasing ! \n";
     }
+#endif
     set_subset_output_missing(fo->addr, 0, fo->type, size_fo,
 			      missing_dfi);
   } else {

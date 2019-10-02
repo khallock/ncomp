@@ -45,10 +45,13 @@ SUBROUTINE DLINMSG(X,NPTS,XMSG,MFLAG,MPTCRT)
   ! This DO loop was added later to check for the special
   ! case were all values in X are missing.
   !
+
   nloop: DO  N=1,NPTS
      IF (X(N) /= XMSG) GO TO 10
   END DO nloop
   RETURN
+
+  !IF ALL(X == MSG) RETURN
 
   ! c c MPTCRT = NPTS   ! updated version
 10 NSTRT = 0
@@ -62,7 +65,6 @@ SUBROUTINE DLINMSG(X,NPTS,XMSG,MFLAG,MPTCRT)
         IF (NSTRT == 0) NSTRT = N
         NEND = N
      ELSE
-
         ! must be a valid pt : check for prior missing values
         !        (1) IF nstrt=0 THEN there are no msg prior values : skip out
         !        (2) IF (nend-nstrt+1).gt.nptcrt the set ncode : skip out
@@ -79,13 +81,9 @@ SUBROUTINE DLINMSG(X,NPTS,XMSG,MFLAG,MPTCRT)
            IF (NSTRT == 1) THEN
               NITP = NITP + (NEND-NSTRT+1)
               IF (MFLAG < 0) THEN
-                 DO NN = NSTRT,NEND
-                    X(NN) = X(N)
-                 END DO
+                 X(NSTRT:NEND) = X(N)
               ELSE
-                 DO NN = NSTRT,NEND
-                    X(NN) = XMSG
-                 END DO
+                 X(NSTRT:NEND) = XMSG
               END IF
            ELSE
               NBASE = NSTRT - 1
@@ -107,13 +105,9 @@ SUBROUTINE DLINMSG(X,NPTS,XMSG,MFLAG,MPTCRT)
   IF (NEND == NPTS) THEN
      NITP = NITP + (NEND-NSTRT+1)
      IF (MFLAG < 0) THEN
-        DO  NN = NSTRT,NPTS
-           X(NN) = X(NSTRT-1)
-        END DO
+        X(NSTRT:NPTS) = X(NSTRT-1)
      ELSE
-        DO NN = NSTRT,NPTS
-           X(NN) = XMSG
-        END DO
+        X(NSTRT:NPTS) = XMSG
      END IF
   END IF
 

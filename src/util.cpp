@@ -89,9 +89,7 @@ extern "C" size_t sizeof_ncomp_array_data(int array_type) {
 void coerce_missing(int type_x, int has_missing_x,
                     const ncomp_missing *missing_x, double *missing_dx,
                     float *missing_fx) {
-  /*
-   * Check for missing value and coerce if neccesary.
-   */
+  // Check for missing value and coerce if neccesary.
   if (has_missing_x) {
     switch (type_x) {
     case NCOMP_DOUBLE:
@@ -140,7 +138,7 @@ void coerce_missing(int type_x, int has_missing_x,
       break;
     }
 
-    if (type_x != NCOMP_DOUBLE && missing_fx != nullptr) {
+    if (type_x != NCOMP_DOUBLE) {
       switch (type_x) {
       case NCOMP_FLOAT:
         (*missing_fx) = missing_x->msg_float;
@@ -183,15 +181,12 @@ void coerce_missing(int type_x, int has_missing_x,
         break;
       }
     }
-  } else { // assign mising value
-    if (missing_dx != nullptr) {
-      if (type_x != NCOMP_DOUBLE) {
-        *missing_dx = NC_FILL_DOUBLE;
-        if (missing_fx != nullptr)
-          *missing_fx = NC_FILL_FLOAT;
-      } else {
-        *missing_dx = NC_FILL_DOUBLE;
-      }
+  } else { // assign DEFAULT mising value just in case
+    if (type_x != NCOMP_DOUBLE) {
+      *missing_dx = static_cast<double>(NC_FILL_FLOAT);
+      *missing_fx = NC_FILL_FLOAT;
+    } else {
+      *missing_dx = NC_FILL_DOUBLE;
     }
   }
 }

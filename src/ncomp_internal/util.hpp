@@ -5,6 +5,7 @@
 #include <ncomp/types.h>
 #include <type_traits>
 #include <iostream>
+#include <limits.h> // for INT_MAX
 
 void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
                    void *to_ptr, int to_type, void *to_missing, size_t num);
