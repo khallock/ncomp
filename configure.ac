@@ -14,4 +14,6 @@ AC_CONFIG_FILES([
  test/Makefile
 ])
 LT_INIT
+AX_BLAS
+AX_LAPACK
 AC_OUTPUT

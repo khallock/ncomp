@@ -6,6 +6,9 @@ dependencies:
   - gxx_linux-64
   - gfortran_linux-64
   - autoconf
+  - autoconf-archive
   - automake
   - libtool
   - make
+  - blas
+  - liblapack
