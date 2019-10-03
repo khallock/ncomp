@@ -1,10 +1,19 @@
-#include <stdio.h>
-#include "wrapper.h"
+#include "ncomp/types.h"
+#include "ncomp/util.h"
+#include "ncomp_internal/util.hpp"
+#include <iostream>
 
-extern void NGCALLF(mocloops,MOCLOOPS)(int *, int *, int *, int *, int *,
+extern "C" void mocloops_(int *, int *, int *, int *, int *,
                                        double *, double *, int *, double *,
                                        double *, double *, double *, double *,
                                        double *, double *);
+
+/*
+* NOTE: Adapted from moc_globe_atl_W() in ncl/ni/src/lib/nfp/mocloopsW.c of original NCL code.
+*
+* Facilitates calculating the meridional overturning circulation for the globe and Atlantic.
+*
+*/
 
 NhlErrorTypes moc_globe_atl_W( void )
 {
@@ -120,7 +129,7 @@ NhlErrorTypes moc_globe_atl_W( void )
            NULL,
            &type_a_bolus,
            DONT_CARE);
-  
+
 /*
  * Get argument # 3
  */
@@ -185,7 +194,7 @@ NhlErrorTypes moc_globe_atl_W( void )
   inyaux = (int) nyaux;
 
   for(i = 0; i <= 2; i++) {
-    if(dsizes_a_bolus[i] != dsizes_a_wvel[i] || 
+    if(dsizes_a_bolus[i] != dsizes_a_wvel[i] ||
        dsizes_a_bolus[i] != dsizes_a_submeso[i]) {
      NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: a_wvel, a_submeso, and a_bolus must have the same dimensionality");
      return(NhlFATAL);
@@ -197,7 +206,7 @@ NhlErrorTypes moc_globe_atl_W( void )
     return(NhlFATAL);
   }
 
-  if(dsizes_rmlak[0] != 2 || 
+  if(dsizes_rmlak[0] != 2 ||
      dsizes_rmlak[1] != nlat || dsizes_rmlak[2] != mlon) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: The dimensions of rmlak must be 2 x nlat x mlon");
     return(NhlFATAL);
@@ -261,7 +270,7 @@ NhlErrorTypes moc_globe_atl_W( void )
     type_tmp = NCL_float;
   }
 
-/* 
+/*
  * Allocate space for output array.
  */
   size_output = 3 * kdepnyaux2;    /* 3 x 2 x kdep x nyaux */
@@ -288,28 +297,28 @@ NhlErrorTypes moc_globe_atl_W( void )
     dtmp3 = &((double*)tmp)[2*kdepnyaux2];
   }
 
-/* 
+/*
  * Allocate space for output dimension sizes and set them.
  */
   ndims_tmp  = 4;
-  dsizes_tmp = (ng_size_t*)calloc(ndims_tmp,sizeof(ng_size_t));  
+  dsizes_tmp = (ng_size_t*)calloc(ndims_tmp,sizeof(ng_size_t));
   if( dsizes_tmp == NULL ) {
     NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for holding dimension sizes");
     return(NhlFATAL);
   }
-  dsizes_tmp[0] = 3; 
+  dsizes_tmp[0] = 3;
   dsizes_tmp[1] = 2;
   dsizes_tmp[2] = kdep;
-  dsizes_tmp[3] = nyaux; 
+  dsizes_tmp[3] = nyaux;
 
 /*
  * Call the Fortran routine.
  */
   nrx = 2;
 
-  NGCALLF(mocloops,MOCLOOPS)(&inyaux, &imlon, &inlat, &ikdep, &nrx, tmp_tlat, 
-                             tmp_lat_aux_grid, rmlak, tmp_a_wvel, tmp_a_bolus, 
-                             tmp_a_submeso, &missing_dbl_a_wvel.doubleval, 
+  NGCALLF(mocloops,MOCLOOPS)(&inyaux, &imlon, &inlat, &ikdep, &nrx, tmp_tlat,
+                             tmp_lat_aux_grid, rmlak, tmp_a_wvel, tmp_a_bolus,
+                             tmp_a_submeso, &missing_dbl_a_wvel.doubleval,
                              dtmp1, dtmp2, dtmp3);
 
   if(type_tmp != NCL_double) {
@@ -334,7 +343,7 @@ NhlErrorTypes moc_globe_atl_W( void )
 
 /*
  * Return value back to NCL script.
- */ 
+ */
   ret = NclReturnValue(tmp,ndims_tmp,dsizes_tmp,NULL,type_tmp,0);
   NclFree(dsizes_tmp);
   return(ret);
