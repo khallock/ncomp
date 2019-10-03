@@ -1,6 +1,4 @@
-#include "ncomp/types.h"
-#include "ncomp/util.h"
-#include "ncomp_internal/util.hpp"
+#include "ncomp_build.h"
 #include <iostream>
 #include <memory>
 #include <vector>
