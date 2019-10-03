@@ -1,5 +1,6 @@
 AC_INIT([NComp], [0.1], [hallock@ucar.edu], [ncomp])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AX_CHECK_ENABLE_DEBUG([no], [DEBUG])
 AC_PROG_CC
 AC_PROG_F77
 AC_PROG_FC
