@@ -162,18 +162,6 @@ extern "C" ncomp_array *ncomp_array_alloc_scalar(void *array_ptr, int array_type
   return ncomp_array_alloc(array_ptr, array_type, array_ndim, array_shape);
 }
 
-// Copies one array to another. Note: the to array must have proper shape size.
-// Otherwise, this won't work. Suggesting to change the ncomp_array defintion of
-// shape from size_t[1] to size_t *.
-extern "C" void ncomp_array_copy(ncomp_array * from, ncomp_array * to) {
-  to->type = from->type;
-  to->addr = from->addr;
-  to->ndim = from->ndim;
-  to->has_missing = from->has_missing;
-  to->msg = from->msg;
-  to->shape = from->shape;
-}
-
 extern "C" void ncomp_array_free(ncomp_array* old_array, int keep_data_ptr) {
     /* free ptr by default */
     if (!keep_data_ptr)

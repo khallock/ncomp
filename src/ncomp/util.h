@@ -10,7 +10,6 @@ extern "C" {
 
 ncomp_array* ncomp_array_alloc(void*, int, int, size_t*);
 ncomp_array* ncomp_array_alloc_scalar(void* data_ptr, int data_type);
-void ncomp_array_copy(ncomp_array * from, ncomp_array * to);
 void ncomp_array_free(ncomp_array*, int);
 size_t sizeof_ncomp_array_data(int);
 

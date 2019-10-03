@@ -639,9 +639,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
      * Set up return value.
      */
      // x_out is the return_md in NCL code.
-     ncomp_array_copy(
-       ncomp_array_alloc((void *) revec.release(), NCOMP_FLOAT, x_in->ndim, dsizes_evec.get()),
-       x_out);
+     *x_out = *ncomp_array_alloc((void *) revec.release(), NCOMP_FLOAT, x_in->ndim, dsizes_evec.get());
      x_out->has_missing = x_in->has_missing;
      x_out->msg.msg_float = missing_f_x_in;
 
@@ -709,9 +707,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
      *  Return doubles.
      */
 
-    ncomp_array_copy(
-      ncomp_array_alloc((void *) evec.release(), NCOMP_DOUBLE, x_in->ndim, dsizes_evec.get()),
-      x_out);
+    *x_out = *ncomp_array_alloc((void *) evec.release(), NCOMP_DOUBLE, x_in->ndim, dsizes_evec.get());
     x_out->has_missing = x_in->has_missing;
     x_out->msg.msg_double = missing_d_x_in;
 
