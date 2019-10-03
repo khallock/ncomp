@@ -2,6 +2,7 @@
 #define NCOMP_UTIL_H
 
 #include <ncomp/types.h>
+#include <limits.h>
 
 #ifdef __cplusplus /* If this is a C++ compiler, use C linkage */
 extern "C" {

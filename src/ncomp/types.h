@@ -2,7 +2,6 @@
 #define NCOMP_TYPES_H
 
 #include <stddef.h>
-#include <limits.h>
 
 enum ncomp_return_status {
   NCOMP_RETURN_ALL_GOOD = 0,
