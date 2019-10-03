@@ -6,4 +6,4 @@ libncomp_la_LIBADD = fortran/libncomp_fort.la wrappers/libncomp_wrappers.la $(FL
 libncomp_la_LDFLAGS = -Wl,-rpath,$(prefix)/lib
 include_HEADERS = ncomp.h
 nobase_include_HEADERS = ncomp/constants.h ncomp/types.h ncomp/util.h ncomp/wrapper.h
-EXTRA_DIST = ncomp_internal/
+EXTRA_DIST = ncomp_build/

@@ -1,7 +1,7 @@
 #include "ncomp/constants.h"
 #include "ncomp/types.h"
 #include "ncomp/util.h"
-#include "ncomp_internal/util.hpp"
+#include "ncomp_build/util.hpp"
 #include <stdlib.h>
 #include <type_traits>
 #include <vector>
