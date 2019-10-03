@@ -1,7 +1,4 @@
-#include "ncomp/constants.h"
-#include "ncomp/types.h"
-#include "ncomp/util.h"
-#include "ncomp_build/util.hpp"
+#include "ncomp_build.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

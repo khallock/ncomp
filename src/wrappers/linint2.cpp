@@ -1,6 +1,4 @@
-#include "ncomp/types.h"
-#include "ncomp/util.h"
-#include "ncomp_build/util.hpp"
+#include "ncomp_build.h"
 #include <vector>
 
 /* this name mangling works with gfortran, haven't tested other compilers */
