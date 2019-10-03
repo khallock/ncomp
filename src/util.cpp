@@ -149,9 +149,8 @@ extern "C" ncomp_array *ncomp_array_alloc(void *array_ptr, int array_type, int a
 
   // We are still going to copy the array_shape because some of our codes assumes
   // that this copy is happening.
-  int i;
   new_array->shape = (size_t *) malloc(sizeof(size_t)*array_ndim);
-  for (i = 0; i < array_ndim; i++)
+  for (int i = 0; i < array_ndim; i++)
     new_array->shape[i] = array_shape[i];
   return new_array;
 }
@@ -161,18 +160,6 @@ extern "C" ncomp_array *ncomp_array_alloc_scalar(void *array_ptr, int array_type
   size_t array_shape[1] = {1};
 
   return ncomp_array_alloc(array_ptr, array_type, array_ndim, array_shape);
-}
-
-// Copies one array to another. Note: the to array must have proper shape size.
-// Otherwise, this won't work. Suggesting to change the ncomp_array defintion of
-// shape from size_t[1] to size_t *.
-extern "C" void ncomp_array_copy(ncomp_array * from, ncomp_array * to) {
-  to->type = from->type;
-  to->addr = from->addr;
-  to->ndim = from->ndim;
-  to->has_missing = from->has_missing;
-  to->msg = from->msg;
-  to->shape = from->shape;
 }
 
 extern "C" void ncomp_array_free(ncomp_array* old_array, int keep_data_ptr) {
@@ -773,67 +760,68 @@ size_t prod(const size_t* shape, int start_inclusive_idx, int end_exclusive_idx)
 }
 
 void print_ncomp_array(const char * name, const ncomp_array * in) {
-  printf("%s type: %d\n", name, in->type);
+  std::cout << name << " type: " << in->type << "\n";
 
-  printf("%s ndim: %d\n", name, in->ndim);
+  std::cout << name << " ndim: " << in->ndim << "\n";
 
-  printf("%s dims: [ ", name);
+  std::cout << name << " dims: [ ";
 
   int nelem = 1;
   for (int i = 0; i < in->ndim; ++i) {
-    printf("%d ", in->shape[i]);
+    std::cout << in->shape[i] << " ";
     nelem *= in->shape[i];
   }
-  printf("]\n");
+  std::cout << "]\n";
 
-  printf("%s has_missing: %d\n", name, in->has_missing);
+  std::cout << name <<" has_missing: " << in->has_missing << "\n";
 
   switch(in->type) {
     case NCOMP_DOUBLE:
-      printf("%s msg: %f\n", name, in->msg.msg_double);
+      std::cout << name << " msg: " << in->msg.msg_double << "\n";
 
-      printf("%s data: [ ", name);
+      std::cout << name << " data: [ ";
       for (int i = 0; i < nelem; ++i) {
-        printf("%f ", ((double *) in->addr)[i]);
+        std::cout << static_cast<double *>(in->addr)[i] << " ";
       }
-      printf("]\n");
+      std::cout << "]\n";
 
       break;
     case NCOMP_FLOAT:
-      printf("%s msg: %f\n", name, in->msg.msg_float);
+      std::cout << name << " msg: " << in->msg.msg_float << "\n";
 
-      printf("%s data: [ ", name);
+      std::cout << name << " data: [ ";
       for (int i = 0; i < nelem; ++i) {
         ;
-        printf("%f ", ((float *) in->addr)[i]);
+        std::cout << static_cast<float*>(in->addr)[i] << " ";
       }
-      printf("]\n");
+      std::cout << "]\n";
       break;
     case NCOMP_INT:
-      printf("%s msg: %f\n", name, in->msg.msg_int);
 
-      printf("%s data: [ ", name);
+      std::cout << name << " msg: " << in->msg.msg_int << "\n";
+
+      std::cout << name << " data: [ ";
       for (int i = 0; i < nelem; ++i) {
         ;
-        printf("%d ", ((int *) in->addr)[i]);
+        std::cout << static_cast<int *>(in->addr)[i] << " ";
       }
-      printf("]\n");
+      std::cout<< "]\n";
       break;
     case NCOMP_CHAR:
-      printf("%s data: [ %s ]\n", name, (char *) in->addr);
+      std::cout << name << " data: [ " << static_cast<char *>(in->addr) << " ]\n";
       break;
     default:
-      printf("ERROR: TYPE NOT FOUND OR NOT IMPLEMENTED YET\n");
+      std::cout << "ERROR: TYPE NOT FOUND OR NOT IMPLEMENTED YET\n";
   }
 }
 
 void print_ncomp_attributes(const ncomp_attributes * in) {
-  printf("nAttribtues: %d\n", in->nAttribute);
+  std::cout << "nAttribtues: " << in->nAttribute << "\n";
   for (int i = 0; i < in->nAttribute; ++i) {
     char * attr_name = in->attribute_array[i]->name;
-    printf("attr Name:  %s\n", attr_name);
+    std::cout << "attr Name:  "<< attr_name << "\n";
     print_ncomp_array(attr_name, in->attribute_array[i]->value);
-    printf("\n");
+    std::cout << std::endl;
   }
 }
 
@@ -843,3 +831,4 @@ template void convert_to<float>(void *, size_t, size_t, int, float *);
 template double * allocateAndInit(size_t, double);
 template float * allocateAndInit(size_t, float);
 template double * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);
+template float * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);

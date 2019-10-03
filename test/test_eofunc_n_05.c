@@ -8,7 +8,7 @@
 
 
 int main(void) {
-  printf("Testing eofunc_n (03): ...\n");
+  printf("Testing eofunc_n (05): ...\n");
 
   // Creating an empty options
   ncomp_attributes* options = ncomp_attributes_allocate(2);

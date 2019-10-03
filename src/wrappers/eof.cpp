@@ -137,7 +137,9 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
 
   // Sanity Checking
   if (x_in->ndim < 2) {
-    std::cerr<<"eofunc: The input array must be at least two-dimensional"<<std::endl;
+    #if DEBUG
+      std::cerr<<"eofunc: The input array must be at least two-dimensional"<<std::endl;
+    #endif
     return 1;
   }
 
@@ -164,13 +166,17 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
 
   // Sanity Checking
   if ( msta<1 || nobs <1) {
-    std::cerr << "eofunc: The dimensions of the input array must both be at least 1" << std::endl;
+    #if DEBUG
+      std::cerr << "eofunc: The dimensions of the input array must both be at least 1" << std::endl;
+    #endif
     return 2;
   }
 
   if((nrow > INT_MAX) || (ncol > INT_MAX) ||
      (msta > INT_MAX) || (nobs > INT_MAX)) {
-    std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+    #if DEBUG
+      std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+    #endif
     return(NCOMP_RETURN_FATAL);
   }
 
@@ -263,7 +269,9 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
   }
 
   if(mcsta > INT_MAX) {
-    std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+    #if DEBUG
+      std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+    #endif
     return(NCOMP_RETURN_FATAL);
   }
   int imcsta = (int) mcsta;
@@ -275,7 +283,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
    * same, except two of them operate on a transposed version of the 2d array.
    */
   if(options->debug) {
-    printf("eofunc: msta = %ld mcsta = %ld nobs = %ld\n", msta, mcsta, nobs);
+    std::cout << "eofunc: msta = " << msta << " mcsta = " << mcsta << " nobs = " << nobs << "\n";
   }
   /*
    * If one of the transpose ncomp_attributes has not explicitly been set by the
@@ -290,7 +298,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
       options->use_new_transpose = false;    /* already the default */
       options->use_old_transpose = false;
       if(options->debug) {
-        printf("eofunc: transpose set to False\n");
+        std::cout << "eofunc: transpose set to False\n";
       }
     } else {
       /*
@@ -299,7 +307,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
       options->use_new_transpose = true;
       options->use_old_transpose = false;
       if(options->debug) {
-        printf("eofunc: transpose set to True\n");
+        std::cout << "eofunc: transpose set to True\n";
       }
     }
   } else if(options->debug) {
@@ -309,11 +317,11 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
      * set to True, transpose will take precedence.
      */
     if(options->use_new_transpose) {
-      printf("eofunc: user set use_new_transpose to True\n");
+      std::cout << "eofunc: user set use_new_transpose to True\n";
     } else if (options->use_old_transpose) {
-      printf("eofunc: user set use_old_transpose to True\n");
+      std::cout << "eofunc: user set use_old_transpose to True\n";
     } else {
-      printf("eofunc: user set neither transpose attribute to True\n");
+      std::cout << "eofunc: user set neither transpose attribute to True\n";
     }
   }
 
@@ -432,7 +440,9 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
     lifail = mcsta;
 
     if((lwork > INT_MAX) || (liwork > INT_MAX) || (lifail > INT_MAX)) {
-      std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+      #if DEBUG
+        std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
+      #endif
       return(NCOMP_RETURN_FATAL);
     }
 
@@ -594,19 +604,27 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
    */
   if (!options->use_new_transpose && i_error != 0) {
     if (i_error == -1) {
-      std::cerr<<"eofunc: cssm contains one or more missing values.\n(One or more series contains all missing values.)"<<std::endl;
+      #if DEBUG
+        std::cerr<<"eofunc: cssm contains one or more missing values.\n(One or more series contains all missing values.)"<<std::endl;
+      #endif
       return i_error;
     }
     else if (i_error == -88) {
-      std::cerr<<"eofunc: trace is equal to zero.\nAll data entries are missing or are equal to zero."<<std::endl;
+      #if DEBUG
+        std::cerr<<"eofunc: trace is equal to zero.\nAll data entries are missing or are equal to zero."<<std::endl;
+      #endif
       return i_error;
     }
     else if (i_error < 0) {
-      std::cerr<<"eofunc: The "<<abs(i_error)<<"-th argument had an illegal value"<<std::endl;
+      #if DEBUG
+        std::cerr<<"eofunc: The "<<abs(i_error)<<"-th argument had an illegal value"<<std::endl;
+      #endif
       return i_error;
     }
     else {
-      std::cerr<<"eofunc: "<<i_error<<" eigenvectors failed to converge"<<std::endl;
+      #if DEBUG
+        std::cerr<<"eofunc: "<<i_error<<" eigenvectors failed to converge"<<std::endl;
+      #endif
       return i_error;
     }
   }
@@ -621,9 +639,8 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
      * Set up return value.
      */
      // x_out is the return_md in NCL code.
-     ncomp_array_copy(
-       ncomp_array_alloc((void *) revec.release(), NCOMP_FLOAT, x_in->ndim, dsizes_evec.get()),
-       x_out);
+     printf("\n\n\n I was executed... \n\n\n");
+     *x_out = *ncomp_array_alloc((void *) revec.release(), NCOMP_FLOAT, x_in->ndim, dsizes_evec.get());
      x_out->has_missing = x_in->has_missing;
      x_out->msg.msg_float = missing_f_x_in;
 
@@ -690,10 +707,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
     /*
      *  Return doubles.
      */
-
-    ncomp_array_copy(
-      ncomp_array_alloc((void *) evec.release(), NCOMP_DOUBLE, x_in->ndim, dsizes_evec.get()),
-      x_out);
+    *x_out = *ncomp_array_alloc((void *) evec.release(), NCOMP_DOUBLE, x_in->ndim, dsizes_evec.get());
     x_out->has_missing = x_in->has_missing;
     x_out->msg.msg_double = missing_d_x_in;
 
@@ -755,9 +769,15 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
    */
   if( (options->use_new_transpose || options->use_old_transpose) &&
       options->return_pcrit) {
-    double * tmp_pcrit = new double[1];
-    *tmp_pcrit = options->pcrit;
-    tmp_attr_out.push_back(create_ncomp_single_attribute_from_scalar((char *) "pcrit", tmp_pcrit, NCOMP_DOUBLE));
+    if (x_in->type != NCOMP_DOUBLE) {
+      float * tmp_pcrit = new float[1];
+      *tmp_pcrit = static_cast<float>(options->pcrit);
+      tmp_attr_out.push_back(create_ncomp_single_attribute_from_scalar((char *) "pcrit", tmp_pcrit, NCOMP_FLOAT));
+    } else {
+      double * tmp_pcrit = new double[1];
+      *tmp_pcrit = options->pcrit;
+      tmp_attr_out.push_back(create_ncomp_single_attribute_from_scalar((char *) "pcrit", tmp_pcrit, NCOMP_DOUBLE));
+    }
   }
 
   /*
@@ -810,6 +830,92 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
 }
 
 
+template<typename T>
+T * _get_rearranged_addr(
+  T * in_addr,
+  size_t size_leftmost,
+  size_t size_middle,
+  size_t size_rightmost,
+  size_t total_size_x
+) {
+  size_t size_middle_rightmost  = size_rightmost * size_middle;
+
+  T * out_addr = new T[total_size_x];
+
+  // Rearranging
+  for (size_t nl = 0, counter = 0; nl < size_leftmost; ++nl) {
+    size_t left_loc = nl * size_middle_rightmost;
+    for(size_t nr = 0; nr < size_rightmost; ++nr) {
+      for(size_t nm = 0; nm < size_middle; ++nm, ++counter) {
+        size_t mid_loc = nm * size_rightmost;
+        size_t ireordered = left_loc + mid_loc + nr;
+        out_addr[counter] = in_addr[ireordered];
+      }
+    }
+  }
+
+  return out_addr;
+
+}
+
+ncomp_array * _rearrange_ncomp_array(
+  const ncomp_array * x_in,
+  int t_dim
+) {
+  size_t size_leftmost          = prod(x_in->shape, 0, t_dim);
+  size_t size_middle            = x_in->shape[t_dim];
+  size_t size_rightmost         = prod(x_in->shape, t_dim + 1, x_in->ndim);
+
+  size_t total_size_x = size_rightmost * size_middle * size_leftmost;
+
+  /* handle missing values */
+  double missing_d_x_in;
+  float missing_f_x_in;
+  coerce_missing(x_in->type, x_in->has_missing, (ncomp_missing *)&(x_in->msg),
+                 &missing_d_x_in,&missing_f_x_in);
+
+  // creating a new shape reflecting the rearrangement
+  std::unique_ptr<size_t[]> rearranged_shape (new size_t[x_in->ndim]);
+  for (int i=0, counter=0; i < x_in->ndim ; ++i) {
+    if (i != t_dim) {
+      rearranged_shape[counter] = x_in->shape[i];
+      ++counter;
+    }
+  }
+  rearranged_shape[x_in->ndim - 1] = x_in->shape[t_dim];
+
+  void * rearranged_data = nullptr;
+  ncomp_array * x_in_rearranged = nullptr;
+  if(x_in->type != NCOMP_DOUBLE) {
+    float * original_data = convert_to_with_copy_avoiding<float>((void *)x_in->addr, total_size_x, 0, x_in->type, NCOMP_FLOAT);
+
+    rearranged_data = (void *) _get_rearranged_addr<float>(original_data, size_leftmost, size_middle, size_rightmost, total_size_x);
+
+    if (x_in->type != NCOMP_FLOAT) delete[] original_data;
+
+    x_in_rearranged = ncomp_array_alloc(
+        rearranged_data, NCOMP_FLOAT, x_in->ndim, rearranged_shape.get()
+    );
+    x_in_rearranged->has_missing = x_in->has_missing;
+    x_in_rearranged->msg.msg_float = missing_f_x_in;
+  } else {
+    double * original_data = convert_to_with_copy_avoiding<double>((void *)x_in->addr, total_size_x, 0, x_in->type, NCOMP_DOUBLE);
+
+    rearranged_data = (void *) _get_rearranged_addr<double>(original_data, size_leftmost, size_middle, size_rightmost, total_size_x);
+
+    if (x_in->type != NCOMP_DOUBLE) delete[] original_data;
+
+    x_in_rearranged = ncomp_array_alloc(
+        rearranged_data, NCOMP_DOUBLE, x_in->ndim, rearranged_shape.get()
+    );
+    x_in_rearranged->has_missing = x_in->has_missing;
+    x_in_rearranged->msg.msg_double = missing_d_x_in;
+  }
+
+  return x_in_rearranged;
+
+}
+
 // NOTE: It seems that eofunc_n in NCL is doing the same calculation as in
 //       eofunc; however, with this difference that the last dimension is notes
 //       the number of observations.
@@ -832,71 +938,11 @@ extern "C" int eofunc_n(const ncomp_array * x_in, const int neval_in,
                                 // thus, no rearrangement is needed.
     return eofunc(x_in, neval_in, options_in, x_out, attrList_out);
   } else {
-    size_t size_leftmost          = prod(x_in->shape, 0, t_dim);
-    size_t size_middle            = x_in->shape[t_dim];
-    size_t size_rightmost         = prod(x_in->shape, t_dim + 1, x_in->ndim);
-    size_t size_middle_rightmost  = size_rightmost * size_middle;
-
-    if (  ((size_rightmost * size_leftmost) < 1) ||
-          (size_middle < 1) ) {
-      std::cerr << "eofunc: The dimensions of the input array must both be at least 1" << std::endl;
-      return 2;
-    }
-
-    if (  (size_middle > INT_MAX) ||
-          ((size_rightmost * size_leftmost) > INT_MAX) ) {
-      std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
-      return(NCOMP_RETURN_FATAL);
-    }
-
-    // Seems we are running out of excuse;
-    // Let's rearrange and do the calculation then
-    /* handle missing values */
-    double missing_d_x_in;
-    float missing_f_x_in;
-    coerce_missing(x_in->type, x_in->has_missing, (ncomp_missing *)&(x_in->msg),
-                   &missing_d_x_in,&missing_f_x_in);
-
-    // Getting xData as double
-    size_t total_size_x = size_middle_rightmost * size_leftmost;
-    double * dx_orig = convert_to_with_copy_avoiding<double>((void *)x_in->addr, total_size_x, 0, x_in->type, NCOMP_DOUBLE);
-
-    std::unique_ptr<double[]> dx(new double[total_size_x]);
-    // Rearranging
-    for (size_t nl = 0, counter = 0; nl < size_leftmost; ++nl) {
-      size_t left_loc = nl * size_middle_rightmost;
-      for(size_t nr = 0; nr < size_rightmost; ++nr) {
-        for(size_t nm = 0; nm < size_middle; ++nm, ++counter) {
-          size_t mid_loc = nm * size_rightmost;
-          size_t ireordered = left_loc + mid_loc + nr;
-          dx[counter] = dx_orig[ireordered];
-        }
-      }
-    }
-
-    // creating a new shape reflecting the rearrangement
-    std::unique_ptr<size_t[]> rearranged_shape (new size_t[x_in->ndim]);
-    for (int i=0, counter=0; i < x_in->ndim ; ++i) {
-      if (i != t_dim) {
-        rearranged_shape[counter] = x_in->shape[i];
-        ++counter;
-      }
-    }
-    rearranged_shape[x_in->ndim - 1] = x_in->shape[t_dim];
-
-    ncomp_array * x_in_rearranged = ncomp_array_alloc(
-        (void *) (dx.get()), NCOMP_DOUBLE, x_in->ndim, rearranged_shape.get());
-    x_in_rearranged->has_missing = x_in->has_missing;
-    x_in_rearranged->msg.msg_double = missing_d_x_in;
+    ncomp_array * x_in_rearranged = _rearrange_ncomp_array(x_in, t_dim);
 
     int i_error = eofunc(x_in_rearranged, neval_in, options_in, x_out, attrList_out);
 
-    ncomp_array_free(x_in_rearranged, 1); // dx, i.e. x_in_rearranged->addr, is
-                                          // a smart pointer. No need to manually
-                                          // free it. Hence, passing 1 for
-                                          // keep_data_ptr
-
-    if(x_in->type != NCOMP_DOUBLE) delete[] dx_orig;
+    ncomp_array_free(x_in_rearranged, 0);
 
     return i_error;
   }
