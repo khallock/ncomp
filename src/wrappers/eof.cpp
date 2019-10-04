@@ -947,3 +947,31 @@ extern "C" int eofunc_n(const ncomp_array * x_in, const int neval_in,
     return i_error;
   }
 }
+
+/**
+Adapted from ncl/ni/src/examples/gsun/contributed.ncl
+*/
+extern "C" int eofunc_north(
+  const ncomp_array * eval,
+  int N,
+  int logical,
+  ncomp_array * sig,
+  ncomp_attributes * out_attrs) {
+  // ORIGINAL COMMENTS FROM CONTRIBUTED.NCL
+  // North, G.R. et al (1982): Sampling Errors in the Estimation of Empirical Orthogonal Functions.
+  // Mon. Wea. Rev., 110, 699–706.
+  // doi: http://dx.doi.org/10.1175/1520-0493(1982)110<0699:SEITEO>2.0.CO;2
+  //
+  // Usage after 'eofunc'. Here ntim was used,
+  //             prinfo = True
+  //             sig    = eval_north(eof@eval, ntim, prinfo)
+  //
+  if ( (eval->ndim == 1) && (eval->shape[0] == 1) ) {
+    int * sig_value = new int[0]{1};
+    *sig = *ncomp_array_alloc_scalar(static_cast<void *>(sig_value), NCOMP_BOOL);
+
+  } else {
+    size_t * shape = eval->size_t
+  }
+
+}
