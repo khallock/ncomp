@@ -15,167 +15,39 @@ extern "C" void mocloops_(int *, int *, int *, int *, int *,
 *
 */
 
-NhlErrorTypes moc_globe_atl_W( void )
+extern "C" int moc_globe_atl( const ncomp_array *lat_aux_grid, const ncomp_array *a_wvel,
+                              const ncomp_array *a_bolus, const ncomp_array *a_submeso,
+                              const ncomp_array *tlat, const ncomp_array *rmlak )
 {
-
-/*
- * Input variables
- */
-/*
- * Argument # 0
- */
-  void *lat_aux_grid;
-  double *tmp_lat_aux_grid;
-  ng_size_t dsizes_lat_aux_grid[1];
-  NclBasicDataTypes type_lat_aux_grid;
-/*
- * Argument # 1
- */
-  void *a_wvel;
-  double *tmp_a_wvel;
-  ng_size_t dsizes_a_wvel[3];
-  int has_missing_a_wvel;
-  NclScalar missing_a_wvel, missing_dbl_a_wvel;
-  NclBasicDataTypes type_a_wvel;
-
-/*
- * Argument # 2
- */
-  void *a_bolus;
-  double *tmp_a_bolus;
-  ng_size_t dsizes_a_bolus[3];
-  NclBasicDataTypes type_a_bolus;
-
-/*
- * Argument # 3
- */
-  void *a_submeso;
-  double *tmp_a_submeso;
-  ng_size_t dsizes_a_submeso[3];
-  NclBasicDataTypes type_a_submeso;
-
-/*
- * Argument # 4
- */
-  void *tlat;
-  double *tmp_tlat;
-  ng_size_t dsizes_tlat[2];
-  NclBasicDataTypes type_tlat;
-
-/*
- * Argument # 5
- */
-  int *rmlak;
-  ng_size_t dsizes_rmlak[3];
-/*
- * Return variable
- */
-  void *tmp;
-  double *dtmp1, *dtmp2, *dtmp3;
-  int ndims_tmp;
-  ng_size_t *dsizes_tmp;
-  NclBasicDataTypes type_tmp;
-
-
 /*
  * Various
  */
-  ng_size_t nyaux, kdep, nlat, mlon, nlatmlon, kdepnlatmlon, kdepnyaux2;
-  ng_size_t i, size_output;
+  long nyaux, kdep, nlat, mlon, nlatmlon, kdepnlatmlon, kdepnyaux2;
+  long i, size_output;
   int nrx, inlat, imlon, ikdep, inyaux;
   int ret;
 
-/*
- * Retrieve parameters.
- *
- * Note any of the pointer parameters can be set to NULL, which
- * implies you don't care about its value.
- */
-/*
- * Get argument # 0
- */
-  lat_aux_grid = (void*)NclGetArgValue(
-           0,
-           6,
-           NULL,
-           dsizes_lat_aux_grid,
-           NULL,
-           NULL,
-           &type_lat_aux_grid,
-           DONT_CARE);
+ // Sanity Checking
+ if (lat_aux_grid->ndim < 1) {
+   #if DEBUG
+     std::cerr<<"moc_globe_atl: Empty array!!!"<<std::endl;
+   #endif
+   return 1;
+ }
 
-/*
- * Get argument # 1
- */
-  a_wvel = (void*)NclGetArgValue(
-           1,
-           6,
-           NULL,
-           dsizes_a_wvel,
-           &missing_a_wvel,
-           &has_missing_a_wvel,
-           &type_a_wvel,
-           DONT_CARE);
+ nyaux = lat_aux_grid->shape[0];
 
-/*
- * Get argument # 2
- */
-  a_bolus = (void*)NclGetArgValue(
-           2,
-           6,
-           NULL,
-           dsizes_a_bolus,
-           NULL,
-           NULL,
-           &type_a_bolus,
-           DONT_CARE);
+  // Sanity Checking
+  if (a_wvel->ndim < 3) {
+    #if DEBUG
+      std::cerr<<"moc_globe_atl: The input array must be at least three-dimensional"<<std::endl;
+    #endif
+    return 1;
+  }
 
-/*
- * Get argument # 3
- */
-  a_submeso = (void*)NclGetArgValue(
-           3,
-           6,
-           NULL,
-           dsizes_a_submeso,
-           NULL,
-           NULL,
-           &type_a_submeso,
-           DONT_CARE);
-
-/*
- * Get argument # 4
- */
-  tlat = (void*)NclGetArgValue(
-           4,
-           6,
-           NULL,
-           dsizes_tlat,
-           NULL,
-           NULL,
-           &type_tlat,
-           DONT_CARE);
-
-/*
- * Get argument # 5
- */
-  rmlak = (int*)NclGetArgValue(
-           5,
-           6,
-           NULL,
-           dsizes_rmlak,
-           NULL,
-           NULL,
-           NULL,
-           DONT_CARE);
-
-/*
- * Error checking
- */
-  nyaux = dsizes_lat_aux_grid[0];
-  kdep  = dsizes_a_wvel[0];
-  nlat  = dsizes_a_wvel[1];
-  mlon  = dsizes_a_wvel[2];
+  kdep  = a_wvel->shape[0];
+  nlat  = a_wvel->shape[1];
+  mlon  = a_wvel->shape[2];
   kdepnyaux2   = 2 * kdep * nyaux;
   nlatmlon     = nlat * mlon;
   kdepnlatmlon = kdep * nlatmlon;
@@ -185,31 +57,40 @@ NhlErrorTypes moc_globe_atl_W( void )
  */
   if((mlon > INT_MAX) || (nlat > INT_MAX) ||
      (kdep > INT_MAX) || (nyaux > INT_MAX)) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: one or more input dimension sizes are greater than INT_MAX");
-    return(NhlFATAL);
+    #if DEBUG
+      std::cerr<<"moc_globe_atl: one or more input dimension sizes are greater than INT_MAX"<<std::endl;
+    #endif
+    return 1;
   }
+
   imlon = (int) mlon;
   inlat = (int) nlat;
   ikdep = (int) kdep;
   inyaux = (int) nyaux;
 
   for(i = 0; i <= 2; i++) {
-    if(dsizes_a_bolus[i] != dsizes_a_wvel[i] ||
-       dsizes_a_bolus[i] != dsizes_a_submeso[i]) {
-     NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: a_wvel, a_submeso, and a_bolus must have the same dimensionality");
-     return(NhlFATAL);
+    if(a_bolus->shape[i] != a_wvel->shape[i] ||
+       a_bolus->shape[i] != a_submeso->shape[i]) {
+       #if DEBUG
+         std::cerr<<"moc_globe_atl: a_wvel, a_submeso, and a_bolus must have the same dimensionality"<<std::endl;
+       #endif
+       return 1;
     }
   }
 
-  if(dsizes_tlat[0] != nlat || dsizes_tlat[1] != mlon) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: The dimensions of tlat must be nlat x mlon");
-    return(NhlFATAL);
+  if(tlat->shape[0] != nlat || tlat->shape[1] != mlon) {
+    #if DEBUG
+      std::cerr<<"moc_globe_atl: The dimensions of tlat must be nlat x mlon"<<std::endl;
+    #endif
+    return 1;
   }
 
-  if(dsizes_rmlak[0] != 2 ||
-     dsizes_rmlak[1] != nlat || dsizes_rmlak[2] != mlon) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: The dimensions of rmlak must be 2 x nlat x mlon");
-    return(NhlFATAL);
+  if(rmlak->shape[0] != 2 ||
+     rmlak->shape[1] != nlat || rmlak->shape[2] != mlon) {
+      #if DEBUG
+        std::cerr<<"moc_globe_atl: The dimensions of rmlak must be 2 x nlat x mlon"<<std::endl;
+      #endif
+      return 1;
   }
 
 /*
