@@ -790,6 +790,16 @@ void print_ncomp_array(const char * name, const ncomp_array * in) {
   std::cout << name <<" has_missing: " << in->has_missing << "\n";
 
   switch(in->type) {
+    // case NCOMP_BOOL:
+    //   std::cout << name << " msg: " << in->msg.msg_double << "\n";
+    //
+    //   std::cout << name << " data: [ ";
+    //   for (int i = 0; i < nelem; ++i) {
+    //     int tmpVal = static_cast<int *>(in->addr)[i];
+    //     std::cout << ((tmpVal == 0) ? "False" : "True") << " ";
+    //   }
+    //   std::cout << "]\n";
+    //   break;
     case NCOMP_DOUBLE:
       std::cout << name << " msg: " << in->msg.msg_double << "\n";
 

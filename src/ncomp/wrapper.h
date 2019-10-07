@@ -19,6 +19,13 @@ int eofunc_n(const ncomp_array * x_in, const int neval_in,
              const ncomp_attributes * options_in,
              ncomp_array * x_out, ncomp_attributes * attrList_out);
 
+int eofunc_north(
+  const ncomp_array * eval,
+  int N,
+  int prinfo,
+  ncomp_array * sig,
+  ncomp_attributes * out_attrs);
+
 
 #ifdef __cplusplus /* If this is a C++ compiler, end C linkage */
 }

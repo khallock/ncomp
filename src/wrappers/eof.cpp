@@ -1049,13 +1049,14 @@ extern "C" int eofunc_north(
     }
 
     if (prinfo == 1) {
+      printf("index    dlam      low       pcvar     high    sig_pcv\n");
       for (size_t i = 0; i < neval; ++i) {
-        std::cout << dlam[i];
-        std::cout << "   " << low[i];
-        std::cout << "   " << eval_d[i];
-        std::cout << "   " << high[i];
-        std::cout << "   " << sig_value[i];
-        std::cout << std::endl;
+        printf(
+          "(%2d)    %7.5f   %7.5f   %7.5f   %7.5f  %s\n",
+          i,
+          dlam[i], low[i], eval_d[i], high[i],
+          sig_value[i] == 1 ? "True" : "False"
+        );
       }
     }
 
