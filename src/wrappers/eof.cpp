@@ -858,6 +858,9 @@ T * _get_rearranged_addr(
 
 }
 
+// This rearranging of one dimension seems to happen in multiple places
+// other than eofunc_n, for example the same thing is happening in
+// eofunc_ts_n. Hence, made a seperate function for it.
 ncomp_array * _rearrange_ncomp_array(
   const ncomp_array * x_in,
   int t_dim
