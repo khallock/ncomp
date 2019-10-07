@@ -633,6 +633,20 @@ extern "C" ncomp_single_attribute * create_ncomp_single_attribute_from_ncomp_arr
   return out_ncomp_single_attribute;
 }
 
+extern "C" ncomp_single_attribute * create_ncomp_single_attribute_char(
+  char * name,
+  char * data
+) {
+  int size_data = strlen(data) + 1;
+  char * copy_of_data = new char[size_data];
+  std::copy(data, data + size_data, copy_of_data);
+  size_t dims[1] {1};
+
+  ncomp_array * value = ncomp_array_alloc((void *) copy_of_data, NCOMP_CHAR, 1, dims);
+
+  return create_ncomp_single_attribute_from_ncomp_array(name, value);
+}
+
 // Creates a ncomp_single_attribute. Note that the data is not copied. So, make
 // sure it is not scoped out if you need to use it later.
 // Note that the name is copied. So, no need to manually copy it.
@@ -830,5 +844,6 @@ template void convert_to<double>(void *, size_t, size_t, int, double *);
 template void convert_to<float>(void *, size_t, size_t, int, float *);
 template double * allocateAndInit(size_t, double);
 template float * allocateAndInit(size_t, float);
+template int * allocateAndInit(size_t, int);
 template double * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);
 template float * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);

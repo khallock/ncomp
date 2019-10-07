@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <cstring>
+#include <math.h>
 
 extern "C" void crveoft_( double *dx_strip, double *dx_strip_t,
                          int *nrow, int *ncol, int *nrobs,
@@ -786,16 +787,22 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
    */
   char * cmatrix;
   if(options->jopt == 0) {
-    cmatrix = new char[11];
-    strcpy(cmatrix,"covariance");
-    size_t dims[1] {1};
-    tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "matrix", cmatrix, NCOMP_CHAR, 1, dims));
+    // cmatrix = new char[11];
+    // strcpy(cmatrix,"covariance");
+    // size_t dims[1] {1};
+    // tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "matrix", cmatrix, NCOMP_CHAR, 1, dims));
+    tmp_attr_out.push_back(
+      create_ncomp_single_attribute_char((char *) "matrix", (char *) "covariance")
+    );
   }
   else {
-    cmatrix = new char[12];
-    strcpy(cmatrix,"correlation");
-    size_t dims[1] {1};
-    tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "matrix", cmatrix, NCOMP_CHAR, 1, dims));
+    // cmatrix = new char[12];
+    // strcpy(cmatrix,"correlation");
+    // size_t dims[1] {1};
+    // tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "matrix", cmatrix, NCOMP_CHAR, 1, dims));
+    tmp_attr_out.push_back(
+      create_ncomp_single_attribute_char((char *) "matrix", (char *) "correlation")
+    );
   }
 
 
@@ -804,22 +811,31 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
    */
   char * cmethod;
   if(options->use_new_transpose) {
-    cmethod = new char[10];
-    strcpy(cmethod,"transpose");
-    size_t dims[1] {1};
-    tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
+    // cmethod = new char[10];
+    // strcpy(cmethod,"transpose");
+    // size_t dims[1] {1};
+    // tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
+    tmp_attr_out.push_back(
+      create_ncomp_single_attribute_char((char *) "method", (char *) "transpose")
+    );
   }
   else if(options->use_old_transpose) {
-    cmethod = new char[14];
-    strcpy(cmethod,"old_transpose");
-    size_t dims[1] {1};
-    tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
+    // cmethod = new char[14];
+    // strcpy(cmethod,"old_transpose");
+    // size_t dims[1] {1};
+    // tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
+    tmp_attr_out.push_back(
+      create_ncomp_single_attribute_char((char *) "method", (char *) "old_transpose")
+    );
   }
   else {
-    cmethod = new char[13];
-    strcpy(cmethod,"no transpose");
-    size_t dims[1] {1};
-    tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
+    tmp_attr_out.push_back(
+      create_ncomp_single_attribute_char((char *) "method", (char *) "no transpose")
+    );
+    // cmethod = new char[13];
+    // strcpy(cmethod,"no transpose");
+    // size_t dims[1] {1};
+    // tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
   }
 
   collectAttributeList(tmp_attr_out, attrList_out);
@@ -954,10 +970,10 @@ Adapted from ncl/ni/src/examples/gsun/contributed.ncl
 extern "C" int eofunc_north(
   const ncomp_array * eval,
   int N,
-  int logical,
+  int prinfo,
   ncomp_array * sig,
   ncomp_attributes * out_attrs) {
-  // ORIGINAL COMMENTS FROM CONTRIBUTED.NCL
+  // ORIGINAL COMMENTS FROM CONTRIBUTED.NCL (DOESN"T NECESSARILLY APPLY HERE)
   // North, G.R. et al (1982): Sampling Errors in the Estimation of Empirical Orthogonal Functions.
   // Mon. Wea. Rev., 110, 699–706.
   // doi: http://dx.doi.org/10.1175/1520-0493(1982)110<0699:SEITEO>2.0.CO;2
@@ -966,12 +982,96 @@ extern "C" int eofunc_north(
   //             prinfo = True
   //             sig    = eval_north(eof@eval, ntim, prinfo)
   //
-  if ( (eval->ndim == 1) && (eval->shape[0] == 1) ) {
-    int * sig_value = new int[0]{1};
+  if (eval->ndim != 1) {
+    #if DEBUG
+      std::cerr << "input eval must be one dimensional array";
+    #endif
+    return 1;
+  }
+
+  std::vector<ncomp_single_attribute *> tmp_attr_out;
+
+  int * sig_value;
+
+  size_t neval = eval->shape[0];
+
+  if (neval == 1) {
+    sig_value = new int[1]{1};
+
+    tmp_attr_out.push_back(
+      create_ncomp_single_attribute_char((char *) "long_name", (char *) "EOF separation is not testable N=1")
+    );
+
     *sig = *ncomp_array_alloc_scalar(static_cast<void *>(sig_value), NCOMP_BOOL);
 
   } else {
-    size_t * shape = eval->size_t
+
+    /* handle missing values */
+    double missing_d;
+    float missing_f;
+    coerce_missing(eval->type, eval->has_missing, (ncomp_missing *)&(eval->msg),
+                   &missing_d,&missing_f);
+
+    double * eval_d = convert_to_with_copy_avoiding<double>(
+      (void *)eval->addr, neval, 0, eval->type, NCOMP_DOUBLE
+    );
+
+    const double eq24_constant = sqrt(2.0/static_cast<double>(N));
+
+    std::unique_ptr<double[]> dlam(new double[neval]);
+    std::unique_ptr<double[]> low(new double[neval]);
+    std::unique_ptr<double[]> high(new double[neval]);
+
+    int * sig_value = allocateAndInit<int>(neval, 0);
+
+    for (size_t i = 0; i < neval; ++i) {
+      dlam[i] = eval_d[i] * eq24_constant;
+      low[i]  = eval_d[i] - dlam[i];
+      high[i] = eval_d[i] + dlam[i];
+    }
+
+    // First and last eigenvalues are special calls
+    if (eval_d[0] > high[1]) {
+      sig_value[0] = 1;
+    }
+
+    if (eval_d[neval-1] < low[neval-2]) {
+      sig_value[neval-1] = 1;
+    }
+
+    // Loop over other eigenvalues
+    if (N > 2) {
+      for (size_t n = 1; n < neval -1; ++n) {
+        if ( (eval_d[n] < low[n-1]) && (eval_d[n] > high[n+1]) ) {
+          sig_value[n] = 1;
+        }
+      }
+    }
+
+    if (prinfo == 1) {
+      for (size_t i = 0; i < neval; ++i) {
+        std::cout << dlam[i];
+        std::cout << "   " << low[i];
+        std::cout << "   " << eval_d[i];
+        std::cout << "   " << high[i];
+        std::cout << "   " << sig_value[i];
+        std::cout << std::endl;
+      }
+    }
+
+    tmp_attr_out.push_back(
+      create_ncomp_single_attribute_char((char *) "long_name", (char *) "EOF separation")
+    );
+
+    if (eval->type != NCOMP_DOUBLE) delete[] eval_d;
+
+    *sig = *ncomp_array_alloc((void*) sig_value, NCOMP_BOOL, eval->ndim, eval->shape);
   }
+
+  int * N_attr = new int[1]{N};
+  tmp_attr_out.push_back(create_ncomp_single_attribute_from_scalar((char *) "N", N_attr, NCOMP_INT));
+
+  collectAttributeList(tmp_attr_out, out_attrs);
+  return 0;
 
 }
