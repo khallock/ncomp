@@ -98,8 +98,7 @@ extern "C" int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d, con
   missing_fi = (ncomp_missing *)&(fi->msg);
   double missing_dfi;
   float missing_rfi;
-  coerce_missing(fi->type, has_missing_fi, missing_fi, &missing_dfi,
-                 &missing_rfi);
+  coerce_missing(fi->type, has_missing_fi, missing_fi, &missing_dfi, &missing_rfi);
 
   // Allocate space for temporary output array.
   // NOTE: since the output array (fo) type and memory is already
@@ -116,16 +115,11 @@ extern "C" int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d, con
   // Coerce input arrays to double if necessary.
   double *tmp_lat2d, *tmp_lon2d, *tmp_lat1d, *tmp_lon1d, *tmp_fi;
 
-  tmp_lat2d = coerce_input_T<double>(lat2d->addr, lat2d->type, nfi, 0, nullptr,
-                                     nullptr);
-  tmp_lon2d = coerce_input_T<double>(lon2d->addr, lon2d->type, nfi, 0, nullptr,
-                                     nullptr);
-  tmp_lat1d = coerce_input_T<double>(lat1d->addr, lat1d->type, nlat1d, 0,
-                                     nullptr, nullptr);
-  tmp_lon1d = coerce_input_T<double>(lon1d->addr, lon1d->type, nlon1d, 0,
-                                     nullptr, nullptr);
-  tmp_fi = coerce_input_T<double>(fi->addr, fi->type, size_fi, has_missing_fi,
-                                  &missing_fi, &missing_dfi);
+  tmp_lat2d = coerce_input_T<double>(lat2d->addr, lat2d->type, nfi, 0, nullptr, nullptr);
+  tmp_lon2d = coerce_input_T<double>(lon2d->addr, lon2d->type, nfi, 0, nullptr, nullptr);
+  tmp_lat1d = coerce_input_T<double>(lat1d->addr, lat1d->type, nlat1d, 0, nullptr, nullptr);
+  tmp_lon1d = coerce_input_T<double>(lon1d->addr, lon1d->type, nlon1d, 0, nullptr, nullptr);
+  tmp_fi = coerce_input_T<double>(fi->addr, fi->type, size_fi, has_missing_fi, &missing_fi, &missing_dfi);
 
   // Force opt to 0 and ncrit to 1, since they are not used yet.
   int tmp_opt = 0;
@@ -167,7 +161,7 @@ extern "C" int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d, con
   if(lat1d->type != NCOMP_DOUBLE) delete[] tmp_lat1d;
   if(lon1d->type != NCOMP_DOUBLE) delete[] tmp_lon1d;
   if(fi->type    != NCOMP_DOUBLE) delete[] tmp_fi;
-  
+
   return ier;
 }
 
@@ -263,8 +257,7 @@ extern "C" int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, con
   std::vector<double> tmp_fo_vec;
   if(fo->type == NCOMP_DOUBLE) {
     tmp_fo = &((double*)fo)[0];
-  }
-  else {
+  } else {
     tmp_fo_vec.resize(size_fo);
     tmp_fo = tmp_fo_vec.data();
   }
@@ -272,8 +265,8 @@ extern "C" int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, con
   // Coerce input arrays to double if necessary.
   double *tmp_lat2d, *tmp_lon2d, *tmp_lat1d, *tmp_lon1d, *tmp_fi;
 
-  tmp_lat2d = coerce_input_T<double>(lat2d->addr, lat2d->type, nfo,	 0, nullptr, nullptr);
-  tmp_lon2d = coerce_input_T<double>(lon2d->addr, lon2d->type, nfo,	 0, nullptr, nullptr);
+  tmp_lat2d = coerce_input_T<double>(lat2d->addr, lat2d->type, nfo, 0, nullptr, nullptr);
+  tmp_lon2d = coerce_input_T<double>(lon2d->addr, lon2d->type, nfo, 0, nullptr, nullptr);
   tmp_lat1d = coerce_input_T<double>(lat1d->addr, lat1d->type, nlat1d, 0, nullptr, nullptr);
   tmp_lon1d = coerce_input_T<double>(lon1d->addr, lon1d->type, nlon1d, 0, nullptr, nullptr);
   tmp_fi    = coerce_input_T<double>(fi->addr, fi->type, size_fi, has_missing_fi, &missing_fi, &missing_dfi);
