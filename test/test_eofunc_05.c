@@ -81,7 +81,7 @@ int main(void) {
     return 4;
   }
 
-  for (int i = 0; i<5; ++i) {
+  for (int i = 0; i<expected_nAttribute; ++i) {
     ncomp_single_attribute * s_attr = attr->attribute_array[i];
 
     if (strcmp("eval_transpose", s_attr->name) == 0) {
