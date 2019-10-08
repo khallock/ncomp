@@ -3,6 +3,11 @@
 
 #include <stddef.h>
 
+enum ncomp_return_status {
+  NCOMP_RETURN_ALL_GOOD = 0,
+  NCOMP_RETURN_FATAL = 42
+};
+
 /* enumerated types, adapted from numpy's ndarraytypes.h */
 enum NcompTypes {
   NCOMP_BOOL = 0,
@@ -20,6 +25,7 @@ enum NcompTypes {
   NCOMP_DOUBLE = 12,
   NCOMP_LONGDOUBLE = 13
 };
+#define NCOMP_CHAR NCOMP_BOOL
 
 typedef union {
     char                msg_bool;
@@ -45,7 +51,17 @@ typedef struct {
     void *addr;
     int has_missing; // = 0;
     ncomp_missing msg;
-    size_t shape[1];
+    size_t * shape;
 } ncomp_array;
+
+typedef struct {
+  char* name; // Name of the attribute
+  ncomp_array* value; // the value for the attribute
+} ncomp_single_attribute;
+
+typedef struct {
+  int nAttribute; // number of attributes
+  ncomp_single_attribute ** attribute_array; // the attributes.
+} ncomp_attributes;
 
 #endif // NCOMP_TYPES_H

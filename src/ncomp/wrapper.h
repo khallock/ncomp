@@ -18,6 +18,10 @@ int rgrid2rcm(const ncomp_array *lat1d, const ncomp_array *lon1d,
               const ncomp_array *fi, const ncomp_array *lat2d,
               const ncomp_array *lon2d, ncomp_array *fo);
 
+int eofunc(const ncomp_array * x_in, const int neval_in,
+           const ncomp_attributes * options_in,
+           ncomp_array * x_out, ncomp_attributes * attrList_out);
+
 #ifdef __cplusplus /* If this is a C++ compiler, end C linkage */
 }
 #endif
