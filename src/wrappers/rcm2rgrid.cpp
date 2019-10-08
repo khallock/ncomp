@@ -161,6 +161,13 @@ extern "C" int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d, con
     }
   }
 
+    // free the memory of the temporary/work arrays
+  if(lat2d->type != NCOMP_DOUBLE) delete[] tmp_lat2d;
+  if(lon2d->type != NCOMP_DOUBLE) delete[] tmp_lon2d;
+  if(lat1d->type != NCOMP_DOUBLE) delete[] tmp_lat1d;
+  if(lon1d->type != NCOMP_DOUBLE) delete[] tmp_lon1d;
+  if(fi->type    != NCOMP_DOUBLE) delete[] tmp_fi;
+  
   return ier;
 }
 
