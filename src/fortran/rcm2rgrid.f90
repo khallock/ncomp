@@ -151,13 +151,11 @@ SUBROUTINE DRCM2RGRID(NGRD,NYI,NXI,YI,XI,FI,NYO,YO,NXO,XO,FO&
                     END IF
                  END DO
 
-                 GO TO 20
-                 ! EXIT iyloop2
+                 EXIT iyloop2
               END IF
            END DO
         END DO iyloop2
 
-20      CONTINUE
      END DO
   END DO
 

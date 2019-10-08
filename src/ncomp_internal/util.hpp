@@ -160,7 +160,8 @@ template <typename T,
       (std::is_same<T, unsigned long>::value && type_x == NCOMP_ULONG)) {
     dx = static_cast<T *>(x);
   } else {
-    dx = new double[size_x];
+    dx = new (std::nothrow) T[size_x];
+    if (dx == nullptr) return nullptr;
 
     NcompTypes ncompType;
     if (std::is_same<T, double>::value)

@@ -51,8 +51,6 @@ SUBROUTINE DLINMSG(X,NPTS,XMSG,MFLAG,MPTCRT)
   END DO nloop
   RETURN
 
-  !IF ALL(X == MSG) RETURN
-
   ! c c MPTCRT = NPTS   ! updated version
 10 NSTRT = 0
   NEND = 0
