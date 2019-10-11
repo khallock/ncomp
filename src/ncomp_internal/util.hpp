@@ -35,4 +35,13 @@ size_t prod(const size_t* shape, int start_inclusive_idx, int end_exclusive_idx)
 ncomp_attributes * collectAttributeList(std::vector<ncomp_single_attribute *> attrVector);
 void collectAttributeList(std::vector<ncomp_single_attribute*> attrVector, ncomp_attributes * collectedAttributedList);
 
+template<typename T>
+NcompTypes getNCOMPType();
+
+template<typename T>
+T* convert_ncomp_array_to(
+  const ncomp_array * input,
+  double * missing_d,
+  float * missing_f);
+
 #endif

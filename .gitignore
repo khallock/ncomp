@@ -140,3 +140,8 @@ dkms.conf
 ### Mac OSX ###
 .DS_Store
 .tar.gz
+
+# Removing compiled tests and the outputs including only .c and .ncl
+test/*
+!test/*.c
+!test/*.ncl

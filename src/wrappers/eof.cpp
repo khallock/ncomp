@@ -36,6 +36,11 @@ extern "C" void xrveoft_( double *dx_strip, double *dx_strip_t,
                           double *xdvar, double *xave,
                           int *jopt, int *ier);
 
+extern "C" void deofts7_( double *,int *,int *,int *,int *,
+                          double *,int *, double *,int *, int *,
+                          double *,double *,double *,double *,
+                          int *);
+
 /*
 * NOTE: adapted from eofunc_w() in ncl/ni/src/lib/nfp/eofW.c of original NCL code
 * This routine calls three different EOF routines.
@@ -147,12 +152,14 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
   /* handle missing values */
   double missing_d_x_in;
   float missing_f_x_in;
-  coerce_missing(x_in->type, x_in->has_missing, (ncomp_missing *)&(x_in->msg),
-                 &missing_d_x_in,&missing_f_x_in);
+  // coerce_missing(x_in->type, x_in->has_missing, (ncomp_missing *)&(x_in->msg),
+  //                &missing_d_x_in, &missing_f_x_in);
 
   // Getting xData as double
   size_t x_nelem = prod(x_in->shape, x_in->ndim);
-  double * dx = convert_to_with_copy_avoiding<double>((void *)x_in->addr, x_nelem, 0, x_in->type, NCOMP_DOUBLE);
+  // double * dx = convert_to_with_copy_avoiding<double>((void *)x_in->addr, x_nelem, 0, x_in->type, NCOMP_DOUBLE);
+
+  double * dx = convert_ncomp_array_to<double>(x_in, &missing_d_x_in, &missing_f_x_in);
 
   // Get number of eigenvalues and eigen vectors to be computed.
   // This is supposed to be a scalar.
@@ -787,19 +794,11 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
    */
   char * cmatrix;
   if(options->jopt == 0) {
-    // cmatrix = new char[11];
-    // strcpy(cmatrix,"covariance");
-    // size_t dims[1] {1};
-    // tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "matrix", cmatrix, NCOMP_CHAR, 1, dims));
     tmp_attr_out.push_back(
       create_ncomp_single_attribute_char((char *) "matrix", (char *) "covariance")
     );
   }
   else {
-    // cmatrix = new char[12];
-    // strcpy(cmatrix,"correlation");
-    // size_t dims[1] {1};
-    // tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "matrix", cmatrix, NCOMP_CHAR, 1, dims));
     tmp_attr_out.push_back(
       create_ncomp_single_attribute_char((char *) "matrix", (char *) "correlation")
     );
@@ -811,19 +810,11 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
    */
   char * cmethod;
   if(options->use_new_transpose) {
-    // cmethod = new char[10];
-    // strcpy(cmethod,"transpose");
-    // size_t dims[1] {1};
-    // tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
     tmp_attr_out.push_back(
       create_ncomp_single_attribute_char((char *) "method", (char *) "transpose")
     );
   }
   else if(options->use_old_transpose) {
-    // cmethod = new char[14];
-    // strcpy(cmethod,"old_transpose");
-    // size_t dims[1] {1};
-    // tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
     tmp_attr_out.push_back(
       create_ncomp_single_attribute_char((char *) "method", (char *) "old_transpose")
     );
@@ -832,10 +823,6 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
     tmp_attr_out.push_back(
       create_ncomp_single_attribute_char((char *) "method", (char *) "no transpose")
     );
-    // cmethod = new char[13];
-    // strcpy(cmethod,"no transpose");
-    // size_t dims[1] {1};
-    // tmp_attr_out.push_back(create_ncomp_single_attribute((char *) "method", cmethod, NCOMP_CHAR, 1, dims));
   }
 
   collectAttributeList(tmp_attr_out, attrList_out);
@@ -890,8 +877,6 @@ ncomp_array * _rearrange_ncomp_array(
   /* handle missing values */
   double missing_d_x_in;
   float missing_f_x_in;
-  coerce_missing(x_in->type, x_in->has_missing, (ncomp_missing *)&(x_in->msg),
-                 &missing_d_x_in,&missing_f_x_in);
 
   // creating a new shape reflecting the rearrangement
   std::unique_ptr<size_t[]> rearranged_shape (new size_t[x_in->ndim]);
@@ -906,7 +891,7 @@ ncomp_array * _rearrange_ncomp_array(
   void * rearranged_data = nullptr;
   ncomp_array * x_in_rearranged = nullptr;
   if(x_in->type != NCOMP_DOUBLE) {
-    float * original_data = convert_to_with_copy_avoiding<float>((void *)x_in->addr, total_size_x, 0, x_in->type, NCOMP_FLOAT);
+    float * original_data = convert_ncomp_array_to<float>(x_in, &missing_d_x_in, &missing_f_x_in);
 
     rearranged_data = (void *) _get_rearranged_addr<float>(original_data, size_leftmost, size_middle, size_rightmost, total_size_x);
 
@@ -918,7 +903,7 @@ ncomp_array * _rearrange_ncomp_array(
     x_in_rearranged->has_missing = x_in->has_missing;
     x_in_rearranged->msg.msg_float = missing_f_x_in;
   } else {
-    double * original_data = convert_to_with_copy_avoiding<double>((void *)x_in->addr, total_size_x, 0, x_in->type, NCOMP_DOUBLE);
+    double * original_data = convert_ncomp_array_to<double>(x_in, &missing_d_x_in, &missing_f_x_in);
 
     rearranged_data = (void *) _get_rearranged_addr<double>(original_data, size_leftmost, size_middle, size_rightmost, total_size_x);
 
@@ -1012,12 +997,7 @@ extern "C" int eofunc_north(
     /* handle missing values */
     double missing_d;
     float missing_f;
-    coerce_missing(eval->type, eval->has_missing, (ncomp_missing *)&(eval->msg),
-                   &missing_d,&missing_f);
-
-    double * eval_d = convert_to_with_copy_avoiding<double>(
-      (void *)eval->addr, neval, 0, eval->type, NCOMP_DOUBLE
-    );
+    double * eval_d = convert_ncomp_array_to<double>(eval, &missing_d, &missing_f);
 
     const double eq24_constant = sqrt(2.0/static_cast<double>(N));
 
@@ -1078,4 +1058,197 @@ extern "C" int eofunc_north(
   collectAttributeList(tmp_attr_out, out_attrs);
   return 0;
 
+}
+
+extern "C" int eofunc_ts(
+  const ncomp_array * x_in,
+  const ncomp_array * evec_in,
+  const ncomp_attributes * options_in,
+  ncomp_array * x_out,
+  ncomp_attributes * attrs_out)
+{
+  int i_err {0};
+
+  /*
+   * Check the input grids.  They both must be at least two dimensional and
+   * have the same number of dimensions.  All but the rightmost dimension of the
+   * first input array must be the same as all the but leftmost dimension of
+   * the second input array.
+   */
+  if ( (x_in->ndim<2) || (x_in->ndim != evec_in->ndim) ) {
+    #if DEBUG
+      std::cerr << "eofunc_ts: The input arrays must be at least "
+                   "two-dimensional and have the same number of dimensions\n";
+    #endif
+    return NCOMP_RETURN_FATAL;
+  }
+
+  size_t msta {1};
+  for (int i = 0; i < (x_in->ndim-1); ++i) {
+    if (x_in->shape[i] != evec_in->shape[i]) {
+      #if DEBUG
+        std::cerr << "eofunc_ts: All but the rightmost dimension of the first "
+                     "input array must be the same as all but the leftmost "
+                     "dimension of the second input array\n";
+      #endif
+      return NCOMP_RETURN_FATAL;
+    } else {
+      msta *= x_in->shape[i];
+    }
+
+  }
+
+  size_t ncol {msta};
+  size_t nobs {x_in->shape[x_in->ndim-1]};
+  size_t nrow {x_in->shape[x_in->ndim-1]};
+  size_t ntime {x_in->shape[x_in->ndim-1]};
+  size_t neval {evec_in->shape[0]};
+
+  if( (ncol > INT_MAX) || (nobs > INT_MAX) || (neval > INT_MAX) ) {
+    #if DEBUG
+      std::cerr << "eofunc_ts: one or more dimension sizes is greater "
+                   "than INT_MAX\n";
+    #endif
+    return NCOMP_RETURN_FATAL;
+  }
+
+  int inrow  = static_cast<int>(nrow);
+  int incol  = static_cast<int>(ncol);
+  int imsta  = static_cast<int>(msta);
+  int inobs  = static_cast<int>(nobs);
+  int ineval = static_cast<int>(neval);
+
+  size_t total_size_x {ncol * nrow};
+  size_t total_size_evec {msta * neval};
+
+  if ( (msta < 1) || (nobs < 1) ) {
+    #if DEBUG
+      std::cerr << "eofunc_ts: The dimensions of the input array "
+                   "must both be at least 1\n";
+    #endif
+    return NCOMP_RETURN_FATAL;
+  }
+
+  /*
+   * Coerce missing values, if any.
+   */
+  double missing_d_x;
+  float missing_f_x;
+  double * dx = convert_ncomp_array_to<double>(x_in, &missing_d_x, &missing_f_x);
+
+  double missing_d_evec;
+  float missing_f_evec;
+  double * devec = convert_ncomp_array_to<double>(evec_in, &missing_d_evec, &missing_f_evec);
+
+  /*
+   * Allocate memory for return variables.
+   */
+  std::unique_ptr<size_t[]> dsizes_evec_ts(new size_t[2]{neval, ntime});
+  double * evec_ts = new double[ntime * neval];
+  double * evtsav  = new double[neval];
+
+  /*
+   * Create a couple of work arrays.  This is necessary to avoid having
+   * these arrays created dynamically in the Fortran file (which makes
+   * it Fortran 90, and unportable to some systems.
+   */
+  size_t lwrk {nobs};
+  size_t lwx {nrow*ncol};
+  std::unique_ptr<double[]> wrk(new double[lwrk]);
+  std::unique_ptr<double[]> wx (new double[lwx]);
+
+  /*
+   * Check for "jopt".
+   */
+  int jopt {0}; // default value is zero.
+  if (options_in != nullptr || options_in->nAttribute>0) {
+    jopt = *(int *) getAttributeOrDefault(options_in, "jopt", &jopt);
+    if ((jopt != 0) && (jopt != 1)) {
+      jopt = 0; // jopt must be either 0 or 1
+    }
+  }
+
+  /*
+   * Call the appropriate Fortran routine.
+   */
+  int iflag = 0;
+  deofts7_( dx, &inrow, &incol, &inobs, &imsta,
+            &missing_d_x, &ineval,  devec, &jopt,
+            &iflag, wx.get(), wrk.get(), evec_ts, evtsav, &i_err);
+
+  if (i_err != 0) {
+    #if DEBUG
+      if (i_err == -1) {
+        std::cerr << "eofunc_ts: cssm contains one or more missing values\n";
+      } else if (i_err == -88) {
+        std::cerr << "eofunc_ts: trace is equal to zero\n";
+      } else if (i_err == -1) {
+        std::cerr << "eofunc_ts: The " << abs(i_err) << "-th argument had an illegal value\n";
+      } else {
+        std::cerr << "eofunc_ts: " << i_err << " eigenvectors failed to converge\n";
+      }
+    #endif
+    return i_err;
+  }
+
+  /*
+   * Free unneeded memory.
+   */
+  if (x_in->type != NCOMP_DOUBLE) delete[] dx;
+  if (evec_in->type != NCOMP_DOUBLE) delete[] devec;
+
+  /*
+   * Return values.
+   */
+  std::vector<ncomp_single_attribute *> tmp_attr_out;
+  if ( (x_in->type != NCOMP_DOUBLE) && (evec_in->type != NCOMP_DOUBLE) ) {
+    /*
+     * Neither input array is double, so return float values.
+     *
+     * First copy double values to float values.
+     */
+     float * revec_ts = new float[ntime*neval];
+     for (int i = 0; i < (ntime * neval); ++i) {
+       revec_ts[i] = static_cast<float>(evec_ts[i]);
+     }
+
+     float * revtsav = new float[neval];
+     for (int i = 0; i < neval; ++i) {
+       revtsav[i] = static_cast<float>(evtsav[i]);
+     }
+
+     delete[] evec_ts;
+     delete[] evtsav;
+
+     *x_out = *ncomp_array_alloc(
+       (void *) revec_ts, NCOMP_FLOAT, 2, dsizes_evec_ts.get());
+     x_out->has_missing = x_in->has_missing;
+     x_out->msg.msg_float = missing_f_x;
+
+     tmp_attr_out.push_back(
+       create_ncomp_single_attribute_from_1DArray((char *)"ts_mean", (void *) revtsav, NCOMP_FLOAT, neval)
+     );
+  } else {
+    *x_out = *ncomp_array_alloc(
+      (void *) evec_ts, NCOMP_DOUBLE, 2, dsizes_evec_ts.get());
+    x_out->has_missing = x_in->has_missing;
+    x_out->msg.msg_double = missing_d_x;
+
+    tmp_attr_out.push_back(
+      create_ncomp_single_attribute_from_1DArray((char *)"ts_mean", (void *) evtsav, NCOMP_DOUBLE, neval)
+    );
+  }
+
+  if (jopt == 0) {
+    tmp_attr_out.push_back(
+      create_ncomp_single_attribute_char((char *) "matrix", (char *) "covariance")
+    );
+  } else {
+    tmp_attr_out.push_back(
+      create_ncomp_single_attribute_char((char *) "matrix", (char *) "correlation")
+    );
+  }
+
+  collectAttributeList(tmp_attr_out, attrs_out);
+  return i_err;
 }

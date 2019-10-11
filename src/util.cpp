@@ -696,11 +696,11 @@ ncomp_attributes * collectAttributeList(std::vector<ncomp_single_attribute *> at
   return output_attribute_list;
 }
 
-void collectAttributeList(std::vector<ncomp_single_attribute*> attrVector, ncomp_attributes * collectedAttributedList) {
-  collectedAttributedList->nAttribute = attrVector.size();
-  collectedAttributedList->attribute_array  = new ncomp_single_attribute*[attrVector.size()];
+void collectAttributeList(std::vector<ncomp_single_attribute*> attrVector, ncomp_attributes * collectedAttributList) {
+  collectedAttributList->nAttribute = attrVector.size();
+  collectedAttributList->attribute_array  = new ncomp_single_attribute*[attrVector.size()];
   for (int i = 0; i < attrVector.size(); ++i) {
-    collectedAttributedList->attribute_array[i] = attrVector[i];
+    collectedAttributList->attribute_array[i] = attrVector[i];
   }
 }
 
@@ -849,6 +849,89 @@ void print_ncomp_attributes(const ncomp_attributes * in) {
   }
 }
 
+
+template<typename T>
+NcompTypes getNCOMPType() {
+  if (std::is_same<T, double>::value) {
+    return NCOMP_DOUBLE;
+  }
+
+  if (std::is_same<T, float>::value) {
+    return NCOMP_FLOAT;
+  }
+
+  if (std::is_same<T, bool>::value) {
+    return NCOMP_BOOL;
+  }
+
+  if (std::is_same<T, signed char>::value) {
+    return NCOMP_BYTE;
+  }
+
+  if (std::is_same<T, unsigned char>::value) {
+    return NCOMP_UBYTE;
+  }
+
+  if (std::is_same<T, short>::value) {
+    return NCOMP_SHORT;
+  }
+
+  if (std::is_same<T, unsigned short>::value) {
+    return NCOMP_USHORT;
+  }
+
+  if (std::is_same<T, int>::value) {
+    return NCOMP_INT;
+  }
+
+  if (std::is_same<T, unsigned int>::value) {
+    return NCOMP_UINT;
+  }
+
+  if (std::is_same<T, long>::value) {
+    return NCOMP_LONG;
+  }
+
+  if (std::is_same<T, unsigned long>::value) {
+    return NCOMP_ULONG;
+  }
+
+  if (std::is_same<T, long long>::value) {
+    return NCOMP_LONGLONG;
+  }
+
+  if (std::is_same<T, unsigned long long>::value) {
+    return NCOMP_ULONGLONG;
+  }
+
+  if (std::is_same<T, long double>::value) {
+    return NCOMP_LONGDOUBLE;
+  }
+}
+
+template<typename T>
+T* convert_ncomp_array_to(
+  const ncomp_array * input,
+  double * missing_d,
+  float * missing_f)
+{
+  coerce_missing(
+    input->type,
+    input->has_missing,
+    (ncomp_missing *)&(input->msg),
+    missing_d,
+    missing_f
+  );
+
+  NcompTypes ncomp_type = getNCOMPType<T>();
+
+  size_t size = prod(input->shape, input->ndim);
+
+  return convert_to_with_copy_avoiding<T>(
+    (void *)input->addr, size, 0, input->type, ncomp_type
+  );
+}
+
 // explicit function instantiations
 template void convert_to<double>(void *, size_t, size_t, int, double *);
 template void convert_to<float>(void *, size_t, size_t, int, float *);
@@ -857,3 +940,5 @@ template float * allocateAndInit(size_t, float);
 template int * allocateAndInit(size_t, int);
 template double * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);
 template float * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);
+template double * convert_ncomp_array_to(const ncomp_array *, double *, float *);
+template float * convert_ncomp_array_to(const ncomp_array *, double *, float *);
