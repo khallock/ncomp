@@ -17,27 +17,43 @@ extern "C" void mocloops_(int *, int *, int *, int *, int *,
 
 extern "C" int moc_globe_atl( const ncomp_array *lat_aux_grid, const ncomp_array *a_wvel,
                               const ncomp_array *a_bolus, const ncomp_array *a_submeso,
-                              const ncomp_array *tlat, const ncomp_array *rmlak )
-{
+                              const ncomp_array *tlat, const ncomp_array *rmlak,
+                              ncomp_array * tmp_out ){
+
 /*
- * Various
+ * Various Variables
  */
   long nyaux, kdep, nlat, mlon, nlatmlon, kdepnlatmlon, kdepnyaux2;
   long i, size_output;
   int nrx, inlat, imlon, ikdep, inyaux;
   int ret;
 
- // Sanity Checking
- if (lat_aux_grid->ndim < 1) {
+
+ /*
+  * Output Variables
+  */
+  void *tmp;
+  double *dtmp1, *dtmp2, *dtmp3;
+  std::unique_ptr<size_t[]> dsizes_tmp;
+  int ndims_tmp;
+  int type_tmp;
+
+
+  /*
+   * Sanity Checks
+   */
+
+  /* Check for lat_aux_grid dimension */
+  if (lat_aux_grid->ndim < 1) {
    #if DEBUG
      std::cerr<<"moc_globe_atl: Empty array!!!"<<std::endl;
    #endif
    return 1;
- }
+  }
 
- nyaux = lat_aux_grid->shape[0];
+  nyaux = lat_aux_grid->shape[0];
 
-  // Sanity Checking
+  /* Check for a_wvel dimension */
   if (a_wvel->ndim < 3) {
     #if DEBUG
       std::cerr<<"moc_globe_atl: The input array must be at least three-dimensional"<<std::endl;
@@ -52,9 +68,7 @@ extern "C" int moc_globe_atl( const ncomp_array *lat_aux_grid, const ncomp_array
   nlatmlon     = nlat * mlon;
   kdepnlatmlon = kdep * nlatmlon;
 
-/*
- * Test dimension sizes.
- */
+  /* Test dimension sizes. */
   if((mlon > INT_MAX) || (nlat > INT_MAX) ||
      (kdep > INT_MAX) || (nyaux > INT_MAX)) {
     #if DEBUG
@@ -93,139 +107,148 @@ extern "C" int moc_globe_atl( const ncomp_array *lat_aux_grid, const ncomp_array
       return 1;
   }
 
-/*
- * Coerce missing value to double if necessary.
- */
-  coerce_missing(type_a_wvel,has_missing_a_wvel,&missing_a_wvel,
-                 &missing_dbl_a_wvel,NULL);
 
-/*
- * Coerce input arrays to double if necassary.
- */
-  tmp_lat_aux_grid = coerce_input_double(lat_aux_grid,type_lat_aux_grid,nyaux,
-					 0,NULL,NULL);
-  if(tmp_lat_aux_grid == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for coercing lat_aux_grid to double");
-    return(NhlFATAL);
-  }
-
-  tmp_a_wvel = coerce_input_double(a_wvel,type_a_wvel,kdepnlatmlon,
-                                   has_missing_a_wvel,&missing_a_wvel,
-                                   &missing_dbl_a_wvel);
-
-  if(tmp_a_wvel == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for coercing a_wvel to double");
-    return(NhlFATAL);
-  }
-
-  tmp_a_bolus = coerce_input_double(a_bolus,type_a_bolus,kdepnlatmlon,0,
-                                    NULL,NULL);
-  if(tmp_a_bolus == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for coercing a_bolus to double");
-    return(NhlFATAL);
-  }
-
-  tmp_a_submeso = coerce_input_double(a_submeso,type_a_submeso,kdepnlatmlon,
-                                      0,NULL,NULL);
-  if(tmp_a_submeso == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for coercing a_submeso to double");
-    return(NhlFATAL);
-  }
-
-  tmp_tlat = coerce_input_double(tlat,type_tlat,nlatmlon,0,NULL,NULL);
-  if(tmp_tlat == NULL) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for coercing tlat to double");
-    return(NhlFATAL);
-  }
+ /*
+  * Handle missing values
+  */
+  double missing_d_a_wvel;
+  float missing_f_a_wvel;
+  coerce_missing(a_wvel->type, a_wvel->has_missing, (ncomp_missing *)&(a_wvel->msg),
+                &missing_d_a_wvel, &missing_f_a_wvel);
 
 
 /*
- * The output will be float unless any of the first four arguments
- * are double.
+ * Convert input arrays to double if necassary.
  */
-  if(type_a_wvel == NCL_double || type_a_submeso == NCL_double ||
-     type_a_bolus == NCL_double) {
-    type_tmp = NCL_double;
+ size_t lat_aux_grid_numel = prod(lat_aux_grid->shape, lat_aux_grid->ndim);
+ double *tmp_lat_aux_grid = convert_to_with_copy_avoiding<double>((void *)lat_aux_grid->addr,
+                              lat_aux_grid_numel, 0, lat_aux_grid->type, NCOMP_DOUBLE);
+
+size_t a_wvel_numel = prod(a_wvel->shape, a_wvel->ndim);
+double *tmp_a_wvel = convert_to_with_copy_avoiding<double>((void *)a_wvel->addr,
+                             a_wvel_numel, 0, a_wvel->type, NCOMP_DOUBLE);
+
+size_t a_bolus_numel = prod(a_bolus->shape, a_bolus->ndim);
+double *tmp_a_bolus = convert_to_with_copy_avoiding<double>((void *)a_bolus->addr,
+                            a_bolus_numel, 0, a_bolus->type, NCOMP_DOUBLE);
+
+size_t a_submeso_numel = prod(a_submeso->shape, a_submeso->ndim);
+double *tmp_a_submeso = convert_to_with_copy_avoiding<double>((void *)a_submeso->addr,
+                           a_submeso_numel, 0, a_submeso->type, NCOMP_DOUBLE);
+
+size_t tlat_numel = prod(tlat->shape, tlat->ndim);
+double *tmp_tlat = convert_to_with_copy_avoiding<double>((void *)tlat->addr,
+                          tlat_numel, 0, tlat->type, NCOMP_DOUBLE);
+
+
+/*
+ * The output will be float unless any of the first four arguments are double.
+ */
+  if(a_wvel->type == NCOMP_DOUBLE || a_submeso->type == NCOMP_DOUBLE ||
+     a_bolus->type == NCOMP_DOUBLE) {
+    type_tmp = NCOMP_DOUBLE;
   }
   else {
-    type_tmp = NCL_float;
+    type_tmp = NCOMP_FLOAT;
   }
+
 
 /*
  * Allocate space for output array.
  */
-  size_output = 3 * kdepnyaux2;    /* 3 x 2 x kdep x nyaux */
+ size_output = 3 * kdepnyaux2;    /* 3 x 2 x kdep x nyaux */
 
-  if(type_tmp != NCL_double) {
-    tmp   = (void *)calloc(size_output, sizeof(float));
-    dtmp1 = (double *)calloc(kdepnyaux2, sizeof(double));
-    dtmp2 = (double *)calloc(kdepnyaux2, sizeof(double));
-    dtmp3 = (double *)calloc(kdepnyaux2, sizeof(double));
-    if(tmp == NULL || dtmp1 == NULL || dtmp2 == NULL ||
-       dtmp3 == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for temporary output arrays");
-      return(NhlFATAL);
-    }
+  /* create temporary output arrays */
+  if (type_tmp != NCOMP_DOUBLE) {
+    tmp   = (void *)(new float[size_output]);
+
+    dtmp1 = new double[kdepnyaux2];
+    dtmp2 = new double[kdepnyaux2];
+    dtmp3 = new double[kdepnyaux2];
   }
   else {
-    tmp = (void *)calloc(size_output, sizeof(double));
-    if(tmp == NULL) {
-      NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for output array");
-      return(NhlFATAL);
-    }
+    tmp   = (void *)(new double[size_output]);
+
     dtmp1 = &((double*)tmp)[0];
     dtmp2 = &((double*)tmp)[kdepnyaux2];
-    dtmp3 = &((double*)tmp)[2*kdepnyaux2];
+    dtmp3 = &((double*)tmp)[2 * kdepnyaux2];
   }
 
 /*
  * Allocate space for output dimension sizes and set them.
  */
   ndims_tmp  = 4;
-  dsizes_tmp = (ng_size_t*)calloc(ndims_tmp,sizeof(ng_size_t));
-  if( dsizes_tmp == NULL ) {
-    NhlPError(NhlFATAL,NhlEUNKNOWN,"moc_globe_atl: Unable to allocate memory for holding dimension sizes");
-    return(NhlFATAL);
-  }
+  dsizes_tmp.reset(new size_t[ndims_tmp]);
   dsizes_tmp[0] = 3;
   dsizes_tmp[1] = 2;
   dsizes_tmp[2] = kdep;
   dsizes_tmp[3] = nyaux;
+
 
 /*
  * Call the Fortran routine.
  */
   nrx = 2;
 
-  NGCALLF(mocloops,MOCLOOPS)(&inyaux, &imlon, &inlat, &ikdep, &nrx, tmp_tlat,
-                             tmp_lat_aux_grid, rmlak, tmp_a_wvel, tmp_a_bolus,
-                             tmp_a_submeso, &missing_dbl_a_wvel.doubleval,
-                             dtmp1, dtmp2, dtmp3);
+  mocloops_(&inyaux, &imlon, &inlat, &ikdep, &nrx, tmp_tlat, tmp_lat_aux_grid,
+            rmlak, tmp_a_wvel, tmp_a_bolus, tmp_a_submeso, &missing_d_a_wvel,
+            dtmp1, dtmp2, dtmp3);
 
-  if(type_tmp != NCL_double) {
-    coerce_output_float_only(tmp,dtmp1,kdepnyaux2,0);
-    coerce_output_float_only(tmp,dtmp2,kdepnyaux2,kdepnyaux2);
-    coerce_output_float_only(tmp,dtmp3,kdepnyaux2,2*kdepnyaux2);
+  if(type_tmp != NCOMP_DOUBLE) {
+    coerce_output_float_only(tmp,dtmp1,kdepnyaux2, 0);
+    coerce_output_float_only(tmp,dtmp2,kdepnyaux2, kdepnyaux2);
+    coerce_output_float_only(tmp,dtmp3,kdepnyaux2, 2 * kdepnyaux2);
+
+    /* TO-DO: Finalize here */
+    /*
+    convert_to<float>(tmp_fo.data(), nfo, 0, NCOMP_DOUBLE,
+                        ((float *)fo->addr) + index_fo);
+    */
   }
+
+
+  /*
+   * Return variables.
+   */
+
+   if(type_tmp != NCOMP_DOUBLE)
+      *tmp_out = *ncomp_array_alloc(tmp, NCOMP_FLOAT, ndims_tmp, dsizes_tmp.get());
+   else
+      *tmp_out = *ncomp_array_alloc(tmp, NCOMP_DOUBLE, ndims_tmp, dsizes_evec.get());
+
+   /* TO-DO: Check if has_missing and msg.msg_double needed */
+   tmp_out->has_missing = a_wvel->has_missing;
+   tmp_out->msg.msg_double = missing_d_a_wvel;
 
 /*
  * Free unneeded memory.
  */
-  if(type_lat_aux_grid != NCL_double) NclFree(tmp_lat_aux_grid);
-  if(type_a_wvel    != NCL_double) NclFree(tmp_a_wvel);
-  if(type_a_bolus   != NCL_double) NclFree(tmp_a_bolus);
-  if(type_a_submeso != NCL_double) NclFree(tmp_a_submeso);
-  if(type_tlat      != NCL_double) NclFree(tmp_tlat);
-  if(type_tmp       != NCL_double) {
-    NclFree(dtmp1);
-    NclFree(dtmp2);
-    NclFree(dtmp3);
-  }
+   if(lat_aux_grid->type != NCOMP_DOUBLE)
+      delete [] tmp_lat_aux_grid;
+
+   if(a_wvel->type != NCOMP_DOUBLE)
+      delete [] tmp_a_wvel;
+
+   if(a_bolus->type != NCOMP_DOUBLE)
+      delete [] tmp_a_bolus;
+
+   if(a_submeso->type != NCOMP_DOUBLE)
+      delete [] tmp_a_submeso;
+
+   if(tlat->type != NCOMP_DOUBLE)
+      delete [] tmp_tlat;
+
+   if(type_tmp != NCOMP_DOUBLE) {
+      delete [] dtmp1;
+      delete [] dtmp2;
+      delete [] dtmp3;
+   }
+
 
 /*
- * Return value back to NCL script.
+ * TO-DO: Revisit to return a meaningful value, if any. Intuition for returnin 0
+ * for now is that if any error did not occur thorughout the code, then there
+ * should not be an erro at this point.
  */
-  ret = NclReturnValue(tmp,ndims_tmp,dsizes_tmp,NULL,type_tmp,0);
-  NclFree(dsizes_tmp);
-  return(ret);
+  return 0;
 }

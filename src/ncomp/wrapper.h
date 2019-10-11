@@ -10,6 +10,10 @@ extern "C" {
 int linint2(const ncomp_array *, const ncomp_array *, const ncomp_array *,
             const ncomp_array *, const ncomp_array *, ncomp_array *, int, int);
 
+int moc_globe_atl( const ncomp_array *, const ncomp_array *, const ncomp_array *,
+                   const ncomp_array *, const ncomp_array *, const ncomp_array *,
+                   ncomp_array * )
+
 #ifdef __cplusplus /* If this is a C++ compiler, end C linkage */
 }
 #endif
