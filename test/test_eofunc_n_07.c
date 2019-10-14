@@ -33,6 +33,7 @@ double * readfile(char * filename, int nTime, int nLat, int nLon) {
 }
 
 int main(void) {
+  printf("Testing eofunc_n (07): ...\n");
   int nTime = 127;
   int nLat  =  91;
   int nLon  = 180;

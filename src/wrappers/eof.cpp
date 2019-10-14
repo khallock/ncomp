@@ -934,7 +934,7 @@ extern "C" int eofunc_n(const ncomp_array * x_in, const int neval_in,
   // Although this check is also performed when eofunc is called, but let's
   // terminate early, if we have too and not bother with rearranging at all.
   if (x_in->ndim < 2) {
-    std::cerr<<"eofunc: The input array must be at least two-dimensional"<<std::endl;
+    std::cerr<<"eofunc_n: The input array must be at least two-dimensional"<<std::endl;
     return 1;
   }
 
@@ -1083,20 +1083,26 @@ extern "C" int eofunc_ts(
     return NCOMP_RETURN_FATAL;
   }
 
+  printf("here 0\n");
+
   size_t msta {1};
   for (int i = 0; i < (x_in->ndim-1); ++i) {
     if (x_in->shape[i] != evec_in->shape[i]) {
+      printf("%d (%d -> %d)\n", i, x_in->shape[i], evec_in->shape[i]);
       #if DEBUG
         std::cerr << "eofunc_ts: All but the rightmost dimension of the first "
                      "input array must be the same as all but the leftmost "
                      "dimension of the second input array\n";
       #endif
+      printf("here 1\n");
       return NCOMP_RETURN_FATAL;
     } else {
       msta *= x_in->shape[i];
     }
 
   }
+
+  printf("here 2\n");
 
   size_t ncol {msta};
   size_t nobs {x_in->shape[x_in->ndim-1]};
@@ -1251,4 +1257,36 @@ extern "C" int eofunc_ts(
 
   collectAttributeList(tmp_attr_out, attrs_out);
   return i_err;
+}
+
+extern "C" int eofunc_ts_n(
+  const ncomp_array * x_in,
+  const ncomp_array * ev_in,
+  const ncomp_attributes * options_in,
+  const int t_dim,
+  ncomp_array * x_out,
+  ncomp_attributes * attrs_out)
+{
+  // Sanity Checking
+  // Although this check is also performed when eofunc is called, but let's
+  // terminate early, if we have too and not bother with rearranging at all.
+  if (x_in->ndim < 2) {
+    std::cerr<<"eofunc_ts_n: The input array must be at least two-dimensional"<<std::endl;
+    return 1;
+  }
+
+  if (t_dim == (x_in->ndim-1)) { // This means the last dimension is the time
+                                // thus, no rearrangement is needed.
+    return eofunc_ts(x_in,ev_in,options_in, x_out, attrs_out);
+  } else {
+    ncomp_array * x_in_rearranged  = _rearrange_ncomp_array(x_in, t_dim);
+    ncomp_array * ev_in_rearranged = _rearrange_ncomp_array(ev_in, t_dim);
+
+    printf("Here ...\n");
+    int i_error = eofunc_ts(x_in_rearranged, ev_in_rearranged, options_in, x_out, attrs_out);
+
+    ncomp_array_free(x_in_rearranged, 0);
+
+    return i_error;
+  }
 }
