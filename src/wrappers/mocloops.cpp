@@ -194,31 +194,35 @@ double *tmp_tlat = convert_to_with_copy_avoiding<double>((void *)tlat->addr,
             rmlak, tmp_a_wvel, tmp_a_bolus, tmp_a_submeso, &missing_d_a_wvel,
             dtmp1, dtmp2, dtmp3);
 
-  if(type_tmp != NCOMP_DOUBLE) {
-    coerce_output_float_only(tmp,dtmp1,kdepnyaux2, 0);
-    coerce_output_float_only(tmp,dtmp2,kdepnyaux2, kdepnyaux2);
-    coerce_output_float_only(tmp,dtmp3,kdepnyaux2, 2 * kdepnyaux2);
-
-    /* TO-DO: Finalize here */
-    /*
-    convert_to<float>(tmp_fo.data(), nfo, 0, NCOMP_DOUBLE,
-                        ((float *)fo->addr) + index_fo);
-    */
-  }
-
 
   /*
    * Return variables.
    */
 
-   if(type_tmp != NCOMP_DOUBLE)
-      *tmp_out = *ncomp_array_alloc(tmp, NCOMP_FLOAT, ndims_tmp, dsizes_tmp.get());
-   else
-      *tmp_out = *ncomp_array_alloc(tmp, NCOMP_DOUBLE, ndims_tmp, dsizes_evec.get());
+   if(type_tmp != NCOMP_DOUBLE){
 
-   /* TO-DO: Check if has_missing and msg.msg_double needed */
+     /* Convert tmp array to floats first*/
+     convert_to<float>(dtmp1, kdepnyaux2, 0, NCOMP_DOUBLE,
+                         (float *)tmp + 0);
+
+     convert_to<float>(dtmp2, kdepnyaux2, 0, NCOMP_DOUBLE,
+                         (float *)tmp + kdepnyaux2);
+
+     convert_to<float>(dtmp3, kdepnyaux2, 0, NCOMP_DOUBLE,
+                         (float *)tmp + 2 * kdepnyaux2);
+
+      /* Populate output ncomp_array from tmp array */
+      *tmp_out = *ncomp_array_alloc((float *)tmp, NCOMP_FLOAT, ndims_tmp, dsizes_tmp.get());
+   }
+   else
+      /* Populate output ncomp_array from tmp array */
+      *tmp_out = *ncomp_array_alloc((double *)tmp, NCOMP_DOUBLE, ndims_tmp, dsizes_tmp.get());
+
+  /* TO-DO: Check if has_missing and msg.msg_double needed
    tmp_out->has_missing = a_wvel->has_missing;
    tmp_out->msg.msg_double = missing_d_a_wvel;
+   */
+
 
 /*
  * Free unneeded memory.
