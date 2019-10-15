@@ -59,15 +59,15 @@ int main(void) {
     return ierr;
   }
 
-  printf("Calling eofunc_ts_n: ...\n");
-  ncomp_array* ev_ts = (ncomp_array*) malloc(sizeof(ncomp_array));
-  ncomp_attributes* ev_ts_attr = (ncomp_attributes*) malloc(sizeof(ncomp_attributes));
-  ierr = eofunc_ts_n(ncomp_x_in, ev, NULL, 0, ev_ts, ev_ts_attr);
-
-  if (ierr != 0) {
-    printf("ierr: %d\n", ierr);
-    return ierr;
-  }
+  // printf("Calling eofunc_ts_n: ...\n");
+  // ncomp_array* ev_ts = (ncomp_array*) malloc(sizeof(ncomp_array));
+  // ncomp_attributes* ev_ts_attr = (ncomp_attributes*) malloc(sizeof(ncomp_attributes));
+  // ierr = eofunc_ts_n(ncomp_x_in, ev, NULL, 0, ev_ts, ev_ts_attr);
+  //
+  // if (ierr != 0) {
+  //   printf("ierr: %d\n", ierr);
+  //   return ierr;
+  // }
 
   // // Proceeding with checking the output
   // if (ncomp_x_out->ndim != 3) {

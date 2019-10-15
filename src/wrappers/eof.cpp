@@ -1083,26 +1083,20 @@ extern "C" int eofunc_ts(
     return NCOMP_RETURN_FATAL;
   }
 
-  printf("here 0\n");
-
   size_t msta {1};
   for (int i = 0; i < (x_in->ndim-1); ++i) {
-    if (x_in->shape[i] != evec_in->shape[i]) {
-      printf("%d (%d -> %d)\n", i, x_in->shape[i], evec_in->shape[i]);
+    if (x_in->shape[i] != evec_in->shape[i+1]) {
       #if DEBUG
         std::cerr << "eofunc_ts: All but the rightmost dimension of the first "
                      "input array must be the same as all but the leftmost "
                      "dimension of the second input array\n";
       #endif
-      printf("here 1\n");
       return NCOMP_RETURN_FATAL;
     } else {
       msta *= x_in->shape[i];
     }
 
   }
-
-  printf("here 2\n");
 
   size_t ncol {msta};
   size_t nobs {x_in->shape[x_in->ndim-1]};
@@ -1146,7 +1140,7 @@ extern "C" int eofunc_ts(
   float missing_f_evec;
   double * devec = convert_ncomp_array_to<double>(evec_in, &missing_d_evec, &missing_f_evec);
 
-  /*
+    /*
    * Allocate memory for return variables.
    */
   std::unique_ptr<size_t[]> dsizes_evec_ts(new size_t[2]{neval, ntime});
@@ -1167,7 +1161,7 @@ extern "C" int eofunc_ts(
    * Check for "jopt".
    */
   int jopt {0}; // default value is zero.
-  if (options_in != nullptr || options_in->nAttribute>0) {
+  if (options_in != nullptr && options_in->nAttribute>0) {
     jopt = *(int *) getAttributeOrDefault(options_in, "jopt", &jopt);
     if ((jopt != 0) && (jopt != 1)) {
       jopt = 0; // jopt must be either 0 or 1
@@ -1271,22 +1265,45 @@ extern "C" int eofunc_ts_n(
   // Although this check is also performed when eofunc is called, but let's
   // terminate early, if we have too and not bother with rearranging at all.
   if (x_in->ndim < 2) {
-    std::cerr<<"eofunc_ts_n: The input array must be at least two-dimensional"<<std::endl;
+    #if DEBUG
+      std::cerr<<"eofunc_ts_n: The input arrays must be at least two-dimensional\n";
+    #endif
     return 1;
   }
+
+  if (x_in->ndim != ev_in->ndim) {
+    #if DEBUG
+      std::cerr<<"eofunc_ts_n: The input arrays must be at least two-dimensional and have the same number of dimensions\n";
+    #endif
+    return 2;
+  }
+
+  for (int i = 0; i < x_in->ndim; ++i) {
+    if (  (i != t_dim) &&
+          (x_in->shape[i]!=ev_in->shape[i]) ) {
+      #if DEBUG
+      std::cout <<"eofunc_ts_n: All but the 'time' dimension of the first input array must be the same as all but the leftmost dimension of the second input array\n";
+      #endif
+      return 3;
+    }
+  }
+
+  printf("\nall good so far...\n");
 
   if (t_dim == (x_in->ndim-1)) { // This means the last dimension is the time
                                 // thus, no rearrangement is needed.
     return eofunc_ts(x_in,ev_in,options_in, x_out, attrs_out);
   } else {
-    ncomp_array * x_in_rearranged  = _rearrange_ncomp_array(x_in, t_dim);
-    ncomp_array * ev_in_rearranged = _rearrange_ncomp_array(ev_in, t_dim);
-
-    printf("Here ...\n");
-    int i_error = eofunc_ts(x_in_rearranged, ev_in_rearranged, options_in, x_out, attrs_out);
-
-    ncomp_array_free(x_in_rearranged, 0);
-
-    return i_error;
+  //   ncomp_array * x_in_rearranged  = _rearrange_ncomp_array(x_in, t_dim);
+  //   // ncomp_array * ev_in_rearranged = _rearrange_ncomp_array(ev_in, t_dim);
+  //
+  //   printf("Here ...\n");
+  //   int i_error = eofunc_ts(x_in_rearranged, ev_in, options_in, x_out, attrs_out);
+  //
+  //   ncomp_array_free(x_in_rearranged, 0);
+  //
+  //   return i_error;
   }
+
+  return 0;
 }
