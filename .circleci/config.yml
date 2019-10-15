@@ -13,7 +13,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}
+          key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum ".circleci/environment-dev-Linux.yml" }}
       - run:
           name: Install conda environment
           command: ./.circleci/install-circle.sh
@@ -21,7 +21,7 @@ jobs:
           name: Running checks
           command: ./.circleci/${TEST_SCRIPT}
       - save_cache:
-          key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}
+          key: deps-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ .Environment.CIRCLE_JOB }}-{{ checksum ".circleci/environment-dev-Linux.yml" }}
           paths:
             - "/usr/local/pkgs"
     environment:

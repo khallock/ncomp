@@ -1,3 +1,9 @@
+
+# Created by https://www.gitignore.io/api/c,fortran,autotools
+# Edit at https://www.gitignore.io/?templates=c,fortran,autotools
+# NOTE: the automatically generated .gitignore is later modified
+
+### Autotools ###
 # http://www.gnu.org/software/automake
 
 Makefile.in
@@ -6,6 +12,7 @@ Makefile.in
 /py-compile
 /test-driver
 /ylwrap
+# Extra added - not by gitignore.io
 .libs/
 *.o
 *.la
@@ -29,6 +36,7 @@ autom4te.cache
 /install-sh
 /missing
 /stamp-h1
+# Extra added - not by gitignore.io
 Makefile
 /config.h
 .deps/
@@ -36,6 +44,7 @@ Makefile
 # https://www.gnu.org/software/libtool/
 
 /ltmain.sh
+# Extra added - not by gitignore.io
 /libtool
 
 # http://www.gnu.org/software/texinfo
@@ -49,3 +58,85 @@ m4/ltoptions.m4
 m4/ltsugar.m4
 m4/ltversion.m4
 m4/lt~obsolete.m4
+
+### Autotools Patch ###
+
+### C ###
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
+### Fortran ###
+# Prerequisites
+
+# Compiled Object files
+*.slo
+
+# Precompiled Headers
+
+# Compiled Dynamic libraries
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+
+# Executables
+
+# End of https://www.gitignore.io/api/c,fortran,autotools
+
+# Extra added - not by gitignore.io
+### Mac OSX ###
+.DS_Store
+.tar.gz
