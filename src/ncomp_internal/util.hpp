@@ -357,6 +357,7 @@ template <typename T>
 T* allocateAndInit(size_t size, T initValue);
 
 size_t prod(const size_t* shape, int ndim);
+size_t prod(const size_t* shape, int start_inclusive_idx, int end_exclusive_idx);
 
 ncomp_attributes * collectAttributeList(std::vector<ncomp_single_attribute *> attrVector);
 void collectAttributeList(std::vector<ncomp_single_attribute*> attrVector, ncomp_attributes * collectedAttributedList);

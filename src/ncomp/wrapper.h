@@ -22,6 +22,12 @@ int eofunc(const ncomp_array * x_in, const int neval_in,
            const ncomp_attributes * options_in,
            ncomp_array * x_out, ncomp_attributes * attrList_out);
 
+int eofunc_n(const ncomp_array * x_in, const int neval_in,
+             const int t_dim,
+             const ncomp_attributes * options_in,
+             ncomp_array * x_out, ncomp_attributes * attrList_out);
+
+
 #ifdef __cplusplus /* If this is a C++ compiler, end C linkage */
 }
 #endif

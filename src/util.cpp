@@ -445,8 +445,12 @@ extern "C" void* getAttributeOrDefault(
 
 //
 size_t prod(const size_t* shape, int ndim) {
+  return prod(shape, 0, ndim);
+}
+
+size_t prod(const size_t* shape, int start_inclusive_idx, int end_exclusive_idx) {
   size_t nElements = 1;
-  for (int i = 0; i<ndim; ++i) {
+  for (int i = start_inclusive_idx; i < end_exclusive_idx; ++i) {
     nElements *= *(shape+i);
   }
   return nElements;
@@ -522,3 +526,4 @@ void print_ncomp_attributes(const ncomp_attributes * in) {
 template double * allocateAndInit(size_t, double);
 template float * allocateAndInit(size_t, float);
 template double * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);
+template float * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);

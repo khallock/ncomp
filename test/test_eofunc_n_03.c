@@ -8,12 +8,12 @@
 
 
 int main(void) {
-  printf("Testing eofunc (05): ...\n");
+  printf("Testing eofunc_n (03): ...\n");
 
   // Creating an empty options
   ncomp_attributes* options = ncomp_attributes_allocate(2);
 
-  int jopt = 1;
+  int jopt = 0;
   options->attribute_array[0] = create_ncomp_single_attribute_from_scalar((char *) "jopt", &jopt, NCOMP_INT);
 
   double pcrit = 32.0;
@@ -27,19 +27,24 @@ int main(void) {
   int nt = 4;
   int nelem = nx*ny*nt;
   size_t dim_x[] = {nx, ny, nt};
-  double x_in [] = {0,1,-99,-99,4,-99,6,-99,8,9,10,-99,12,-99,14,15,16,-99,18,-99,20,21,22,-99,24,25,26,27,28,-99,30,-99,32,33,34,35,36,-99,38,39,40,-99,42,-99,44,45,46,-99,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63};
+  double * x_in = (double *) malloc(sizeof(double) * nelem);
 
+  // filling in with some data
+  for (int i = 0; i < (nelem); ++i) {
+    x_in[i] = i;
+  }
 
   // creating rest of the eofunc arguments:
   ncomp_array* ncomp_x_in = ncomp_array_alloc((void*) x_in, NCOMP_DOUBLE, 3, dim_x);
   ncomp_x_in->has_missing = 1;
-  ncomp_x_in->msg.msg_double = -99.0;
+  ncomp_x_in->msg.msg_double = -999.0;
   ncomp_array* ncomp_x_out = (ncomp_array*) malloc(sizeof(ncomp_array));
   ncomp_attributes* attr = (ncomp_attributes*) malloc(sizeof(ncomp_attributes));
   int neval = 1;
 
-  printf("Calling eofunc: ...\n");
-  int ierr = eofunc(ncomp_x_in, neval, options, ncomp_x_out, attr);
+  printf("Calling eofunc_n: ...\n");
+  int t_dim = 0;
+  int ierr = eofunc_n(ncomp_x_in, neval, t_dim, options, ncomp_x_out, attr);
   if (ierr != 0) {
     printf("ierr: %d", ierr);
     return ierr;
@@ -62,13 +67,9 @@ int main(void) {
     return 2;
   };
 
-  double expected_x_out[] = {0.0600, 0.1257, 0.1778, 0.2675, 0.1257, 0.1778, 0.3404, 0.1257, 0.3404, 0.2675, 0.1257, 0.1778, 0.3404, 0.3404, 0.3404, 0.3404};
-
   for (int i = 0; i < 16; ++i) {
-    if (fabs( ((double*) ncomp_x_out->addr)[i] - expected_x_out[i]) > 0.0001) {
+    if (fabs( ((double*) ncomp_x_out->addr)[i] - 0.25) > 0.001) {
       printf("problem with ncomp_x_out->addr\n");
-      printf("Expected: x_out[%d] = %f\n", i, expected_x_out[i]);
-      printf("  Actual: x_out[%d] = %f\n", i, ((double*) ncomp_x_out->addr)[i]);
       return 3;
     }
   }
@@ -76,8 +77,6 @@ int main(void) {
   int expected_nAttribute = 6;
   if (attr->nAttribute != expected_nAttribute) {
     printf("problem with attr->nAttribute\n");
-    printf("Expected: %d\n", expected_nAttribute);
-    printf("  Actual: %d\n", attr->nAttribute);
     return 4;
   }
 
@@ -88,10 +87,8 @@ int main(void) {
       if (  (s_attr->value->type != 12) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
-            ( fabs( ((double*) s_attr->value->addr)[0] - 2.9852) > 0.0001) ) {
+            ( fabs( ((double*) s_attr->value->addr)[0] - 1365.3333) > 0.0001) ) {
         printf("problem with eval_transpose\n");
-        printf("Expected: %f\n", 2.9852);
-        printf("  Actual: %f\n", ((double*) s_attr->value->addr)[0]);
         return 5;
       }
     }
@@ -100,10 +97,8 @@ int main(void) {
       if (  (s_attr->value->type != 12) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
-            ( fabs( ((double*) s_attr->value->addr)[0] - 14.9260) > 0.0001) ) {
+            ( fabs( ((double*) s_attr->value->addr)[0] - 6826.6667) > 0.0001) ) {
         printf("problem with eval\n");
-        printf("Expected: %f\n", 14.9260);
-        printf("  Actual: %f\n", ((double*) s_attr->value->addr)[0]);
         return 6;
       }
     }
@@ -112,10 +107,8 @@ int main(void) {
       if (  (s_attr->value->type != 11) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
-            ( fabs( ((float*) s_attr->value->addr)[0] - 98.7163) > 0.0001) ) {
+            ( fabs( ((float*) s_attr->value->addr)[0] - 100.00) > 0.0001) ) {
         printf("problem with pcvar\n");
-        printf("Expected: %f\n", 98.7163);
-        printf("Actual: %f\n", ((float*) s_attr->value->addr)[0]);
         return 7;
       }
     }
@@ -134,7 +127,7 @@ int main(void) {
       if (  (s_attr->value->type != 0) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
-            strcmp((char *) s_attr->value->addr, "correlation")!=0 ) {
+            strcmp((char *) s_attr->value->addr, "covariance")!=0 ) {
         printf("problem with matrix\n");
         return 8;
       }

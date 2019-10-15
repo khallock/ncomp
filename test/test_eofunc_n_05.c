@@ -8,12 +8,12 @@
 
 
 int main(void) {
-  printf("Testing eofunc (05): ...\n");
+  printf("Testing eofunc_n (05): ...\n");
 
   // Creating an empty options
   ncomp_attributes* options = ncomp_attributes_allocate(2);
 
-  int jopt = 1;
+  int jopt = 0;
   options->attribute_array[0] = create_ncomp_single_attribute_from_scalar((char *) "jopt", &jopt, NCOMP_INT);
 
   double pcrit = 32.0;
@@ -38,8 +38,9 @@ int main(void) {
   ncomp_attributes* attr = (ncomp_attributes*) malloc(sizeof(ncomp_attributes));
   int neval = 1;
 
-  printf("Calling eofunc: ...\n");
-  int ierr = eofunc(ncomp_x_in, neval, options, ncomp_x_out, attr);
+  printf("Calling eofunc_n: ...\n");
+  int t_dim = 1;
+  int ierr = eofunc_n(ncomp_x_in, neval, t_dim, options, ncomp_x_out, attr);
   if (ierr != 0) {
     printf("ierr: %d", ierr);
     return ierr;
@@ -62,7 +63,7 @@ int main(void) {
     return 2;
   };
 
-  double expected_x_out[] = {0.0600, 0.1257, 0.1778, 0.2675, 0.1257, 0.1778, 0.3404, 0.1257, 0.3404, 0.2675, 0.1257, 0.1778, 0.3404, 0.3404, 0.3404, 0.3404};
+  double expected_x_out[] = {0.3139, 0.1243, 0.1274, -99.0, 0.3139, 0.0318, 0.3139, -99.0, 0.3139, 0.2821, 0.3139, 0.0303, 0.3139, 0.3139, 0.3139, 0.3139};
 
   for (int i = 0; i < 16; ++i) {
     if (fabs( ((double*) ncomp_x_out->addr)[i] - expected_x_out[i]) > 0.0001) {
@@ -88,7 +89,7 @@ int main(void) {
       if (  (s_attr->value->type != 12) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
-            ( fabs( ((double*) s_attr->value->addr)[0] - 2.9852) > 0.0001) ) {
+            ( fabs( ((double*) s_attr->value->addr)[0] - 84.7542) > 0.0001) ) {
         printf("problem with eval_transpose\n");
         printf("Expected: %f\n", 2.9852);
         printf("  Actual: %f\n", ((double*) s_attr->value->addr)[0]);
@@ -100,7 +101,7 @@ int main(void) {
       if (  (s_attr->value->type != 12) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
-            ( fabs( ((double*) s_attr->value->addr)[0] - 14.9260) > 0.0001) ) {
+            ( fabs( ((double*) s_attr->value->addr)[0] - 339.0166) > 0.0001) ) {
         printf("problem with eval\n");
         printf("Expected: %f\n", 14.9260);
         printf("  Actual: %f\n", ((double*) s_attr->value->addr)[0]);
@@ -112,7 +113,7 @@ int main(void) {
       if (  (s_attr->value->type != 11) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
-            ( fabs( ((float*) s_attr->value->addr)[0] - 98.7163) > 0.0001) ) {
+            ( fabs( ((float*) s_attr->value->addr)[0] - 102.4951) > 0.0001) ) {
         printf("problem with pcvar\n");
         printf("Expected: %f\n", 98.7163);
         printf("Actual: %f\n", ((float*) s_attr->value->addr)[0]);
@@ -134,7 +135,7 @@ int main(void) {
       if (  (s_attr->value->type != 0) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
-            strcmp((char *) s_attr->value->addr, "correlation")!=0 ) {
+            strcmp((char *) s_attr->value->addr, "covariance")!=0 ) {
         printf("problem with matrix\n");
         return 8;
       }
