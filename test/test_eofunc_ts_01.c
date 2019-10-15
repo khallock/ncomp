@@ -21,9 +21,7 @@ double * read_data_rearrange(char * filename, int nTime, int nLat, int nLon) {
           // nLat x nLon x nTime
           int idx = j*(nLon*nTime) + i*(nTime) + k;
           data[idx] = atof(tmp);
-          // printf("%f ", data[idx]);
         }
-        // printf("\n");
       }
     }
     fclose(fp);
@@ -48,9 +46,7 @@ double * read_expected_ev(char * filename, int nTime, int nLat, int nLon) {
           fscanf(fp,"%s", &tmp);
           int idx = k*(nLat*nLon) + j*(nLon) + i;
           data[idx] = atof(tmp);
-          // printf("%f ", data[idx]);
         }
-        // printf("\n");
       }
     }
     fclose(fp);
@@ -102,7 +98,7 @@ int main(void) {
   ncomp_array* ev = (ncomp_array*) malloc(sizeof(ncomp_array));
   ncomp_attributes* ev_attr = (ncomp_attributes*) malloc(sizeof(ncomp_attributes));
 
-  printf("Calling eofunc_n: ...\n");
+  printf("Calling eofunc: ...\n");
   int neval = 5;
   int ierr = eofunc(ncomp_x_in, neval, NULL, ev, ev_attr);
 

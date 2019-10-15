@@ -1188,7 +1188,6 @@ extern "C" int eofunc_ts(
         std::cerr << "eofunc_ts: " << i_err << " eigenvectors failed to converge\n";
       }
     #endif
-    return i_err;
   }
 
   /*
@@ -1228,7 +1227,7 @@ extern "C" int eofunc_ts(
      tmp_attr_out.push_back(
        create_ncomp_single_attribute_from_1DArray((char *)"ts_mean", (void *) revtsav, NCOMP_FLOAT, neval)
      );
-  } else {
+  } else { // at least one of the inputs is of type NCOMP_DOUBLE
     *x_out = *ncomp_array_alloc(
       (void *) evec_ts, NCOMP_DOUBLE, 2, dsizes_evec_ts.get());
     x_out->has_missing = x_in->has_missing;
@@ -1288,21 +1287,17 @@ extern "C" int eofunc_ts_n(
     }
   }
 
-  printf("\nall good so far...\n");
-
   if (t_dim == (x_in->ndim-1)) { // This means the last dimension is the time
                                 // thus, no rearrangement is needed.
     return eofunc_ts(x_in,ev_in,options_in, x_out, attrs_out);
   } else {
-  //   ncomp_array * x_in_rearranged  = _rearrange_ncomp_array(x_in, t_dim);
-  //   // ncomp_array * ev_in_rearranged = _rearrange_ncomp_array(ev_in, t_dim);
-  //
-  //   printf("Here ...\n");
-  //   int i_error = eofunc_ts(x_in_rearranged, ev_in, options_in, x_out, attrs_out);
-  //
-  //   ncomp_array_free(x_in_rearranged, 0);
-  //
-  //   return i_error;
+    ncomp_array * x_in_rearranged  = _rearrange_ncomp_array(x_in, t_dim);
+
+    int i_error = eofunc_ts(x_in_rearranged, ev_in, options_in, x_out, attrs_out);
+
+    ncomp_array_free(x_in_rearranged, 0);
+
+    return i_error;
   }
 
   return 0;

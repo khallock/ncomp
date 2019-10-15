@@ -13,6 +13,7 @@ begin
 	printVarSummary(ev)
 	printVarSummary(ev_ts)
 
+	asciiwrite("resources/SampleSST_ev.txt", ev)
 	asciiwrite("resources/SampleSST_ev_ts.txt", ev_ts)
 end
 
