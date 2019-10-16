@@ -191,8 +191,8 @@ double *tmp_tlat = convert_to_with_copy_avoiding<double>((void *)tlat->addr,
   nrx = 2;
 
   mocloops_(&inyaux, &imlon, &inlat, &ikdep, &nrx, tmp_tlat, tmp_lat_aux_grid,
-            rmlak, tmp_a_wvel, tmp_a_bolus, tmp_a_submeso, &missing_d_a_wvel,
-            dtmp1, dtmp2, dtmp3);
+            ((int *)rmlak->addr), tmp_a_wvel, tmp_a_bolus, tmp_a_submeso,
+            &missing_d_a_wvel, dtmp1, dtmp2, dtmp3);
 
 
   /*
