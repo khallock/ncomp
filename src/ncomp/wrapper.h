@@ -29,7 +29,7 @@ int eofunc_n(const ncomp_array * x_in, const int neval_in,
 
 int moc_globe_atl( const ncomp_array *, const ncomp_array *, const ncomp_array *,
                    const ncomp_array *, const ncomp_array *, const ncomp_array *,
-                   ncomp_array * )
+                   ncomp_array * );
 
 #ifdef __cplusplus /* If this is a C++ compiler, end C linkage */
 }
