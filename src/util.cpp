@@ -9,6 +9,115 @@
 #include <vector>
 #include <iostream>
 
+
+template <typename T>
+void convert_to(void *in_arr, size_t in_arr_size, size_t in_arr_offset,
+                int in_arr_type, T *out_arr) {
+  switch (in_arr_type) {
+  case NCOMP_DOUBLE: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<double *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_FLOAT: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<float *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_BOOL: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<char *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_BYTE: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<signed char *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_UBYTE: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] = static_cast<T>(
+          static_cast<unsigned char *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_SHORT: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<short *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_USHORT: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] = static_cast<T>(
+          static_cast<unsigned short *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_INT: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<int *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_UINT: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] = static_cast<T>(
+          static_cast<unsigned int *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_LONG: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<long *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_ULONG: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] = static_cast<T>(
+          static_cast<unsigned long *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_LONGLONG: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<long long *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_ULONGLONG: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] = static_cast<T>(
+          static_cast<unsigned long long *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_LONGDOUBLE: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<long double *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  default:
+    break;
+  }
+  return;
+}
+
 // If the intended type and the actual type are the same, the array is just casted
 // So nothing is copied. Hence, you need to make sure that in_arr is not scoped
 // out. However, if the arr_type and the intended are not the same, then a brand
@@ -330,6 +439,20 @@ extern "C" ncomp_single_attribute * create_ncomp_single_attribute_from_ncomp_arr
   return out_ncomp_single_attribute;
 }
 
+extern "C" ncomp_single_attribute * create_ncomp_single_attribute_char(
+  char * name,
+  char * data
+) {
+  int size_data = strlen(data) + 1;
+  char * copy_of_data = new char[size_data];
+  std::copy(data, data + size_data, copy_of_data);
+  size_t dims[1] {1};
+
+  ncomp_array * value = ncomp_array_alloc((void *) copy_of_data, NCOMP_CHAR, 1, dims);
+
+  return create_ncomp_single_attribute_from_ncomp_array(name, value);
+}
+
 // Creates a ncomp_single_attribute. Note that the data is not copied. So, make
 // sure it is not scoped out if you need to use it later.
 // Note that the name is copied. So, no need to manually copy it.
@@ -473,6 +596,16 @@ void print_ncomp_array(const char * name, const ncomp_array * in) {
   std::cout << name <<" has_missing: " << in->has_missing << "\n";
 
   switch(in->type) {
+    // case NCOMP_BOOL:
+    //   std::cout << name << " msg: " << in->msg.msg_double << "\n";
+    //
+    //   std::cout << name << " data: [ ";
+    //   for (int i = 0; i < nelem; ++i) {
+    //     int tmpVal = static_cast<int *>(in->addr)[i];
+    //     std::cout << ((tmpVal == 0) ? "False" : "True") << " ";
+    //   }
+    //   std::cout << "]\n";
+    //   break;
     case NCOMP_DOUBLE:
       std::cout << name << " msg: " << in->msg.msg_double << "\n";
 
@@ -525,5 +658,6 @@ void print_ncomp_attributes(const ncomp_attributes * in) {
 // explicit function instantiations
 template double * allocateAndInit(size_t, double);
 template float * allocateAndInit(size_t, float);
+template int * allocateAndInit(size_t, int);
 template double * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);
 template float * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);
