@@ -6,6 +6,7 @@ dependencies:
   - clangxx_osx-64
   - gfortran_osx-64
   - autoconf
+  - autoconf-archive
   - automake
   - libtool
   - make
