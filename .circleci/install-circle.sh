@@ -9,5 +9,5 @@ conda env update -f .circleci/environment-dev-$(uname).yml --name=${ENV_NAME} --
 conda env list
 source activate ${ENV_NAME}
 autoreconf --install
-./configure --prefix=${CONDA_PREFIX} LDFLAGS="-L${CONDA_PREFIX}/lib"
+./configure --prefix=${CONDA_PREFIX} LDFLAGS="-L${CONDA_PREFIX}/lib" CPPFLAGS="$(echo $CPPFLAGS | sed -e 's/-DNDEBUG//g')"
 make install
