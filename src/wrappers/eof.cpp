@@ -1055,7 +1055,7 @@ extern "C" int eofunc_north(
       printf("index    dlam      low       pcvar     high    sig_pcv\n");
       for (size_t i = 0; i < neval; ++i) {
         printf(
-          "(%2d)    %7.5f   %7.5f   %7.5f   %7.5f  %s\n",
+          "(%2zd)    %7.5f   %7.5f   %7.5f   %7.5f  %s\n",
           i,
           dlam[i], low[i], eval_d[i], high[i],
           sig_value[i] == 1 ? "True" : "False"

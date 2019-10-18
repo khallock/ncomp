@@ -41,8 +41,8 @@ int main(void) {
   for (int i = 0; i < 4; ++i) {
     if (((int*) ncomp_sig_out->addr)[i] != expected_sig_out[i]) {
       printf("problem with ncomp_sig_out->addr\n");
-      printf("Expected: ncomp_sig_out[%d] = %f\n", i, expected_sig_out[i]);
-      printf("  Actual: ncomp_sig_out[%d] = %f\n", i, ((int*) ncomp_sig_out->addr)[i]);
+      printf("Expected: ncomp_sig_out[%d] = %d\n", i, expected_sig_out[i]);
+      printf("  Actual: ncomp_sig_out[%d] = %d\n", i, ((int*) ncomp_sig_out->addr)[i]);
       return 3;
     }
   }
