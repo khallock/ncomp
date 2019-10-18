@@ -40,7 +40,7 @@ extern "C" int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d, con
   /**************** START: BASIC SANITY CHECKS ****************/
   if (lat2d->shape[0] != lon2d->shape[0] ||
       lat2d->shape[1] != lon2d->shape[1]) {
-#if DEBUG
+#ifdef DEBUG
     std::cerr << "ERROR rcm2rgrid: The input lat/lon grids must be the same "
       "size ! \n";
 #endif
@@ -48,7 +48,7 @@ extern "C" int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d, con
   }
 
   if (nlon2d <= 1 || nlat2d <= 1 || nlat1d <= 1 || nlon1d <= 1) {
-#if DEBUG
+#ifdef DEBUG
     std::cerr << "ERROR rcm2rgrid: The input/output lat/lon grids must have at "
       "least 2 elements ! \n";
 #endif
@@ -57,13 +57,13 @@ extern "C" int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d, con
 
   // Check dimensions of fi.
   if (fi->ndim < 2) {
-#if DEBUG
+#ifdef DEBUG
     std::cerr << "ERROR rcm2rgrid: fi must be at least two dimensions !\n";
 #endif
     return 1;
   }
   if (fi->shape[fi->ndim - 2] != nlat2d || fi->shape[fi->ndim - 1] != nlon2d) {
-#if DEBUG
+#ifdef DEBUG
     std::cerr << "ERROR rcm2rgrid: The rightmost dimensions of fi must "
       "be (nlat2d x nlon2d), where nlat2d and nlon2d are the "
       "dimensions of the lat2d/lon2d arrays !\n";
@@ -74,7 +74,7 @@ extern "C" int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d, con
   // Test input dimension sizes.
   if((nlon2d > INT_MAX) || (nlat2d > INT_MAX) || (ngrid > INT_MAX) ||
      (nlon1d > INT_MAX) || (nlat1d > INT_MAX)) {
-#if DEBUG
+#ifdef DEBUG
     std::cerr << "ERROR rcm2rgrid: one or more input dimension sizes is greater than INT_MAX !\n";
 #endif
     return 1;
@@ -132,14 +132,14 @@ extern "C" int rcm2rgrid(const ncomp_array *lat2d, const ncomp_array *lon2d, con
 
   if (ier) {
     if (ier == 1) {
-#if DEBUG
+#ifdef DEBUG
       std::cerr
 	<< "ERROR rcm2rgrid: not enough points in input/output array ! \n";
 #endif
       return 1;
     }
     if (2 <= ier && ier <= 5) {
-#if DEBUG
+#ifdef DEBUG
       std::cerr << "ERROR rcm2rgrid: lat2d, lon2d, lat1d, lon1d must be "
 	"monotonically increasing ! \n";
 #endif
@@ -189,14 +189,14 @@ extern "C" int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, con
   /**************** START: BASIC SANITY CHECKS ****************/
   if(lat2d->shape[0] != lon2d->shape[0] ||
      lat2d->shape[1] != lon2d->shape[1]) {
-#if DEBUG
+#ifdef DEBUG
     std::cerr << "ERROR rgrid2rcm: The output lat/lon grids must be the same size ! \n";
 #endif
     return 1;
   }
 
   if(nlon2d <= 1 || nlat2d <= 1 || nlat1d <= 1 || nlon1d <= 1) {
-#if DEBUG
+#ifdef DEBUG
     std::cerr << "ERROR rgrid2rcm: The input/output lat/lon grids must "
       "have at least 2 elements ! \n";
 #endif
@@ -205,7 +205,7 @@ extern "C" int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, con
 
   // Check dimensions of fi.
   if (fi->ndim < 2) {
-#if DEBUG
+#ifdef DEBUG
     std::cerr
       << "ERROR rgrid2rcm: fi must be at least two dimensions !\n";
 #endif
@@ -214,7 +214,7 @@ extern "C" int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, con
 
   if (fi->shape[fi->ndim - 2] != nlat1d ||
       fi->shape[fi->ndim - 1] != nlon1d) {
-#if DEBUG
+#ifdef DEBUG
     std::cerr << "ERROR rgrid2rcm: The rightmost dimensions of `fi` must "
       "be (nlat1d x nlon1d), where nlat1d and nlon1d are the "
       "dimensions of the lat1d/lon1d arrays !\n";
@@ -225,7 +225,7 @@ extern "C" int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, con
   // Test input dimension sizes.
   if((nlon2d > INT_MAX) || (nlat2d > INT_MAX) || (ngrid > INT_MAX) ||
      (nlon1d > INT_MAX) || (nlat1d > INT_MAX)) {
-#if DEBUG
+#ifdef DEBUG
     std::cerr << "ERROR rgridrcm: one or more input dimension sizes is greater than INT_MAX !\n";
 #endif
     return 1;
@@ -283,13 +283,13 @@ extern "C" int rgrid2rcm(const ncomp_array* lat1d, const ncomp_array* lon1d, con
 
   if(ier) {
     if(ier == 1) {
-#if DEBUG
+#ifdef DEBUG
       std::cerr << "ERROR rgrid2rcm: not enough points in input/output array ! \n";
 #endif
       return 1;
     }
     if(2 <= ier && ier <= 5) {
-#if DEBUG
+#ifdef DEBUG
       std::cerr << "ERROR rgrid2rcm: lat2d, lon2d, lat1d, lon1d must be monotonically increasing ! \n";
 #endif
       return 1;

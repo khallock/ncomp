@@ -984,7 +984,7 @@ extern "C" int eofunc_north(
   //             sig    = eval_north(eof@eval, ntim, prinfo)
   //
   if (eval->ndim != 1) {
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr << "input eval must be one dimensional array";
     #endif
     return 1;
