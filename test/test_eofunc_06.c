@@ -8,7 +8,7 @@
 
 
 int main(void) {
-  printf("Testing eofunc (05): ...\n");
+  printf("Testing eofunc (06): ...\n");
 
   // Creating an empty options
   ncomp_attributes* options = ncomp_attributes_allocate(2);
@@ -17,7 +17,7 @@ int main(void) {
   options->attribute_array[0] = create_ncomp_single_attribute_from_scalar((char *) "jopt", &jopt, NCOMP_INT);
 
   double pcrit = 32.0;
-  options->attribute_array[1] = create_ncomp_single_attribute_from_scalar((char *) "pcrit", &pcrit, NCOMP_DOUBLE);
+  options->attribute_array[1] = create_ncomp_single_attribute_from_scalar((char *) "pcrit", &pcrit, NCOMP_FLOAT);
 
   printf("options->nAttribute: %d\n", options->nAttribute);
 
@@ -27,13 +27,13 @@ int main(void) {
   int nt = 4;
   int nelem = nx*ny*nt;
   size_t dim_x[] = {nx, ny, nt};
-  double x_in [] = {0,1,-99,-99,4,-99,6,-99,8,9,10,-99,12,-99,14,15,16,-99,18,-99,20,21,22,-99,24,25,26,27,28,-99,30,-99,32,33,34,35,36,-99,38,39,40,-99,42,-99,44,45,46,-99,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63};
+  float x_in [] = {0,1,-99,-99,4,-99,6,-99,8,9,10,-99,12,-99,14,15,16,-99,18,-99,20,21,22,-99,24,25,26,27,28,-99,30,-99,32,33,34,35,36,-99,38,39,40,-99,42,-99,44,45,46,-99,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63};
 
 
   // creating rest of the eofunc arguments:
-  ncomp_array* ncomp_x_in = ncomp_array_alloc((void*) x_in, NCOMP_DOUBLE, 3, dim_x);
+  ncomp_array* ncomp_x_in = ncomp_array_alloc((void*) x_in, NCOMP_FLOAT, 3, dim_x);
   ncomp_x_in->has_missing = 1;
-  ncomp_x_in->msg.msg_double = -99.0;
+  ncomp_x_in->msg.msg_float = -99.0;
   ncomp_array* ncomp_x_out = (ncomp_array*) malloc(sizeof(ncomp_array));
   ncomp_attributes* attr = (ncomp_attributes*) malloc(sizeof(ncomp_attributes));
   int neval = 1;
@@ -64,11 +64,17 @@ int main(void) {
 
   double expected_x_out[] = {0.0600, 0.1257, 0.1778, 0.2675, 0.1257, 0.1778, 0.3404, 0.1257, 0.3404, 0.2675, 0.1257, 0.1778, 0.3404, 0.3404, 0.3404, 0.3404};
 
+  if (ncomp_x_out->type != NCOMP_FLOAT) {
+    printf("Problem with x_out type\n");
+    printf("Expected: x_out->type: %d\n", NCOMP_FLOAT);
+    printf("  Actual: x_out->type: %d\n", ncomp_x_out->type);
+  }
+
   for (int i = 0; i < 16; ++i) {
-    if (fabs( ((double*) ncomp_x_out->addr)[i] - expected_x_out[i]) > 0.0001) {
+    if (fabs( ((float*) ncomp_x_out->addr)[i] - expected_x_out[i]) > 0.0001) {
       printf("problem with ncomp_x_out->addr\n");
       printf("Expected: x_out[%d] = %f\n", i, expected_x_out[i]);
-      printf("  Actual: x_out[%d] = %f\n", i, ((double*) ncomp_x_out->addr)[i]);
+      printf("  Actual: x_out[%d] = %f\n", i, ((float*) ncomp_x_out->addr)[i]);
       return 3;
     }
   }
@@ -81,29 +87,29 @@ int main(void) {
     return 4;
   }
 
-  for (int i = 0; i<expected_nAttribute; ++i) {
+  for (int i = 0; i<5; ++i) {
     ncomp_single_attribute * s_attr = attr->attribute_array[i];
 
     if (strcmp("eval_transpose", s_attr->name) == 0) {
-      if (  (s_attr->value->type != 12) ||
+      if (  (s_attr->value->type != NCOMP_FLOAT) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
-            ( fabs( ((double*) s_attr->value->addr)[0] - 2.9852) > 0.0001) ) {
+            ( fabs( ((float*) s_attr->value->addr)[0] - 2.9852) > 0.0001) ) {
         printf("problem with eval_transpose\n");
         printf("Expected: %f\n", 2.9852);
-        printf("  Actual: %f\n", ((double*) s_attr->value->addr)[0]);
+        printf("  Actual: %f\n", ((float*) s_attr->value->addr)[0]);
         return 5;
       }
     }
 
     if (strcmp("eval", s_attr->name) == 0) {
-      if (  (s_attr->value->type != 12) ||
+      if (  (s_attr->value->type != NCOMP_FLOAT) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
-            ( fabs( ((double*) s_attr->value->addr)[0] - 14.9260) > 0.0001) ) {
+            ( fabs( ((float*) s_attr->value->addr)[0] - 14.9260) > 0.0001) ) {
         printf("problem with eval\n");
         printf("Expected: %f\n", 14.9260);
-        printf("  Actual: %f\n", ((double*) s_attr->value->addr)[0]);
+        printf("  Actual: %f\n", ((float*) s_attr->value->addr)[0]);
         return 6;
       }
     }
@@ -115,17 +121,19 @@ int main(void) {
             ( fabs( ((float*) s_attr->value->addr)[0] - 98.7163) > 0.0001) ) {
         printf("problem with pcvar\n");
         printf("Expected: %f\n", 98.7163);
-        printf("Actual: %f\n", ((float*) s_attr->value->addr)[0]);
+        printf("  Actual: %f\n", ((float*) s_attr->value->addr)[0]);
         return 7;
       }
     }
 
     if (strcmp("pcrit", s_attr->name) == 0) {
-      if (  (s_attr->value->type != 12) ||
+      if (  (s_attr->value->type != NCOMP_FLOAT) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
-            ( fabs( ((double*) s_attr->value->addr)[0] - 32.0000) > 0.0001) ) {
+            ( fabs( ((float*) s_attr->value->addr)[0] - 32.0000) > 0.0001) ) {
         printf("problem with pcrit\n");
+        printf("Expected: %f\n", 32.0);
+        printf("  Actual: %f\n", ((float*) s_attr->value->addr)[0]);
         return 6;
       }
     }

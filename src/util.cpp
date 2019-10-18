@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 
+
 template <typename T>
 void convert_to(void *in_arr, size_t in_arr_size, size_t in_arr_offset,
                 int in_arr_type, T *out_arr) {
@@ -215,9 +216,7 @@ extern "C" size_t sizeof_ncomp_array_data(int array_type) {
 void coerce_missing(int type_x, int has_missing_x,
                     const ncomp_missing *missing_x, double *missing_dx,
                     float *missing_fx) {
-  /*
-   * Check for missing value and coerce if neccesary.
-   */
+  // Check for missing value and coerce if neccesary.
   if (has_missing_x) {
     switch (type_x) {
     case NCOMP_DOUBLE:
@@ -266,7 +265,7 @@ void coerce_missing(int type_x, int has_missing_x,
       break;
     }
 
-    if (type_x != NCOMP_DOUBLE && missing_fx != nullptr) {
+    if (type_x != NCOMP_DOUBLE) {
       switch (type_x) {
       case NCOMP_FLOAT:
         (*missing_fx) = missing_x->msg_float;
@@ -309,221 +308,14 @@ void coerce_missing(int type_x, int has_missing_x,
         break;
       }
     }
-  } else { // assign mising value
-    if (missing_dx != nullptr) {
-      if (type_x != NCOMP_DOUBLE) {
-        *missing_dx = NC_FILL_DOUBLE;
-        if (missing_fx != nullptr)
-          *missing_fx = NC_FILL_FLOAT;
-      } else {
-        *missing_dx = NC_FILL_DOUBLE;
-      }
-    }
-  }
-}
-
-template <typename T,
-          typename = typename std::enable_if<
-              std::is_same<T, double>::value || std::is_same<T, float>::value ||
-                  std::is_same<T, int>::value ||
-                  std::is_same<T, unsigned int>::value ||
-                  std::is_same<T, long>::value,
-              T>::type>
-T *coerce_input_T(void *x, int type_x, size_t size_x, int has_missing_x,
-                  void *missing_x, T *missing_dx) {
-  T *dx = nullptr;
-  if ((std::is_same<T, double>::value && type_x == NCOMP_DOUBLE) ||
-      (std::is_same<T, float>::value && type_x == NCOMP_FLOAT) ||
-      (std::is_same<T, int>::value && type_x == NCOMP_INT) ||
-      (std::is_same<T, unsigned int>::value && type_x == NCOMP_UINT) ||
-      (std::is_same<T, unsigned long>::value && type_x == NCOMP_ULONG)) {
-    dx = static_cast<T *>(x);
-  } else {
-    std::vector<T> dxVec(size_x);
-    dx = dxVec.data();
-
-    NcompTypes ncompType;
-    if (std::is_same<T, double>::value)
-      ncompType = NCOMP_DOUBLE;
-    else if (std::is_same<T, float>::value)
-      ncompType = NCOMP_FLOAT;
-    else if (std::is_same<T, int>::value)
-      ncompType = NCOMP_INT;
-    else if (std::is_same<T, unsigned int>::value)
-      ncompType = NCOMP_UINT;
-    else if (std::is_same<T, unsigned long>::value)
-      ncompType = NCOMP_ULONG;
-    else
-      return nullptr;
-
-    if (has_missing_x) {
-      _ncomp_coerce(x, type_x, missing_x, (void *)dx, ncompType,
-                    (void *)missing_dx, size_x);
+  } else { // assign DEFAULT mising value just in case
+    if (type_x != NCOMP_DOUBLE) {
+      *missing_dx = static_cast<double>(NC_FILL_FLOAT);
+      *missing_fx = NC_FILL_FLOAT;
     } else {
-      _ncomp_coerce(x, type_x, nullptr, (void *)dx, ncompType, nullptr, size_x);
+      *missing_dx = NC_FILL_DOUBLE;
     }
   }
-  return dx;
-}
-
-template <typename T>
-void _ncomp_coerce_internal(void *from_ptr, int from_type, void *from_missing,
-                            T *to_ptr, T *to_missing, bool has_missing,
-                            size_t num) {
-  switch (from_type) {
-  case NCOMP_DOUBLE: {
-    for (size_t i = 0; i < num; i++) {
-      if (has_missing && ((double *)from_ptr)[i] == *((double *)from_missing)) {
-        to_ptr[i] = *to_missing;
-      } else {
-        to_ptr[i] = static_cast<T>(static_cast<double *>(from_ptr)[i]);
-      }
-    }
-    break;
-  }
-  case NCOMP_FLOAT: {
-    for (size_t i = 0; i < num; i++) {
-      if (has_missing && ((float *)from_ptr)[i] == *((float *)from_missing)) {
-        to_ptr[i] = *to_missing;
-      } else {
-        to_ptr[i] = static_cast<T>(static_cast<float *>(from_ptr)[i]);
-      }
-    }
-    break;
-  }
-  case NCOMP_BOOL: {
-    for (size_t i = 0; i < num; i++) {
-      if (has_missing && ((char *)from_ptr)[i] == *((char *)from_missing)) {
-        to_ptr[i] = *to_missing;
-      } else {
-        to_ptr[i] = static_cast<T>(static_cast<char *>(from_ptr)[i]);
-      }
-    }
-    break;
-  }
-  case NCOMP_BYTE: {
-    for (size_t i = 0; i < num; i++) {
-      if (has_missing &&
-          ((signed char *)from_ptr)[i] == *((signed char *)from_missing)) {
-        to_ptr[i] = *to_missing;
-      } else {
-        to_ptr[i] = static_cast<T>(static_cast<signed char *>(from_ptr)[i]);
-      }
-    }
-    break;
-  }
-  case NCOMP_UBYTE: {
-    for (size_t i = 0; i < num; i++) {
-      if (has_missing &&
-          ((unsigned char *)from_ptr)[i] == *((unsigned char *)from_missing)) {
-        to_ptr[i] = *to_missing;
-      } else {
-        to_ptr[i] = static_cast<T>(static_cast<unsigned char *>(from_ptr)[i]);
-      }
-    }
-    break;
-  }
-  case NCOMP_SHORT: {
-    for (size_t i = 0; i < num; i++) {
-      if (has_missing && ((short *)from_ptr)[i] == *((short *)from_missing)) {
-        to_ptr[i] = *to_missing;
-      } else {
-        to_ptr[i] = static_cast<T>(static_cast<short *>(from_ptr)[i]);
-      }
-    }
-    break;
-  }
-  case NCOMP_USHORT: {
-    for (size_t i = 0; i < num; i++) {
-      if (has_missing && ((unsigned short *)from_ptr)[i] ==
-                             *((unsigned short *)from_missing)) {
-        to_ptr[i] = *to_missing;
-      } else {
-        to_ptr[i] = static_cast<T>(static_cast<unsigned short *>(from_ptr)[i]);
-      }
-    }
-    break;
-  }
-  case NCOMP_INT: {
-    for (size_t i = 0; i < num; i++) {
-      if (has_missing && ((int *)from_ptr)[i] == *((int *)from_missing)) {
-        to_ptr[i] = *to_missing;
-      } else {
-        to_ptr[i] = static_cast<T>(static_cast<int *>(from_ptr)[i]);
-      }
-    }
-    break;
-  }
-  case NCOMP_UINT: {
-    for (size_t i = 0; i < num; i++) {
-      if (has_missing &&
-          ((unsigned int *)from_ptr)[i] == *((unsigned int *)from_missing)) {
-        to_ptr[i] = *to_missing;
-      } else {
-        to_ptr[i] = static_cast<T>(static_cast<unsigned int *>(from_ptr)[i]);
-      }
-    }
-    break;
-  }
-  case NCOMP_LONG: {
-    for (size_t i = 0; i < num; i++) {
-      if (has_missing && ((long *)from_ptr)[i] == *((long *)from_missing)) {
-        to_ptr[i] = *to_missing;
-      } else {
-        to_ptr[i] = static_cast<T>(static_cast<long *>(from_ptr)[i]);
-      }
-    }
-    break;
-  }
-  case NCOMP_ULONG: {
-    for (size_t i = 0; i < num; i++) {
-      if (has_missing &&
-          ((unsigned long *)from_ptr)[i] == *((unsigned long *)from_missing)) {
-        to_ptr[i] = *to_missing;
-      } else {
-        to_ptr[i] = static_cast<T>(static_cast<unsigned long *>(from_ptr)[i]);
-      }
-    }
-    break;
-  }
-  case NCOMP_LONGLONG: {
-    for (size_t i = 0; i < num; i++) {
-      if (has_missing &&
-          ((long long *)from_ptr)[i] == *((long long *)from_missing)) {
-        to_ptr[i] = *to_missing;
-      } else {
-        to_ptr[i] = static_cast<T>(static_cast<long long *>(from_ptr)[i]);
-      }
-    }
-    break;
-  }
-  case NCOMP_ULONGLONG: {
-    for (size_t i = 0; i < num; i++) {
-      if (has_missing && ((unsigned long long *)from_ptr)[i] ==
-                             *((unsigned long long *)from_missing)) {
-        to_ptr[i] = *to_missing;
-      } else {
-        to_ptr[i] =
-            static_cast<T>(static_cast<unsigned long long *>(from_ptr)[i]);
-      }
-    }
-    break;
-  }
-  case NCOMP_LONGDOUBLE: {
-    for (size_t i = 0; i < num; i++) {
-      if (has_missing &&
-          ((long double *)from_ptr)[i] == *((long double *)from_missing)) {
-        to_ptr[i] = *to_missing;
-      } else {
-        to_ptr[i] = static_cast<T>(static_cast<long double *>(from_ptr)[i]);
-      }
-    }
-    break;
-  }
-  default:
-    break;
-  }
-  return;
 }
 
 void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
@@ -608,6 +400,20 @@ void _ncomp_coerce(void *from_ptr, int from_type, void *from_missing,
   return;
 }
 
+// Sets a subset of the output data to missing.
+void set_subset_output_missing(void *x, size_t index_x, int type_x,
+                               size_t size_x, const double &missing_x) {
+  if (type_x != NCOMP_DOUBLE) {
+    for (auto i = 0; i < size_x; i++) {
+      (static_cast<float *>(x))[index_x + i] = static_cast<float>(missing_x);
+    }
+  } else {
+    for (auto i = 0; i < size_x; i++) {
+      (static_cast<double *>(x))[index_x + i] = missing_x;
+    }
+  }
+}
+
 // Allocates a variable of a given size and initializes all the elements
 template <typename T>
 T* allocateAndInit(unsigned long size, T initValue) {
@@ -628,6 +434,20 @@ extern "C" ncomp_single_attribute * create_ncomp_single_attribute_from_ncomp_arr
   out_ncomp_single_attribute->name = copy_of_name;
   out_ncomp_single_attribute->value = value;
   return out_ncomp_single_attribute;
+}
+
+extern "C" ncomp_single_attribute * create_ncomp_single_attribute_char(
+  char * name,
+  char * data
+) {
+  int size_data = strlen(data) + 1;
+  char * copy_of_data = new char[size_data];
+  std::copy(data, data + size_data, copy_of_data);
+  size_t dims[1] {1};
+
+  ncomp_array * value = ncomp_array_alloc((void *) copy_of_data, NCOMP_CHAR, 1, dims);
+
+  return create_ncomp_single_attribute_from_ncomp_array(name, value);
 }
 
 // Creates a ncomp_single_attribute. Note that the data is not copied. So, make
@@ -745,8 +565,12 @@ extern "C" void* getAttributeOrDefault(
 
 //
 size_t prod(const size_t* shape, int ndim) {
+  return prod(shape, 0, ndim);
+}
+
+size_t prod(const size_t* shape, int start_inclusive_idx, int end_exclusive_idx) {
   size_t nElements = 1;
-  for (int i = 0; i<ndim; ++i) {
+  for (int i = start_inclusive_idx; i < end_exclusive_idx; ++i) {
     nElements *= *(shape+i);
   }
   return nElements;
@@ -769,6 +593,16 @@ void print_ncomp_array(const char * name, const ncomp_array * in) {
   std::cout << name <<" has_missing: " << in->has_missing << "\n";
 
   switch(in->type) {
+    // case NCOMP_BOOL:
+    //   std::cout << name << " msg: " << in->msg.msg_double << "\n";
+    //
+    //   std::cout << name << " data: [ ";
+    //   for (int i = 0; i < nelem; ++i) {
+    //     int tmpVal = static_cast<int *>(in->addr)[i];
+    //     std::cout << ((tmpVal == 0) ? "False" : "True") << " ";
+    //   }
+    //   std::cout << "]\n";
+    //   break;
     case NCOMP_DOUBLE:
       std::cout << name << " msg: " << in->msg.msg_double << "\n";
 
@@ -819,8 +653,8 @@ void print_ncomp_attributes(const ncomp_attributes * in) {
 }
 
 // explicit function instantiations
-template void convert_to<double>(void *, size_t, size_t, int, double *);
-template void convert_to<float>(void *, size_t, size_t, int, float *);
 template double * allocateAndInit(size_t, double);
 template float * allocateAndInit(size_t, float);
+template int * allocateAndInit(size_t, int);
 template double * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);
+template float * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);
