@@ -15,9 +15,9 @@ extern "C" void mocloops_(int *, int *, int *, int *, int *,
 *
 */
 
-extern "C" int moc_globe_atl( const ncomp_array *lat_aux_grid, const ncomp_array *a_wvel,
-                              const ncomp_array *a_bolus, const ncomp_array *a_submeso,
-                              const ncomp_array *tlat, const ncomp_array *rmlak,
+extern "C" int moc_globe_atl( const ncomp_array * lat_aux_grid, const ncomp_array * a_wvel,
+                              const ncomp_array * a_bolus, const ncomp_array * a_submeso,
+                              const ncomp_array * tlat, const ncomp_array * rmlak,
                               ncomp_array * tmp_out ){
 
 /*
@@ -58,7 +58,7 @@ extern "C" int moc_globe_atl( const ncomp_array *lat_aux_grid, const ncomp_array
     #if DEBUG
       std::cerr<<"moc_globe_atl: The input array must be at least three-dimensional"<<std::endl;
     #endif
-    return 1;
+    return 2;
   }
 
   kdep  = a_wvel->shape[0];
@@ -74,7 +74,7 @@ extern "C" int moc_globe_atl( const ncomp_array *lat_aux_grid, const ncomp_array
     #if DEBUG
       std::cerr<<"moc_globe_atl: one or more input dimension sizes are greater than INT_MAX"<<std::endl;
     #endif
-    return 1;
+    return 3;
   }
 
   imlon = (int) mlon;
@@ -88,7 +88,7 @@ extern "C" int moc_globe_atl( const ncomp_array *lat_aux_grid, const ncomp_array
        #if DEBUG
          std::cerr<<"moc_globe_atl: a_wvel, a_submeso, and a_bolus must have the same dimensionality"<<std::endl;
        #endif
-       return 1;
+       return 4;
     }
   }
 
@@ -96,7 +96,7 @@ extern "C" int moc_globe_atl( const ncomp_array *lat_aux_grid, const ncomp_array
     #if DEBUG
       std::cerr<<"moc_globe_atl: The dimensions of tlat must be nlat x mlon"<<std::endl;
     #endif
-    return 1;
+    return 5;
   }
 
   if(rmlak->shape[0] != 2 ||
@@ -104,7 +104,7 @@ extern "C" int moc_globe_atl( const ncomp_array *lat_aux_grid, const ncomp_array
       #if DEBUG
         std::cerr<<"moc_globe_atl: The dimensions of rmlak must be 2 x nlat x mlon"<<std::endl;
       #endif
-      return 1;
+      return 6;
   }
 
 
