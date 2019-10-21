@@ -1,6 +1,4 @@
-#include "ncomp/types.h"
-#include "ncomp/util.h"
-#include "ncomp_internal/util.hpp"
+#include "ncomp_build.h"
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -143,7 +141,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
 
   // Sanity Checking
   if (x_in->ndim < 2) {
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr<<"eofunc: The input array must be at least two-dimensional"<<std::endl;
     #endif
     return 1;
@@ -174,7 +172,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
 
   // Sanity Checking
   if ( msta<1 || nobs <1) {
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr << "eofunc: The dimensions of the input array must both be at least 1" << std::endl;
     #endif
     return 2;
@@ -182,7 +180,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
 
   if((nrow > INT_MAX) || (ncol > INT_MAX) ||
      (msta > INT_MAX) || (nobs > INT_MAX)) {
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
     #endif
     return(NCOMP_RETURN_FATAL);
@@ -277,7 +275,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
   }
 
   if(mcsta > INT_MAX) {
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
     #endif
     return(NCOMP_RETURN_FATAL);
@@ -448,7 +446,7 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
     lifail = mcsta;
 
     if((lwork > INT_MAX) || (liwork > INT_MAX) || (lifail > INT_MAX)) {
-      #if DEBUG
+      #ifdef DEBUG
         std::cerr<<"eofunc: one or more dimension sizes is greater than INT_MAX"<<std::endl;
       #endif
       return(NCOMP_RETURN_FATAL);
@@ -612,25 +610,25 @@ extern "C" int eofunc(const ncomp_array * x_in, const int neval_in,
    */
   if (!options->use_new_transpose && i_error != 0) {
     if (i_error == -1) {
-      #if DEBUG
+      #ifdef DEBUG
         std::cerr<<"eofunc: cssm contains one or more missing values.\n(One or more series contains all missing values.)"<<std::endl;
       #endif
       return i_error;
     }
     else if (i_error == -88) {
-      #if DEBUG
+      #ifdef DEBUG
         std::cerr<<"eofunc: trace is equal to zero.\nAll data entries are missing or are equal to zero."<<std::endl;
       #endif
       return i_error;
     }
     else if (i_error < 0) {
-      #if DEBUG
+      #ifdef DEBUG
         std::cerr<<"eofunc: The "<<abs(i_error)<<"-th argument had an illegal value"<<std::endl;
       #endif
       return i_error;
     }
     else {
-      #if DEBUG
+      #ifdef DEBUG
         std::cerr<<"eofunc: "<<i_error<<" eigenvectors failed to converge"<<std::endl;
       #endif
       return i_error;
@@ -971,7 +969,7 @@ extern "C" int eofunc_north(
   //             sig    = eval_north(eof@eval, ntim, prinfo)
   //
   if (eval->ndim != 1) {
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr << "input eval must be one dimensional array";
     #endif
     return 1;
@@ -1035,7 +1033,7 @@ extern "C" int eofunc_north(
       printf("index    dlam      low       pcvar     high    sig_pcv\n");
       for (size_t i = 0; i < neval; ++i) {
         printf(
-          "(%2d)    %7.5f   %7.5f   %7.5f   %7.5f  %s\n",
+          "(%2zd)    %7.5f   %7.5f   %7.5f   %7.5f  %s\n",
           i,
           dlam[i], low[i], eval_d[i], high[i],
           sig_value[i] == 1 ? "True" : "False"

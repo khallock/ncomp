@@ -1,13 +1,119 @@
-#include "ncomp/constants.h"
-#include "ncomp/types.h"
-#include "ncomp/util.h"
-#include "ncomp_internal/util.hpp"
+#include "ncomp_build.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <type_traits>
 #include <vector>
 #include <iostream>
+
+
+template <typename T>
+void convert_to(void *in_arr, size_t in_arr_size, size_t in_arr_offset,
+                int in_arr_type, T *out_arr) {
+  switch (in_arr_type) {
+  case NCOMP_DOUBLE: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<double *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_FLOAT: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<float *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_BOOL: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<char *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_BYTE: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<signed char *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_UBYTE: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] = static_cast<T>(
+          static_cast<unsigned char *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_SHORT: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<short *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_USHORT: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] = static_cast<T>(
+          static_cast<unsigned short *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_INT: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<int *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_UINT: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] = static_cast<T>(
+          static_cast<unsigned int *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_LONG: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<long *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_ULONG: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] = static_cast<T>(
+          static_cast<unsigned long *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_LONGLONG: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<long long *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_ULONGLONG: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] = static_cast<T>(
+          static_cast<unsigned long long *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  case NCOMP_LONGDOUBLE: {
+    for (size_t i = 0; i < in_arr_size; i++) {
+      out_arr[i] =
+          static_cast<T>(static_cast<long double *>(in_arr)[i + in_arr_offset]);
+    }
+    break;
+  }
+  default:
+    break;
+  }
+  return;
+}
 
 // If the intended type and the actual type are the same, the array is just casted
 // So nothing is copied. Hence, you need to make sure that in_arr is not scoped

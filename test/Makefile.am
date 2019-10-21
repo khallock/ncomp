@@ -4,6 +4,7 @@ check_PROGRAMS = 	test_linint2 \
 									test_eofunc_north_01 test_eofunc_north_02 \
 									test_eofunc_ts_01 \
 									test_eofunc_ts_n_01
+
 AM_CPPFLAGS = -I$(srcdir)/../src
 AM_LDFLAGS = -lm -L$(srcdir)/../src/.libs -lncomp -Wl,-rpath,$(prefix)/lib
 TESTS = $(check_PROGRAMS)
