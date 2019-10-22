@@ -1,6 +1,9 @@
+#include "ncomp_build.h"
+/*
 #include "ncomp/types.h"
 #include "ncomp/util.h"
 #include "ncomp_internal/util.hpp"
+*/
 #include <iostream>
 
 extern "C" void mocloops_(int *, int *, int *, int *, int *,
