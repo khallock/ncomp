@@ -119,7 +119,7 @@ int main(void) {
     printf("problem with ncomp_x_out->shape\n");
     printf("expected shape: [5, 91, 180]\n");
     printf(
-      "  actual shape: [%d, %d, %d]\n",
+      "  actual shape: [%zd, %zd, %zd]\n",
       ev->shape[0],
       ev->shape[1],
       ev->shape[2]
@@ -246,7 +246,7 @@ int main(void) {
     printf("problem with ev_ts->shape\n");
     printf("expected shape: [5, 127]\n");
     printf(
-      "  actual shape: [%d, %d]\n",
+      "  actual shape: [%zd, %zd]\n",
       ev_ts->shape[0],
       ev_ts->shape[1]
     );

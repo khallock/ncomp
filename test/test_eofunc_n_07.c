@@ -72,7 +72,7 @@ int main(void) {
     printf("problem with ncomp_x_out->shape\n");
     printf("expected shape: [5, 91, 180]\n");
     printf(
-      "  actual shape: [%d, %d, %d]\n",
+      "  actual shape: [%zd, %zd, %zd]\n",
       ncomp_x_out->shape[0],
       ncomp_x_out->shape[1],
       ncomp_x_out->shape[2]
