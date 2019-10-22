@@ -17,6 +17,10 @@ ncomp_single_attribute* create_ncomp_single_attribute_from_ncomp_array(
   char * name,
   ncomp_array* value);
 
+ncomp_single_attribute * create_ncomp_single_attribute_char(
+    char * name,
+    char * data);
+
 ncomp_single_attribute* create_ncomp_single_attribute(
   char * name,
   void * data_ptr,
