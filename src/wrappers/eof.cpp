@@ -1074,7 +1074,7 @@ extern "C" int eofunc_ts(
    * the second input array.
    */
   if ( (x_in->ndim<2) || (x_in->ndim != evec_in->ndim) ) {
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr << "eofunc_ts: The input arrays must be at least "
                    "two-dimensional and have the same number of dimensions\n";
     #endif
@@ -1084,7 +1084,7 @@ extern "C" int eofunc_ts(
   size_t msta {1};
   for (int i = 0; i < (x_in->ndim-1); ++i) {
     if (x_in->shape[i] != evec_in->shape[i+1]) {
-      #if DEBUG
+      #ifdef DEBUG
         std::cerr << "eofunc_ts: All but the rightmost dimension of the first "
                      "input array must be the same as all but the leftmost "
                      "dimension of the second input array\n";
@@ -1103,7 +1103,7 @@ extern "C" int eofunc_ts(
   size_t neval {evec_in->shape[0]};
 
   if( (ncol > INT_MAX) || (nobs > INT_MAX) || (neval > INT_MAX) ) {
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr << "eofunc_ts: one or more dimension sizes is greater "
                    "than INT_MAX\n";
     #endif
@@ -1120,7 +1120,7 @@ extern "C" int eofunc_ts(
   size_t total_size_evec {msta * neval};
 
   if ( (msta < 1) || (nobs < 1) ) {
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr << "eofunc_ts: The dimensions of the input array "
                    "must both be at least 1\n";
     #endif
@@ -1175,7 +1175,7 @@ extern "C" int eofunc_ts(
             &iflag, wx.get(), wrk.get(), evec_ts, evtsav, &i_err);
 
   if (i_err != 0) {
-    #if DEBUG
+    #ifdef DEBUG
       if (i_err == -1) {
         std::cerr << "eofunc_ts: cssm contains one or more missing values\n";
       } else if (i_err == -88) {
@@ -1262,14 +1262,14 @@ extern "C" int eofunc_ts_n(
   // Although this check is also performed when eofunc is called, but let's
   // terminate early, if we have too and not bother with rearranging at all.
   if (x_in->ndim < 2) {
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr<<"eofunc_ts_n: The input arrays must be at least two-dimensional\n";
     #endif
     return 1;
   }
 
   if (x_in->ndim != ev_in->ndim) {
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr<<"eofunc_ts_n: The input arrays must be at least two-dimensional and have the same number of dimensions\n";
     #endif
     return 2;
@@ -1278,7 +1278,7 @@ extern "C" int eofunc_ts_n(
   for (int i = 0; i < x_in->ndim; ++i) {
     if (  (i != t_dim) &&
           (x_in->shape[i]!=ev_in->shape[i]) ) {
-      #if DEBUG
+      #ifdef DEBUG
       std::cout <<"eofunc_ts_n: All but the 'time' dimension of the first input array must be the same as all but the leftmost dimension of the second input array\n";
       #endif
       return 3;
