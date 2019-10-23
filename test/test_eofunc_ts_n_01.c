@@ -16,7 +16,7 @@ double * read_data(char * filename, int nTime, int nLat, int nLon) {
       for (int j = 0; j < nLat; ++j) {
         for (int i = 0; i < nLon; ++i) {
           char tmp[40];
-          fscanf(fp,"%s", &tmp);
+          fscanf(fp,"%s", tmp);
           int idx = k*(nLat*nLon) + j*(nLon) + i;
           data[idx] = atof(tmp);
         }
@@ -41,7 +41,7 @@ double * read_expected_ev(char * filename, int nTime, int nLat, int nLon) {
       for (int j = 0; j < nLat; ++j) {
         for (int i = 0; i < nLon; ++i) {
           char tmp[40];
-          fscanf(fp,"%s", &tmp);
+          fscanf(fp,"%s", tmp);
           int idx = k*(nLat*nLon) + j*(nLon) + i;
           data[idx] = atof(tmp);
           // printf("%f ", data[idx]);
@@ -67,7 +67,7 @@ double * read_expected_ev_ts(char * filename, int nEval, int nTime) {
     for (int n = 0; n < nEval; ++n) {
       for (int t = 0; t < nTime; ++t) {
         char tmp[40];
-        fscanf(fp,"%s", &tmp);
+        fscanf(fp,"%s", tmp);
         int idx = n*nTime + t;
         data[idx] = atof(tmp);
       }
