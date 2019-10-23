@@ -106,19 +106,21 @@ int main(void) {
     }
 
     if (strcmp("matrix", s_attr->name) == 0) {
-      if (  (s_attr->value->type != 0) ||
+      if (  (s_attr->value->type != NCOMP_CHAR) ||
             (s_attr->value->ndim != 1) ||
-            (s_attr->value->shape[0] != 1) ||
+            (s_attr->value->shape[0] != (strlen("covariance") + 1)) ||
             strcmp((char *) s_attr->value->addr, "covariance")!=0 ) {
         printf("problem with matrix\n");
+        printf(" Expected matrix: covariance\n");
+        printf("   Actual matrix: %s\n", (char *) s_attr->value->addr);
         return 8;
       }
     }
 
     if (strcmp("method", s_attr->name) == 0) {
-      if (  (s_attr->value->type != 0) ||
+      if (  (s_attr->value->type != NCOMP_CHAR) ||
             (s_attr->value->ndim != 1) ||
-            (s_attr->value->shape[0] != 1) ||
+            (s_attr->value->shape[0] != (strlen("transpose") + 1)) ||
             strcmp((char *) s_attr->value->addr, "transpose")!=0 ) {
         printf("problem with method\n");
         return 9;

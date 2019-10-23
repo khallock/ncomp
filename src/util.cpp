@@ -443,7 +443,7 @@ extern "C" ncomp_single_attribute * create_ncomp_single_attribute_char(
   int size_data = strlen(data) + 1;
   char * copy_of_data = new char[size_data];
   std::copy(data, data + size_data, copy_of_data);
-  size_t dims[1] {1};
+  size_t dims[1] {static_cast<size_t>(size_data)};
 
   ncomp_array * value = ncomp_array_alloc((void *) copy_of_data, NCOMP_CHAR, 1, dims);
 
