@@ -16,7 +16,7 @@ double * readfile(char * filename, int nTime, int nLat, int nLon) {
       for (int j = 0; j < nLat; ++j) {
         for (int i = 0; i < nLon; ++i) {
           char tmp[20];
-          fscanf(fp,"%s", &tmp);
+          fscanf(fp,"%s", tmp);
           int idx = k*(nLat*nLon) + j*(nLon) + i;
           data[idx] = atof(tmp);
           // printf("%f ", data[idx]);
