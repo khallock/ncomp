@@ -217,7 +217,7 @@ void coerce_missing(int type_x, int has_missing_x,
                     const ncomp_missing *missing_x, double *missing_dx,
                     float *missing_fx) {
   // Check for missing value and coerce if neccesary.
-  if (has_missing_x) {
+  if (has_missing_x && missing_dx != nullptr) {
     switch (type_x) {
     case NCOMP_DOUBLE:
       (*missing_dx) = missing_x->msg_double;
@@ -265,7 +265,7 @@ void coerce_missing(int type_x, int has_missing_x,
       break;
     }
 
-    if (type_x != NCOMP_DOUBLE) {
+    if (type_x != NCOMP_DOUBLE && missing_fx != nullptr) {
       switch (type_x) {
       case NCOMP_FLOAT:
         (*missing_fx) = missing_x->msg_float;
@@ -309,11 +309,13 @@ void coerce_missing(int type_x, int has_missing_x,
       }
     }
   } else { // assign DEFAULT mising value just in case
-    if (type_x != NCOMP_DOUBLE) {
+    if (type_x != NCOMP_DOUBLE && missing_dx != nullptr && missing_fx != nullptr) {
       *missing_dx = static_cast<double>(NC_FILL_FLOAT);
       *missing_fx = NC_FILL_FLOAT;
     } else {
-      *missing_dx = NC_FILL_DOUBLE;
+      if (missing_dx != nullptr) {
+        *missing_dx = NC_FILL_DOUBLE;
+      }
     }
   }
 }
@@ -743,3 +745,5 @@ template double * convert_to_with_copy_avoiding(void *, size_t, size_t, int, Nco
 template float * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);
 template double * convert_ncomp_array_to(const ncomp_array *, double *, float *);
 template float * convert_ncomp_array_to(const ncomp_array *, double *, float *);
+template bool * convert_ncomp_array_to(const ncomp_array *, double *, float *);
+template int * convert_ncomp_array_to(const ncomp_array *, double *, float *);

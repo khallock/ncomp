@@ -17,7 +17,7 @@ int main(void) {
   options->attribute_array[0] = create_ncomp_single_attribute_from_scalar((char *) "jopt", &jopt, NCOMP_INT);
 
   double pcrit = 32.0;
-  options->attribute_array[1] = create_ncomp_single_attribute_from_scalar((char *) "pcrit", &pcrit, NCOMP_FLOAT);
+  options->attribute_array[1] = create_ncomp_single_attribute_from_scalar((char *) "pcrit", &pcrit, NCOMP_DOUBLE);
 
   printf("options->nAttribute: %d\n", options->nAttribute);
 

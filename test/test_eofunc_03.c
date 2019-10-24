@@ -83,7 +83,7 @@ int main(void) {
     ncomp_single_attribute * s_attr = attr->attribute_array[i];
 
     if (strcmp("eval_transpose", s_attr->name) == 0) {
-      if (  (s_attr->value->type != 12) ||
+      if (  (s_attr->value->type != NCOMP_DOUBLE) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
             ( fabs( ((double*) s_attr->value->addr)[0] - 3.2000) > 0.0001) ) {
@@ -93,7 +93,7 @@ int main(void) {
     }
 
     if (strcmp("eval", s_attr->name) == 0) {
-      if (  (s_attr->value->type != 12) ||
+      if (  (s_attr->value->type != NCOMP_DOUBLE) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
             ( fabs( ((double*) s_attr->value->addr)[0] - 16.0000) > 0.0001) ) {
@@ -103,7 +103,7 @@ int main(void) {
     }
 
     if (strcmp("pcvar", s_attr->name) == 0) {
-      if (  (s_attr->value->type != 11) ||
+      if (  (s_attr->value->type != NCOMP_FLOAT) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
             ( fabs( ((float*) s_attr->value->addr)[0] - 100.00) > 0.0001) ) {
@@ -113,7 +113,7 @@ int main(void) {
     }
 
     if (strcmp("pcrit", s_attr->name) == 0) {
-      if (  (s_attr->value->type != 12) ||
+      if (  (s_attr->value->type != NCOMP_DOUBLE) ||
             (s_attr->value->ndim != 1) ||
             (s_attr->value->shape[0] != 1) ||
             ( fabs( ((double*) s_attr->value->addr)[0] - 32.0000) > 0.0001) ) {

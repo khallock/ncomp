@@ -84,41 +84,65 @@ eofunc_options* extract_eofunc_options(const ncomp_attributes * options_in) {
     return options_out;
   }
 
-  options_out->jopt = *(int *) getAttributeOrDefault(options_in, "jopt", &(options_out->jopt));
-  if ((options_out->jopt != 0) && (options_out->jopt != 1)) {
-    options_out->jopt = 0; // jopt must be either 0 or 1
+  int tmpPos = -1;
+  if (hasAttribute(options_in, "jopt", &tmpPos)==1) {
+    int * tmp_jopt = convert_ncomp_array_to<int>(options_in->attribute_array[tmpPos]->value, nullptr, nullptr);
+    options_out->jopt = *tmp_jopt;
+    if (options_in->attribute_array[tmpPos]->value->type != NCOMP_INT) free(tmp_jopt);
+    if ((options_out->jopt != 0) && (options_out->jopt != 1)) {
+      options_out->jopt = 0; // jopt must be either 0 or 1
+    }
   }
 
-  int tmpPos = -1;
+
   if (hasAttribute(options_in, "pcrit", &tmpPos)==1) {
-    options_out->pcrit = *(double*) options_in->attribute_array[tmpPos]->value->addr;
+    double * tmp_pcrit = convert_ncomp_array_to<double>(options_in->attribute_array[tmpPos]->value, nullptr, nullptr);
+    options_out->pcrit = *tmp_pcrit;
+    if (options_in->attribute_array[tmpPos]->value->type != NCOMP_DOUBLE) free(tmp_pcrit);
     options_out->return_pcrit = true;
     if ((options_out->pcrit < 0.0) || (options_out->pcrit > 100.0)) {
       options_out->pcrit = 50.0; // pcrit must be between 0.0 and 100.0; default value is 50
     }
   }
 
-  options_out->return_eval = *(bool*) getAttributeOrDefault(options_in, "return_eval", &(options_out->return_eval));
+  if (hasAttribute(options_in, "return_eval", &tmpPos)==1) {
+    bool * tmp_return_eval = convert_ncomp_array_to<bool>(options_in->attribute_array[tmpPos]->value, nullptr, nullptr);
+    options_out->return_eval = *tmp_return_eval;
+    if (options_in->attribute_array[tmpPos]->value->type != NCOMP_BOOL) free(tmp_return_eval);
+  }
 
-  options_out->return_trace = *(bool*) getAttributeOrDefault(options_in, "return_trace", &(options_out->return_trace));
+  if (hasAttribute(options_in, "return_trace", &tmpPos)==1) {
+    bool * tmp_return_trace = convert_ncomp_array_to<bool>(options_in->attribute_array[tmpPos]->value, nullptr, nullptr);
+    options_out->return_trace = *tmp_return_trace;
+    if (options_in->attribute_array[tmpPos]->value->type != NCOMP_BOOL) free(tmp_return_trace);
+  }
 
-  options_out->anomalies = *(bool*) getAttributeOrDefault(options_in, "anomalies", &(options_out->anomalies));
+  if (hasAttribute(options_in, "anomalies", &tmpPos)==1) {
+    bool * tmp_anomalies = convert_ncomp_array_to<bool>(options_in->attribute_array[tmpPos]->value, nullptr, nullptr);
+    options_out->anomalies = *tmp_anomalies;
+    if (options_in->attribute_array[tmpPos]->value->type != NCOMP_BOOL) free(tmp_anomalies);
+  }
 
   if (hasAttribute(options_in, "transpose", &tmpPos)==1) {
-    options_out->use_new_transpose = *(bool*) options_in->attribute_array[tmpPos]->value->addr;
+    bool * tmp_use_new_transpose = convert_ncomp_array_to<bool>(options_in->attribute_array[tmpPos]->value, nullptr, nullptr);
+    options_out->use_new_transpose = *tmp_use_new_transpose;
+    if (options_in->attribute_array[tmpPos]->value->type != NCOMP_BOOL) free(tmp_use_new_transpose);
     options_out->tr_setbyuser = true;
   } else if (hasAttribute(options_in, "oldtranspose", &tmpPos)==1) { // we should set either transpose or old-transposed
                                                                     // in this case, if transpose is already provided,
                                                                     // we are not checking if old-tranpose is set.
                                                                     // We only check if old-transpose is set, in case if
                                                                     // transpose is not set.
-    options_out->use_old_transpose = *(bool*) options_in->attribute_array[tmpPos]->value->addr;
+    bool * tmp_use_old_transpose = convert_ncomp_array_to<bool>(options_in->attribute_array[tmpPos]->value, nullptr, nullptr);
+    options_out->use_old_transpose = *tmp_use_old_transpose;
+    if (options_in->attribute_array[tmpPos]->value->type != NCOMP_BOOL) free(tmp_use_old_transpose);
     options_out->use_new_transpose = false; // making sure that only one of them is set.
     options_out->tr_setbyuser = true;
   } // Not setting transpose or old_transpose is the same as setting transpose.
     // Based on NCL notes: old-transpose is for debug and should not be used by the user.
     // So, May be we could remove it from here.
 
+  // TODO make sure the original data is also bool
   options_out->debug = *(bool*) getAttributeOrDefault(options_in, "debug", &(options_out->debug));
 
   if (options_out->debug) {
