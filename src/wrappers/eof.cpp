@@ -94,7 +94,6 @@ eofunc_options* extract_eofunc_options(const ncomp_attributes * options_in) {
     }
   }
 
-
   if (hasAttribute(options_in, "pcrit", &tmpPos)==1) {
     double * tmp_pcrit = convert_ncomp_array_to<double>(options_in->attribute_array[tmpPos]->value, nullptr, nullptr);
     options_out->pcrit = *tmp_pcrit;
