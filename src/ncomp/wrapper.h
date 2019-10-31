@@ -41,7 +41,7 @@ int eofunc_ts(
   ncomp_array * x_out,
   ncomp_attributes * attrs_out);
 
-  int eofunc_ts_n(
+int eofunc_ts_n(
     const ncomp_array * x_in,
     const ncomp_array * evec_in,
     const ncomp_attributes * options_in,
@@ -49,7 +49,9 @@ int eofunc_ts(
     ncomp_array * x_out,
     ncomp_attributes * attrs_out);
 
-
+int moc_globe_atl( const ncomp_array *, const ncomp_array *, const ncomp_array *,
+                   const ncomp_array *, const ncomp_array *, const ncomp_array *,
+                   ncomp_array * );
 
 #ifdef __cplusplus /* If this is a C++ compiler, end C linkage */
 }
