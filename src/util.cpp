@@ -217,7 +217,7 @@ void coerce_missing(int type_x, int has_missing_x,
                     const ncomp_missing *missing_x, double *missing_dx,
                     float *missing_fx) {
   // Check for missing value and coerce if neccesary.
-  if (has_missing_x) {
+  if (has_missing_x && missing_dx != nullptr) {
     switch (type_x) {
     case NCOMP_DOUBLE:
       (*missing_dx) = missing_x->msg_double;
@@ -265,7 +265,7 @@ void coerce_missing(int type_x, int has_missing_x,
       break;
     }
 
-    if (type_x != NCOMP_DOUBLE) {
+    if (type_x != NCOMP_DOUBLE && missing_fx != nullptr) {
       switch (type_x) {
       case NCOMP_FLOAT:
         (*missing_fx) = missing_x->msg_float;
@@ -309,11 +309,13 @@ void coerce_missing(int type_x, int has_missing_x,
       }
     }
   } else { // assign DEFAULT mising value just in case
-    if (type_x != NCOMP_DOUBLE) {
+    if (type_x != NCOMP_DOUBLE && missing_dx != nullptr && missing_fx != nullptr) {
       *missing_dx = static_cast<double>(NC_FILL_FLOAT);
       *missing_fx = NC_FILL_FLOAT;
     } else {
-      *missing_dx = NC_FILL_DOUBLE;
+      if (missing_dx != nullptr) {
+        *missing_dx = NC_FILL_DOUBLE;
+      }
     }
   }
 }
@@ -443,7 +445,7 @@ extern "C" ncomp_single_attribute * create_ncomp_single_attribute_char(
   int size_data = strlen(data) + 1;
   char * copy_of_data = new char[size_data];
   std::copy(data, data + size_data, copy_of_data);
-  size_t dims[1] {1};
+  size_t dims[1] {static_cast<size_t>(size_data)};
 
   ncomp_array * value = ncomp_array_alloc((void *) copy_of_data, NCOMP_CHAR, 1, dims);
 
@@ -499,11 +501,11 @@ ncomp_attributes * collectAttributeList(std::vector<ncomp_single_attribute *> at
   return output_attribute_list;
 }
 
-void collectAttributeList(std::vector<ncomp_single_attribute*> attrVector, ncomp_attributes * collectedAttributedList) {
-  collectedAttributedList->nAttribute = attrVector.size();
-  collectedAttributedList->attribute_array  = new ncomp_single_attribute*[attrVector.size()];
+void collectAttributeList(std::vector<ncomp_single_attribute*> attrVector, ncomp_attributes * collectedAttributList) {
+  collectedAttributList->nAttribute = attrVector.size();
+  collectedAttributList->attribute_array  = new ncomp_single_attribute*[attrVector.size()];
   for (int i = 0; i < attrVector.size(); ++i) {
-    collectedAttributedList->attribute_array[i] = attrVector[i];
+    collectedAttributList->attribute_array[i] = attrVector[i];
   }
 }
 
@@ -652,9 +654,96 @@ void print_ncomp_attributes(const ncomp_attributes * in) {
   }
 }
 
+
+template<typename T>
+NcompTypes getNCOMPType() {
+  if (std::is_same<T, double>::value) {
+    return NCOMP_DOUBLE;
+  }
+
+  if (std::is_same<T, float>::value) {
+    return NCOMP_FLOAT;
+  }
+
+  if (std::is_same<T, bool>::value) {
+    return NCOMP_BOOL;
+  }
+
+  if (std::is_same<T, signed char>::value) {
+    return NCOMP_BYTE;
+  }
+
+  if (std::is_same<T, unsigned char>::value) {
+    return NCOMP_UBYTE;
+  }
+
+  if (std::is_same<T, short>::value) {
+    return NCOMP_SHORT;
+  }
+
+  if (std::is_same<T, unsigned short>::value) {
+    return NCOMP_USHORT;
+  }
+
+  if (std::is_same<T, int>::value) {
+    return NCOMP_INT;
+  }
+
+  if (std::is_same<T, unsigned int>::value) {
+    return NCOMP_UINT;
+  }
+
+  if (std::is_same<T, long>::value) {
+    return NCOMP_LONG;
+  }
+
+  if (std::is_same<T, unsigned long>::value) {
+    return NCOMP_ULONG;
+  }
+
+  if (std::is_same<T, long long>::value) {
+    return NCOMP_LONGLONG;
+  }
+
+  if (std::is_same<T, unsigned long long>::value) {
+    return NCOMP_ULONGLONG;
+  }
+
+  if (std::is_same<T, long double>::value) {
+    return NCOMP_LONGDOUBLE;
+  }
+}
+
+template<typename T>
+T* convert_ncomp_array_to(
+  const ncomp_array * input,
+  double * missing_d,
+  float * missing_f)
+{
+  coerce_missing(
+    input->type,
+    input->has_missing,
+    (ncomp_missing *)&(input->msg),
+    missing_d,
+    missing_f
+  );
+
+  NcompTypes ncomp_type = getNCOMPType<T>();
+
+  size_t size = prod(input->shape, input->ndim);
+
+  return convert_to_with_copy_avoiding<T>(
+    (void *)input->addr, size, 0, input->type, ncomp_type
+  );
+}
+
 // explicit function instantiations
 template double * allocateAndInit(size_t, double);
 template float * allocateAndInit(size_t, float);
 template int * allocateAndInit(size_t, int);
 template double * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);
 template float * convert_to_with_copy_avoiding(void *, size_t, size_t, int, NcompTypes);
+template double * convert_ncomp_array_to(const ncomp_array *, double *, float *);
+template float * convert_ncomp_array_to(const ncomp_array *, double *, float *);
+template bool * convert_ncomp_array_to(const ncomp_array *, double *, float *);
+template int * convert_ncomp_array_to(const ncomp_array *, double *, float *);

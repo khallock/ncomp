@@ -17,7 +17,7 @@ int main(void) {
   options->attribute_array[0] = create_ncomp_single_attribute_from_scalar((char *) "jopt", &jopt, NCOMP_INT);
 
   double pcrit = 32.0;
-  options->attribute_array[1] = create_ncomp_single_attribute_from_scalar((char *) "pcrit", &pcrit, NCOMP_FLOAT);
+  options->attribute_array[1] = create_ncomp_single_attribute_from_scalar((char *) "pcrit", &pcrit, NCOMP_DOUBLE);
 
   printf("options->nAttribute: %d\n", options->nAttribute);
 
@@ -139,9 +139,9 @@ int main(void) {
     }
 
     if (strcmp("matrix", s_attr->name) == 0) {
-      if (  (s_attr->value->type != 0) ||
+      if (  (s_attr->value->type != NCOMP_CHAR) ||
             (s_attr->value->ndim != 1) ||
-            (s_attr->value->shape[0] != 1) ||
+            (s_attr->value->shape[0] != (strlen("correlation") + 1)) ||
             strcmp((char *) s_attr->value->addr, "correlation")!=0 ) {
         printf("problem with matrix\n");
         return 8;
@@ -149,9 +149,9 @@ int main(void) {
     }
 
     if (strcmp("method", s_attr->name) == 0) {
-      if (  (s_attr->value->type != 0) ||
+      if (  (s_attr->value->type != NCOMP_CHAR) ||
             (s_attr->value->ndim != 1) ||
-            (s_attr->value->shape[0] != 1) ||
+            (s_attr->value->shape[0] != (strlen("transpose") + 1)) ||
             strcmp((char *) s_attr->value->addr, "transpose")!=0 ) {
         printf("problem with method\n");
         return 9;
