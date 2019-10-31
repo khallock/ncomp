@@ -37,8 +37,7 @@ extern "C" int moc_globe_atl( const ncomp_array * lat_aux_grid, const ncomp_arra
   */
   void *tmp;
   double *dtmp1, *dtmp2, *dtmp3;
-  std::unique_ptr<size_t[]> dsizes_tmp;
-  int ndims_tmp;
+  int ndims_tmp = 4;
   int type_tmp;
 
 
@@ -162,6 +161,7 @@ extern "C" int moc_globe_atl( const ncomp_array * lat_aux_grid, const ncomp_arra
                           tlat_numel, 0, tlat->type, NCOMP_DOUBLE);
 
 
+
  /*
   * The output will be float unless any of the first four arguments are double.
   */
@@ -180,6 +180,7 @@ extern "C" int moc_globe_atl( const ncomp_array * lat_aux_grid, const ncomp_arra
  /*
   * Allocate space for output and working arrays.
   */
+  size_t dsizes_tmp[] = {3, 2, (size_t)kdep, (size_t)nyaux};
   size_output = 3 * kdepnyaux2;    /* 3 x 2 x kdep x nyaux */
 
   /* Create temporary output arrays */
@@ -199,14 +200,6 @@ extern "C" int moc_globe_atl( const ncomp_array * lat_aux_grid, const ncomp_arra
     dtmp2 = &((double*)tmp)[kdepnyaux2];
     dtmp3 = &((double*)tmp)[2 * kdepnyaux2];
   }
-
-  /* Allocate space for output dimension sizes and set them. */
-  ndims_tmp  = 4;
-  dsizes_tmp.reset(new size_t[ndims_tmp]);
-  dsizes_tmp[0] = 3;
-  dsizes_tmp[1] = 2;
-  dsizes_tmp[2] = kdep;
-  dsizes_tmp[3] = nyaux;
 
 
  /*
@@ -235,11 +228,11 @@ extern "C" int moc_globe_atl( const ncomp_array * lat_aux_grid, const ncomp_arra
                          (float *)tmp + 2 * kdepnyaux2);
 
       /* Populate output ncomp_array from tmp array */
-      *tmp_out = *ncomp_array_alloc((float *)tmp, NCOMP_FLOAT, ndims_tmp, dsizes_tmp.get());
+      *tmp_out = *ncomp_array_alloc((float *)tmp, NCOMP_FLOAT, ndims_tmp, dsizes_tmp);
    }
    else
       /* Populate output ncomp_array from tmp array */
-      *tmp_out = *ncomp_array_alloc((double *)tmp, NCOMP_DOUBLE, ndims_tmp, dsizes_tmp.get());
+      *tmp_out = *ncomp_array_alloc((double *)tmp, NCOMP_DOUBLE, ndims_tmp, dsizes_tmp);
 
   /* TO-DO: Check if has_missing and msg.msg_double needed
    tmp_out->has_missing = a_wvel->has_missing;
