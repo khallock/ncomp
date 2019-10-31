@@ -49,7 +49,7 @@ extern "C" int moc_globe_atl( const ncomp_array * lat_aux_grid, const ncomp_arra
   /* Check for lat_aux_grid dimension */
   if (lat_aux_grid->ndim < 1) {
 
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr<<"moc_globe_atl: Empty array!!!"<<std::endl;
     #endif
 
@@ -61,7 +61,7 @@ extern "C" int moc_globe_atl( const ncomp_array * lat_aux_grid, const ncomp_arra
   /* Check for a_wvel dimension */
   if (a_wvel->ndim < 3) {
 
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr<<"moc_globe_atl: The input array must be at least three-dimensional"<<std::endl;
     #endif
 
@@ -80,7 +80,7 @@ extern "C" int moc_globe_atl( const ncomp_array * lat_aux_grid, const ncomp_arra
   if((mlon > INT_MAX) || (nlat > INT_MAX) ||
      (kdep > INT_MAX) || (nyaux > INT_MAX)) {
 
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr<<"moc_globe_atl: one or more input dimension sizes are greater than INT_MAX"<<std::endl;
     #endif
 
@@ -99,7 +99,7 @@ extern "C" int moc_globe_atl( const ncomp_array * lat_aux_grid, const ncomp_arra
     if(a_bolus->shape[i] != a_wvel->shape[i] ||
        a_bolus->shape[i] != a_submeso->shape[i]) {
 
-      #if DEBUG
+      #ifdef DEBUG
         std::cerr<<"moc_globe_atl: a_wvel, a_submeso, and a_bolus must have the same dimensionality"<<std::endl;
       #endif
 
@@ -110,7 +110,7 @@ extern "C" int moc_globe_atl( const ncomp_array * lat_aux_grid, const ncomp_arra
   /* Check for t_lat shape */
   if(tlat->shape[0] != nlat || tlat->shape[1] != mlon) {
 
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr<<"moc_globe_atl: The dimensions of tlat must be nlat x mlon"<<std::endl;
     #endif
 
@@ -122,7 +122,7 @@ extern "C" int moc_globe_atl( const ncomp_array * lat_aux_grid, const ncomp_arra
      rmlak->shape[1] != nlat ||
      rmlak->shape[2] != mlon) {
 
-    #if DEBUG
+    #ifdef DEBUG
       std::cerr<<"moc_globe_atl: The dimensions of rmlak must be 2 x nlat x mlon"<<std::endl;
     #endif
 
