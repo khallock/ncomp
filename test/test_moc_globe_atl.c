@@ -62,12 +62,12 @@ int main(void) {
   ncomp_array* ncomp_rmlak = ncomp_array_alloc((void*) rmlak, NCOMP_INT, 3, dim_rmlak);
 
   // Allocating ,e,ory for output data
-  ncomp_array* ncomp_arr_out = (ncomp_array*) malloc(sizeof(ncomp_array));
+  ncomp_array* ncomp_arr_out = NULL;
 
   // Calling moc_globe_atl function
   printf("Calling moc_globe_atl: ...\n");
 
-  int ierr = moc_globe_atl(ncomp_lat_aux_grid, ncomp_a_wvel, ncomp_a_bolus, ncomp_a_submeso, ncomp_tlat, ncomp_rmlak, ncomp_arr_out);
+  int ierr = moc_globe_atl(ncomp_lat_aux_grid, ncomp_a_wvel, ncomp_a_bolus, ncomp_a_submeso, ncomp_tlat, ncomp_rmlak, &ncomp_arr_out);
 
   if (ierr != 0) {
     printf("ierr: %d", ierr);

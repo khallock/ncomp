@@ -15,14 +15,14 @@ int main(void) {
   ncomp_eval_in->has_missing = 1;
   ncomp_eval_in->msg.msg_double = -99.0;
 
-  ncomp_array* ncomp_sig_out = (ncomp_array*) malloc(sizeof(ncomp_array));
+  ncomp_array* ncomp_sig_out;
   ncomp_attributes* attr = (ncomp_attributes*) malloc(sizeof(ncomp_attributes));
 
   int N = 320;
   int prinfo = 1;
 
   printf("Calling eofunc_north ... \n");
-  int ierr = eofunc_north(ncomp_eval_in, N, prinfo, ncomp_sig_out, attr);
+  int ierr = eofunc_north(ncomp_eval_in, N, prinfo, &ncomp_sig_out, attr);
 
   print_ncomp_array("ncomp_sig_out", ncomp_sig_out);
   print_ncomp_attributes(attr);

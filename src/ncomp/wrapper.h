@@ -20,25 +20,25 @@ int rgrid2rcm(const ncomp_array *lat1d, const ncomp_array *lon1d,
 
 int eofunc(const ncomp_array * x_in, const int neval_in,
            const ncomp_attributes * options_in,
-           ncomp_array * x_out, ncomp_attributes * attrList_out);
+           ncomp_array ** x_out, ncomp_attributes * attrList_out);
 
 int eofunc_n(const ncomp_array * x_in, const int neval_in,
              const int t_dim,
              const ncomp_attributes * options_in,
-             ncomp_array * x_out, ncomp_attributes * attrList_out);
+             ncomp_array ** x_out, ncomp_attributes * attrList_out);
 
 int eofunc_north(
   const ncomp_array * eval,
   int N,
   int prinfo,
-  ncomp_array * sig,
+  ncomp_array ** sig,
   ncomp_attributes * out_attrs);
 
 int eofunc_ts(
   const ncomp_array * x_in,
   const ncomp_array * evec_in,
   const ncomp_attributes * options_in,
-  ncomp_array * x_out,
+  ncomp_array ** x_out,
   ncomp_attributes * attrs_out);
 
 int eofunc_ts_n(
@@ -46,12 +46,12 @@ int eofunc_ts_n(
     const ncomp_array * evec_in,
     const ncomp_attributes * options_in,
     const int t_dim,
-    ncomp_array * x_out,
+    ncomp_array ** x_out,
     ncomp_attributes * attrs_out);
 
 int moc_globe_atl( const ncomp_array *, const ncomp_array *, const ncomp_array *,
                    const ncomp_array *, const ncomp_array *, const ncomp_array *,
-                   ncomp_array * );
+                   ncomp_array ** );
 
 #ifdef __cplusplus /* If this is a C++ compiler, end C linkage */
 }

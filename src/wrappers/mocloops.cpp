@@ -21,7 +21,7 @@ extern "C" void mocloops_(int *, int *, int *, int *, int *,
 extern "C" int moc_globe_atl( const ncomp_array * lat_aux_grid, const ncomp_array * a_wvel,
                               const ncomp_array * a_bolus, const ncomp_array * a_submeso,
                               const ncomp_array * tlat, const ncomp_array * rmlak,
-                              ncomp_array * tmp_out ){
+                              ncomp_array ** tmp_out ){
 
  /*
   * Various Variables
@@ -228,11 +228,11 @@ extern "C" int moc_globe_atl( const ncomp_array * lat_aux_grid, const ncomp_arra
                          (float *)tmp + 2 * kdepnyaux2);
 
       /* Populate output ncomp_array from tmp array */
-      *tmp_out = *ncomp_array_alloc((float *)tmp, NCOMP_FLOAT, ndims_tmp, dsizes_tmp);
+      *tmp_out = ncomp_array_alloc((float *)tmp, NCOMP_FLOAT, ndims_tmp, dsizes_tmp);
    }
    else
       /* Populate output ncomp_array from tmp array */
-      *tmp_out = *ncomp_array_alloc((double *)tmp, NCOMP_DOUBLE, ndims_tmp, dsizes_tmp);
+      *tmp_out = ncomp_array_alloc((double *)tmp, NCOMP_DOUBLE, ndims_tmp, dsizes_tmp);
 
   /* TO-DO: Check if has_missing and msg.msg_double needed
    tmp_out->has_missing = a_wvel->has_missing;

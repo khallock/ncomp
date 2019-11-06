@@ -95,12 +95,12 @@ int main(void) {
   size_t dim_x[] = {nLat, nLon, nTime};
   ncomp_array* ncomp_x_in = ncomp_array_alloc((void*) data, NCOMP_DOUBLE, 3, dim_x);
   ncomp_x_in->has_missing = 0;
-  ncomp_array* ev = (ncomp_array*) malloc(sizeof(ncomp_array));
+  ncomp_array* ev;
   ncomp_attributes* ev_attr = (ncomp_attributes*) malloc(sizeof(ncomp_attributes));
 
   printf("Calling eofunc: ...\n");
   int neval = 5;
-  int ierr = eofunc(ncomp_x_in, neval, NULL, ev, ev_attr);
+  int ierr = eofunc(ncomp_x_in, neval, NULL, &ev, ev_attr);
 
   if (ierr != 0) {
     printf("ierr: %d\n", ierr);
@@ -227,9 +227,9 @@ int main(void) {
 
 
   printf("Calling eofunc_ts: ...\n");
-  ncomp_array* ev_ts = (ncomp_array*) malloc(sizeof(ncomp_array));
+  ncomp_array* ev_ts;
   ncomp_attributes* ev_ts_attr = (ncomp_attributes*) malloc(sizeof(ncomp_attributes));
-  ierr = eofunc_ts(ncomp_x_in, ev, NULL, ev_ts, ev_ts_attr);
+  ierr = eofunc_ts(ncomp_x_in, ev, NULL, &ev_ts, ev_ts_attr);
 
   if (ierr != 0) {
     printf("ierr: %d\n", ierr);
