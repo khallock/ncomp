@@ -38,13 +38,13 @@ int main(void) {
   ncomp_array* ncomp_x_in = ncomp_array_alloc((void*) x_in, NCOMP_DOUBLE, 3, dim_x);
   ncomp_x_in->has_missing = 1;
   ncomp_x_in->msg.msg_double = -999.0;
-  ncomp_array* ncomp_x_out = (ncomp_array*) malloc(sizeof(ncomp_array));
+  ncomp_array* ncomp_x_out;
   ncomp_attributes* attr = (ncomp_attributes*) malloc(sizeof(ncomp_attributes));
   int neval = 1;
 
   printf("Calling eofunc_n: ...\n");
   int t_dim = 0;
-  int ierr = eofunc_n(ncomp_x_in, neval, t_dim, options, ncomp_x_out, attr);
+  int ierr = eofunc_n(ncomp_x_in, neval, t_dim, options, &ncomp_x_out, attr);
   if (ierr != 0) {
     printf("ierr: %d", ierr);
     return ierr;
